@@ -1,0 +1,92 @@
+/**
+ * @fileoverview Hoja de estilos para el componente Login.
+ * @description Se definen los estilos para el diálogo modal de inicio de sesión,
+ * incluyendo el formulario, los campos de entrada y los mensajes de error.
+ */
+
+/** @section Encabezado de la Tarjeta */
+
+/* Se centra y estiliza el contenedor del encabezado. */
+.mat-mdc-card-header {
+  margin: 2rem;
+  padding: 0;
+  justify-content: center;
+  text-align: center;
+}
+
+/* Se define el estilo del título principal. */
+.mat-mdc-card-title {
+  font-size: 1.8rem;
+  font-weight: 500;
+  color: var(--color-titulo-formulario);
+}
+
+/* Se define el estilo del subtítulo. */
+.mat-mdc-card-subtitle {
+  font-size: 0.8rem;
+  color: var(--color-subtitulo-formulario);
+  margin-top: 0.5rem;
+}
+
+/** @section Formulario y Campos */
+
+/* Se define el contenedor del formulario. */
+.login-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  margin: 0 2rem 2rem 2rem;
+}
+
+/* Se define el estilo para los campos de entrada, asegurando que ocupen todo el ancho. */
+.login-input-field {
+  display: block;
+  width: 100%;
+}
+
+/** @section Opciones y Acciones */
+
+/* Se distribuyen las opciones secundarias ('Recordarme', 'Olvidé contraseña'). */
+.login-options {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.9rem;
+}
+
+/* Se estiliza el enlace para recuperar contraseña. */
+.login-options a {
+  text-decoration: none;
+}
+.login-options a:hover {
+  text-decoration: underline;
+}
+
+/* Se da forma de píldora y altura al botón de 'Iniciar Sesión'. */
+.login-button {
+  width: 100%;
+  font-weight: 500;
+  height: 50px;
+  border-radius: 25px;
+}
+.login-button:hover {
+  filter: brightness(90%); /* Se oscurece ligeramente al pasar el mouse. */
+}
+
+/* Se centra el contenedor de acciones. */
+.mat-mdc-card-actions {
+  display: flex;
+  justify-content: center;
+  padding: 1rem 1rem;
+}
+
+/** @section Mensajes de Error */
+
+/* Se estiliza el mensaje de error para credenciales inválidas. */
+.form-error-message {
+  color: var(--mat-sys-error, #B3261E); /* Se usa una variable de color de error de Material. */
+  text-align: center;
+  margin-bottom: 1.5rem;
+  font-size: 0.9rem;
+  font-weight: 500;
+}

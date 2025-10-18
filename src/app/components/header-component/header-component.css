@@ -1,0 +1,223 @@
+/**
+ * @fileoverview Hoja de estilos para el componente Header.
+ * @description Se definen los estilos para la barra de navegación, incluyendo su diseño responsivo
+ * y la animación de la barra de búsqueda en dispositivos móviles.
+ */
+
+/** @section Barra de Navegación Principal */
+
+/* Se define el contenedor principal del header. */
+.custom-toolbar {
+  background-color: var(--color-fondo-header); /* Se aplica el color de fondo global. */
+  color: var(--color-letra-header);           /* Se aplica el color de letra global. */
+  display: flex;                              /* Se utiliza Flexbox para alinear los elementos hijos. */
+  align-items: center;                        /* Se centran todos los elementos verticalmente. */
+  justify-content: space-between;             /* Se distribuye el espacio entre los bloques izquierdo, central y derecho. */
+  padding: 0 1.5rem;                          /* Se añade espaciado horizontal interno. */
+  height: 7rem;                               /* Se fija una altura consistente para la barra. */
+  box-shadow: none;                           /* Se elimina cualquier sombra por defecto. */
+}
+
+
+/** @section Secciones Izquierda y Derecha */
+
+/* Se definen los contenedores para el logo/título y los botones de acción. */
+.toolbar-left, .toolbar-right {
+  display: flex;          /* Se alinean los elementos hijos en una fila. */
+  align-items: center;    /* Se centran verticalmente. */
+  gap: 1rem;              /* Se crea un espacio consistente entre los elementos. */
+}
+
+
+/** @section Elementos de la Izquierda (Logo y Títulos) */
+
+.toolbar-logo {
+  height: 5rem;
+  transition: height 0.3s ease; /* Se anima el cambio de tamaño para una transición suave. */
+}
+
+.titulo {
+  display: flex;
+  flex-direction: column; /* Se apilan las dos líneas de título verticalmente. */
+  line-height: 1.1;       /* Se reduce el espacio entre las líneas de texto. */
+}
+.titulo .linea1 {
+  font-size: 1.8rem;
+  font-weight: 500;
+  transition: font-size 0.3s ease;
+}
+.titulo .linea2 {
+  font-size: 1.2rem;
+  opacity: 0.8;
+  transition: font-size 0.3s ease, opacity 0.3s ease;
+}
+
+
+/** @section Barra de Búsqueda (Estilo Píldora) */
+
+/* Se define el contenedor que centra la barra de búsqueda. */
+.search-container {
+  flex: 1;                  /* Se configura para que ocupe todo el espacio sobrante en el medio. */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 1.5rem;        /* Se añade espaciado para evitar que se pegue a otros elementos. */
+}
+
+/* Se estiliza el componente mat-form-field. */
+.search-bar {
+  width: 100%;
+  max-width: 600px; /* Se limita el ancho máximo en pantallas grandes. */
+}
+
+
+/**
+ * @section Modificaciones Internas de Angular Material con ::ng-deep
+ * @description Se utiliza ::ng-deep para acceder y modificar los estilos internos encapsulados
+ * de los componentes de Angular Material.
+ * @todo A futuro, se podría evaluar el uso de 'encapsulation: ViewEncapsulation.None' en el componente
+ * o definir estos estilos de forma global para evitar el uso de '::ng-deep', que está deprecado.
+ */
+
+/* Se hace invisible el contenedor del campo para no interferir con el estilo de píldora. */
+:host ::ng-deep .search-bar .mdc-text-field--filled {
+  background-color: transparent !important;
+}
+
+/* Se crea el fondo blanco y redondeado de la píldora. */
+:host ::ng-deep .search-bar .mat-mdc-form-field-flex {
+  background-color: white;
+  border-radius: 50px; /* Se usa un valor alto para asegurar la forma de píldora. */
+  height: 52px;
+}
+
+/* Se elimina la línea inferior que aparece por defecto. */
+:host ::ng-deep .search-bar .mat-mdc-form-field-underline {
+  display: none !important;
+}
+
+/* Se elimina la línea de foco (azul) que aparece al hacer clic. */
+:host ::ng-deep .search-bar .mdc-line-ripple {
+  display: none !important;
+}
+
+/* Se colapsa el espacio inferior (reservado para errores) para un centrado perfecto. */
+:host ::ng-deep .search-bar .mat-mdc-form-field-subscript-wrapper {
+  display: none;
+}
+
+/* Se elimina el resaltado de color al pasar el mouse. */
+:host ::ng-deep .search-bar .mat-mdc-form-field-focus-overlay {
+  background-color: transparent !important;
+}
+
+
+/** @section Estilos para el Contenido de la Barra de Búsqueda */
+
+.search-bar input {
+  color: #212121; /* Se define un texto oscuro para el contraste. */
+}
+.search-bar input::placeholder {
+  color: #757575; /* Se define un color gris suave para el placeholder. */
+}
+.search-bar .mat-icon {
+  color: #5f5f5f; /* Se define un color gris para el ícono de lupa. */
+}
+
+
+/** @section Botones y Lógica Responsiva */
+
+/* Se oculta por defecto el botón para activar la búsqueda en móvil. */
+.search-toggle-button {
+  display: none;
+}
+
+/* Por defecto, los elementos específicos para móvil están ocultos. */
+.show-on-mobile {
+  display: none !important;
+}
+
+/* Se definen los estilos para pantallas con un ancho máximo de 768px. */
+@media (max-width: 768px) {
+
+  .custom-toolbar {
+    position: relative; /* Se necesita para posicionar la barra de búsqueda expandida. */
+  }
+
+  /* Se oculta el contenedor de búsqueda principal. */
+  .search-container {
+    display: none;
+  }
+
+  /* Se ocultan los elementos de escritorio. */
+  .hide-on-mobile,
+  .toolbar-right .cta-button {
+    display: none !important;
+  }
+
+  /* Se muestran los elementos específicos para móvil. */
+  .show-on-mobile,
+  .search-toggle-button {
+    display: inline-flex !important;
+  }
+
+  /** @subsection Estilo de Búsqueda Expandida en Móvil */
+
+  /* Cuando la búsqueda está activa, se ocultan el logo y ciertos botones con una animación. */
+  .custom-toolbar.search-active .toolbar-left,
+  .custom-toolbar.search-active .toolbar-right .mat-icon-button[aria-label="Ayuda"] {
+    opacity: 0;
+    transform: scale(0.8);
+    pointer-events: none; /* Se evita que se pueda interactuar con los elementos ocultos. */
+  }
+
+  /* Se asegura que el botón de cerrar búsqueda permanezca visible. */
+  .custom-toolbar.search-active .toolbar-right .search-toggle-button {
+    opacity: 1;
+    transform: scale(1);
+    pointer-events: auto;
+  }
+
+  /* Se muestra y posiciona la barra de búsqueda para que ocupe casi todo el header. */
+  .custom-toolbar.search-active .search-container {
+    display: flex;
+    position: absolute; /* Se saca del flujo normal para posicionarla sobre los demás. */
+    left: 1rem;
+    right: 4rem;        /* Se deja espacio a la derecha para el botón de cerrar. */
+    top: 0;
+    bottom: 0;
+    align-items: center;
+    padding: 0;
+    animation: fadeIn 0.3s ease; /* Se aplica una animación de aparición. */
+  }
+
+
+  /** @subsection Estilos Generales para Móvil */
+
+  /* Se añade una transición suave para todos los cambios de estado. */
+  .toolbar-left, .toolbar-right .mat-icon-button, .search-container {
+    transition: all 0.3s ease-in-out;
+  }
+
+  @keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+}
+
+/** @section Estilos de Botones de la Derecha (Hover y Active) */
+
+.help-icon mat-icon {
+  color: var(--color-letra-header);
+  opacity: 0.9;
+  transition: opacity 0.2s ease-in-out;
+}
+.help-icon:hover mat-icon {
+  opacity: 1; /* Se aumenta la opacidad al pasar el mouse para un feedback sutil. */
+}
+
+/* Se da un feedback visual al presionar cualquier ícono de la derecha. */
+.toolbar-right .mat-icon-button:active mat-icon {
+  color: #e0e0e0;         /* Se aplica un gris claro para el feedback. */
+  transform: scale(0.9);  /* Se aplica un leve encogimiento para simular el clic. */
+}

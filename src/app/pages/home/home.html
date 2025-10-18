@@ -1,0 +1,72 @@
+<!--
+  Se define la plantilla para la página de inicio.
+  Se estructura en dos secciones principales: una para filtros y otra para mostrar los resultados.
+-->
+<div class="home-container">
+
+  <!-- Sección de Selección de Filtros -->
+  <section class="selection-section">
+    <h2><mat-icon>filter_list</mat-icon> Tipos de Documento</h2>
+    <p>Seleccione una categoría para filtrar los documentos publicados.</p>
+
+    <div class="filter-buttons">
+      <!-- Botón para mostrar todos los documentos -->
+      <button mat-stroked-button
+              (click)="selectCategory('todos')"
+              [class.active-filter]="categoriaSeleccionada === 'todos'">
+        Todos
+      </button>
+
+      <!-- Se utiliza el bloque @for para iterar y crear un botón por cada tipo de documento. -->
+      @for (tipo of tiposDeDocumento; track tipo.idTipoDocumento) {
+        <button mat-stroked-button
+                (click)="selectCategory(tipo.nombre)"
+                [class.active-filter]="categoriaSeleccionada === tipo.nombre">
+          <mat-icon>{{ tipo.icono }}</mat-icon>
+          <span>{{ tipo.nombre }}</span>
+        </button>
+      }
+    </div>
+  </section>
+
+  <!-- Sección de Resultados de Documentos -->
+  <section class="results-section">
+    <!-- Grilla que contiene las tarjetas de los documentos filtrados. -->
+    <div class="document-grid">
+      <!-- Se itera sobre la lista 'documentosFiltrados' para mostrar una tarjeta por cada documento. -->
+      @for (doc of documentosFiltrados; track doc.idDocumento) {
+        <mat-card class="document-card" (click)="onCardClick(doc.idDocumento)">
+          <mat-card-header class="card-header-colored">
+            <mat-icon mat-card-avatar>article</mat-icon>
+            <div class="card-header-content">
+              <mat-card-title>
+                <!-- Se trunca el texto del título y se muestra completo en un tooltip. -->
+                <span class="truncate-text" [matTooltip]="doc.titulo">{{ doc.titulo }}</span>
+              </mat-card-title>
+              <div class="spacer"></div>
+              <mat-card-subtitle>{{ doc.numDocumento }}</mat-card-subtitle>
+            </div>
+          </mat-card-header>
+          <mat-card-content>
+            <p>
+              <!-- Se trunca el texto del resumen. -->
+              <span class="truncate-text" [matTooltip]="doc.resumen">{{ doc.resumen }}</span>
+            </p>
+            <div class="spacer"></div>
+            <span class="creation-date">
+              Fecha de creación {{ doc.fechaCreacion | date:'dd/MM/yyyy' }}
+            </span>
+          </mat-card-content>
+        </mat-card>
+      }
+    </div>
+
+    <!-- Se muestra un mensaje si la lista de 'documentosFiltrados' está vacía. -->
+    @if (documentosFiltrados.length === 0) {
+      <div class="no-results">
+        <mat-icon>search_off</mat-icon>
+        <p>No se encontraron documentos para los filtros aplicados.</p>
+      </div>
+    }
+  </section>
+</div>

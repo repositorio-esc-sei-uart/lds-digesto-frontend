@@ -1,0 +1,46 @@
+/**
+ * @fileoverview Hoja de estilos principal de la aplicación.
+ * @description Se definen los estilos globales y la configuración del tema
+ * de Angular Material (basado en Material 3 / MDC).
+ */
+
+/* Se importa el módulo de theming de Angular Material. */
+@use '@angular/material' as mat;
+
+/*
+  Se incluyen los estilos base y estructurales de Angular Material.
+  Esto es fundamental para que los componentes funcionen correctamente.
+*/
+@include mat.core();
+
+/*
+  Se definen los estilos para la etiqueta `html`, aplicando el tema global.
+*/
+html {
+  /* Se define el esquema de color preferido para el navegador (light o dark). */
+  color-scheme: light;
+
+  /*
+    Se aplica el tema de la aplicación utilizando el mixin `mat.theme`.
+    Esto genera todas las variables CSS necesarias para los componentes de Material.
+  */
+  @include mat.theme((
+    color: (
+      // Se definen las paletas de colores para el tema.
+      primary: mat.$blue-palette,
+      secondary: mat.$violet-palette,
+      error: mat.$red-palette,
+    ),
+    // Se establece la densidad de los componentes (0 es la estándar).
+    density: 0
+  ));
+}
+
+/*
+  Se definen los estilos base para el `body` de la aplicación.
+*/
+body {
+  /* Se aplican los colores de fondo y de texto del tema de Material 3. */
+  background: var(--mat-sys-color-surface);
+  color: var(--mat-sys-color-on-surface);
+}

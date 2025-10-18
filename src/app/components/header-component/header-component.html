@@ -1,0 +1,49 @@
+<!--
+  Se define la barra de navegación principal de la aplicación.
+  Se utiliza 'mat-toolbar' de Angular Material como contenedor.
+  La clase 'search-active' se aplica dinámicamente para controlar el estado de la búsqueda en móviles.
+-->
+<mat-toolbar class="custom-toolbar" [class.search-active]="isSearchActive">
+
+  <!-- Sección Izquierda: Contiene el logo y el título de la aplicación. -->
+  <div class="toolbar-left">
+    <img [src]="configService.logoUrl" alt="Logo de la Aplicación" class="toolbar-logo">
+    <div class="titulo">
+      <span class="linea1">{{ configService.titleLine1 }}</span>
+      <span class="linea2">{{ configService.titleLine2 }}</span>
+    </div>
+  </div>
+
+  <!-- Sección Central: Contiene la barra de búsqueda principal, visible en escritorio. -->
+  <div class="search-container">
+    <mat-form-field class="search-bar">
+      <mat-icon matPrefix>search</mat-icon>
+      <!-- Se utiliza un formControl para gestionar el estado del input de forma reactiva. -->
+      <input matInput placeholder="Buscar en el digesto..." [formControl]="searchControl">
+    </mat-form-field>
+  </div>
+
+  <!-- Sección Derecha: Contiene los botones de acción (búsqueda móvil, ayuda, acceso). -->
+  <div class="toolbar-right">
+    <!-- Botón para mostrar/ocultar la búsqueda, visible solo en móviles. -->
+    <button mat-icon-button class="search-toggle-button" (click)="toggleSearch()" aria-label="Abrir búsqueda">
+      <!-- El ícono cambia entre 'search' y 'close' según el estado de la búsqueda. -->
+      <mat-icon>{{ isSearchActive ? 'close' : 'search' }}</mat-icon>
+    </button>
+
+    <!-- Botón de Ayuda. -->
+    <button mat-icon-button class="help-icon" aria-label="Ayuda">
+      <mat-icon>help_outline</mat-icon>
+    </button>
+
+    <!-- Botón de Acceso principal, se oculta en la vista móvil. -->
+    <button mat-flat-button class="cta-button" (click)="openLoginDialog()" aria-label="Acceder">
+      Acceder
+    </button>
+
+    <!-- Ícono de Acceso/Usuario, se muestra solo en la vista móvil en lugar del botón principal. -->
+    <button mat-icon-button class="show-on-mobile" (click)="openLoginDialog()" aria-label="Acceder">
+      <mat-icon>account_circle</mat-icon>
+    </button>
+  </div>
+</mat-toolbar>

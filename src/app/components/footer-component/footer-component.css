@@ -1,0 +1,96 @@
+/**
+ * @fileoverview Hoja de estilos para el componente Footer.
+ * @description Se definen los estilos para el pie de página, incluyendo un diseño de
+ * grilla para los enlaces y su adaptación a dispositivos móviles.
+ */
+
+/** @section Contenedor Principal */
+
+/* Se define el contenedor principal del footer. */
+.footer-container {
+  background-color: var(--color-fondo-footer); /* Se aplica el color de fondo global. */
+  color: var(--color-letra-footer);           /* Se aplica el color de letra global. */
+  padding: 2rem;
+  display: flex;
+  flex-wrap: wrap;                            /* Se permite que las secciones pasen a la siguiente línea si no hay espacio. */
+  justify-content: space-evenly;              /* Se distribuyen las secciones equitativamente. */
+  gap: 2rem;
+  border-top: 1px solid #e0e0e0;              /* Se añade una línea superior para separación visual. */
+}
+
+/** @section Secciones y Títulos */
+
+/* Se define el ancho mínimo para cada sección (Institución, Redes). */
+.footer-section {
+  min-width: 300px;
+}
+
+/* Se estiliza el título de cada sección. */
+.footer-section h3 {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 1.2rem;
+  font-weight: 500;
+  border-bottom: 1px solid #ccc;
+  padding-bottom: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+/** @section Grilla de Enlaces */
+
+/* Se define un contenedor de 2 columnas utilizando CSS Grid. */
+.grid-container {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr); /* Se crean 2 columnas de ancho idéntico. */
+  gap: 1rem;                             /* Se define el espacio entre los elementos de la grilla. */
+}
+
+/** @section Elementos Individuales (Enlaces) */
+
+/* Se estiliza cada enlace (ícono + texto). */
+.footer-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  text-decoration: none;
+  color: #ffffff;
+  transition: color 0.2s; /* Se añade una transición suave para el cambio de color. */
+}
+/* Se define un efecto hover para dar feedback al usuario. */
+.footer-item:hover {
+  color: blueviolet; /* TODO: Considerar usar una variable de color primario del tema. */
+}
+
+/** @section Copyright */
+
+/* Se estiliza la línea de copyright al final. */
+.copyright {
+  width: 100%;
+  text-align: center;
+  margin-top: 2rem;
+  font-size: 0.9rem;
+  color: #ffffff;
+}
+
+/** @section Adaptación para Móviles */
+
+/* Se definen los estilos para pantallas con un ancho máximo de 768px. */
+@media (max-width: 768px) {
+  /* Se apilan las secciones verticalmente y se centra el contenido. */
+  .footer-container {
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+  }
+
+  /* En la vista móvil, se ocultan los textos de los enlaces para ahorrar espacio. */
+  .footer-item span {
+    display: none;
+  }
+
+  /* Se convierte la grilla en una sola fila con 5 columnas para los íconos. */
+  .grid-container {
+    grid-template-columns: repeat(5, 1fr);
+  }
+}

@@ -1,0 +1,49 @@
+<!--
+  Se define la plantilla para el diálogo de inicio de sesión.
+  Se utiliza una tarjeta de Angular Material para enmarcar el contenido.
+-->
+<div class="login-modal-wrapper">
+  <mat-card class="login-card">
+    <mat-card-header>
+      <mat-card-title>Iniciar Sesión</mat-card-title>
+      <mat-card-subtitle>Ingresá tus credenciales para acceder</mat-card-subtitle>
+    </mat-card-header>
+
+    <mat-card-content>
+      <!-- Se define el formulario reactivo, vinculando el formGroup y el evento ngSubmit. -->
+      <form [formGroup]="loginForm" (ngSubmit)="onSubmit()">
+
+        <!-- Campo de entrada para el correo o legajo. -->
+        <mat-form-field color="primary" [appearance]="configService.formFieldAppearance" class="login-input-field">
+          <mat-label>Correo electrónico o Legajo</mat-label>
+          <input matInput formControlName="credential">
+        </mat-form-field>
+
+        <!-- Campo de entrada para la contraseña. -->
+        <mat-form-field color="primary" [appearance]="configService.formFieldAppearance" class="login-input-field">
+          <mat-label>Contraseña</mat-label>
+          <input matInput type="password" formControlName="password">
+        </mat-form-field>
+
+        <!-- @if: Se muestra un mensaje de error si el formulario tiene el error 'invalidCredentials'. -->
+        @if (loginForm.hasError('invalidCredentials')) {
+          <div class="form-error-message">
+            El legajo o la contraseña son incorrectos.
+          </div>
+        }
+
+        <!-- Opciones adicionales como 'Recordarme' y 'Olvidé mi contraseña'. -->
+        <div class="login-options">
+          <mat-slide-toggle color="primary">Recordarme</mat-slide-toggle>
+          <a href="#">¿Olvidaste tu contraseña?</a>
+        </div>
+
+        <!-- Acciones del formulario, contiene el botón de envío. -->
+        <mat-card-actions>
+          <button mat-flat-button color="primary" class="login-button" type="submit">Iniciar Sesión</button>
+        </mat-card-actions>
+
+      </form>
+    </mat-card-content>
+  </mat-card>
+</div>

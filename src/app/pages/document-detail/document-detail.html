@@ -1,0 +1,78 @@
+<!--
+  Se define la plantilla para la vista de detalle de un documento.
+  Se utiliza el nuevo control de flujo '@if' para renderizar condicionalmente el contenido.
+-->
+
+<!-- @if (documento) Bloque que se muestra si el documento se encuentra. -->
+@if (documento) {
+  <!-- Sección de Acciones: Contiene botones de navegación como 'Volver'. -->
+  <div class="page-actions">
+    <a mat-stroked-button routerLink="/home">
+      <mat-icon>arrow_back</mat-icon>
+      <span>Volver al inicio</span>
+    </a>
+  </div>
+
+  <!-- Contenedor Principal: Organiza el contenido y la barra lateral en una grilla. -->
+  <div class="detail-container">
+
+    <!-- Contenido Principal del Documento (Columna Izquierda). -->
+    <div class="document-content">
+      <mat-card>
+        <mat-card-header>
+          <mat-card-title>{{ documento.titulo }}</mat-card-title>
+          <mat-card-subtitle>{{ documento.numDocumento }}</mat-card-subtitle>
+        </mat-card-header>
+        <mat-card-content>
+          <h3 class="summary-title">Resumen</h3>
+          <p class="document-body">{{ documento.resumen }}</p>
+        </mat-card-content>
+      </mat-card>
+    </div>
+
+    <!-- Barra Lateral con Metadatos (Columna Derecha). -->
+    <div class="document-sidebar">
+      <mat-card>
+        <mat-card-content>
+          <h3>Detalles del Documento</h3>
+
+          <!-- Metadato: Tipo de Documento -->
+          <div class="metadata-item">
+            <mat-icon>assignment</mat-icon>
+            <div class="metadata-text">
+              <span>Tipo</span>
+              <strong>{{ documento.tipoDocumento }}</strong>
+            </div>
+          </div>
+
+          <!-- Metadato: Sector Emisor -->
+          <div class="metadata-item">
+            <mat-icon>corporate_fare</mat-icon>
+            <div class="metadata-text">
+              <span>Sector Emisor</span>
+              <strong>{{ documento.sector }}</strong>
+            </div>
+          </div>
+
+          <!-- Metadato: Fecha de Creación -->
+          <div class="metadata-item">
+            <mat-icon>calendar_today</mat-icon>
+            <div class="metadata-text">
+              <span>Fecha de Creación</span>
+              <!-- Se utiliza un pipe 'date' para formatear la fecha. -->
+              <strong>{{ documento.fechaCreacion | date:'dd/MM/yyyy' }}</strong>
+            </div>
+          </div>
+        </mat-card-content>
+      </mat-card>
+    </div>
+  </div>
+} @else {
+  <!-- @else Bloque que se muestra si el documento NO se encuentra. -->
+  <div class="not-found-container">
+    <mat-icon>search_off</mat-icon>
+    <h2>Documento no Encontrado</h2>
+    <p>El documento que estás buscando no existe o fue movido.</p>
+    <a mat-stroked-button routerLink="/home">Volver al inicio</a>
+  </div>
+}

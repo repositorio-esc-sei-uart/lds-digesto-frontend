@@ -1,1 +1,50 @@
-/* You can add global styles to this file, and also import other style files */
+/**
+ * @fileoverview Hoja de estilos principal de la aplicación.
+ * @description Se definen los estilos globales, las variables de CSS y la configuración
+ * del tema de Angular Material (basado en Material 3 / MDC).
+ */
+
+/*
+  Se define el bloque de variables globales (CSS Custom Properties) para la aplicación.
+  Esto permite centralizar los colores y facilita la consistencia en el diseño.
+*/
+:root {
+  /* Colores del Header */
+  --color-fondo-header: #9900d9;
+  --color-letra-header: #ffffff;
+
+  /* Colores del Footer */
+  --color-fondo-footer: #0d19d9;
+  --color-letra-footer: #ffffff;
+
+  /* Colores del titulo y subtitulo del formulario */
+  --color-titulo-formulario: #271ad5;
+  --color-subtitulo-formulario: #6c757d;
+
+  /* Colores para las Tarjetas del Home */
+  /* Paleta de Colores para TODAS las Tarjetas */
+  --color-fondo-card-header: #D8B3E8;       /* Obispo Pastel */
+  --color-letra-card-titulo: #5a0081;       /* Obispo Oscuro */
+  --color-letra-card-subtitulo: #5a0081;   /* Obispo Oscuro (con opacidad en el componente) */
+  --color-fondo-card-contenido: whitesmoke;
+  --color-letra-card-contenido: #000000;             /* Negro Suave */
+  --color-letra-card-fecha: #6c757d;                /* Gris para la fecha */
+
+  /* Colores extra que usa el componente */
+  --card-avatar-background: #5a0081;
+  --card-avatar-text: #ffffff;
+}
+
+/*
+  Se aplican estilos base al `html` y al `body` para un reseteo
+  consistente y para definir la fuente por defecto de la aplicación.
+*/
+html, body {
+  /* Se elimina el margen y padding por defecto del navegador. */
+  margin: 0;
+  padding: 0;
+  /* Se asegura que la aplicación ocupe toda la altura de la ventana. */
+  height: 100%;
+  /* Se establece la fuente principal para toda la aplicación. */
+  font-family: Roboto, "Helvetica Neue", sans-serif;
+}
