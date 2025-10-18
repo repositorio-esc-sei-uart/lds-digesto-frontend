@@ -1,59 +1,45 @@
-# Digesto
+# LDS - Sistema de Digesto Institucional (Prototipo Frontend)
 
-This project was generated using [Angular CLI](https://github.com/angular/angular-cli) version 20.3.1.
+Este repositorio contiene el código fuente del **prototipo del frontend** para un sistema de **Digesto Digital**, desarrollado en el marco de la materia **Laboratorio de Desarrollo de Software (LDS)**.  
 
-## Development server
+La aplicación se encarga de la **interfaz de usuario**, permitiendo la **visualización** y **búsqueda** de documentos normativos.
 
-To start a local development server, run:
+---
 
-```bash
-ng serve
-```
+## Funcionalidades Implementadas
 
-Once the server is running, open your browser and navigate to `http://localhost:4200/`. The application will automatically reload whenever you modify any of the source files.
+- **Visualización de Documentos**: lista de todos los documentos disponibles en tarjetas interactivas.  
+- **Filtrado por Categoría**: permite filtrar los documentos por su tipo (Resoluciones, Ordenanzas, etc.).  
+- **Búsqueda en Tiempo Real**: barra de búsqueda en el encabezado que filtra los resultados mientras el usuario escribe.  
+- **Vista de Detalle**: al hacer clic en un documento, se navega a una vista dedicada con toda su información.  
+- **Diseño Responsivo**: interfaz adaptable a dispositivos móviles, tablets y escritorio.  
 
-## Code scaffolding
+---
 
-Angular CLI includes powerful code scaffolding tools. To generate a new component, run:
+## Arquitectura del Frontend
 
-```bash
-ng generate component component-name
-```
+La aplicación sigue una **arquitectura basada en componentes y servicios**, separando responsabilidades y maximizando la reutilización del código.
 
-For a complete list of available schematics (such as `components`, `directives`, or `pipes`), run:
+### 🔹 Componentes Principales
+- **HeaderComponent**: encabezado principal con logo, título y búsqueda global.  
+- **FooterComponent**: pie de página con información de contacto y enlaces a redes sociales.  
+- **HomeComponent**: página principal con grilla de documentos y botones de filtrado.  
+- **DocumentDetailComponent**: vista detallada de un documento seleccionado.  
+- **LoginComponent**: formulario modal de inicio de sesión.  
 
-```bash
-ng generate --help
-```
+### 🔹 Servicios Centrales
+- **DocumentService**: provee los datos de los documentos (mock data, preparado para API backend).  
+- **TypeDocumentService**: gestiona los tipos de documentos disponibles para el filtrado.  
+- **SearchService**: maneja el estado de la búsqueda de forma centralizada, conectando Header ↔ Home.  
+- **GlobalConfigurationService**: almacena configuraciones globales (títulos, logos, etc.).  
 
-## Building
+---
 
-To build the project run:
+## 🛠️ Tecnologías Utilizadas
 
-```bash
-ng build
-```
+- **Framework**: Angular v20  
+- **UI Library**: Angular Material  
+- **Estilos**: CSS con variables globales  
 
-This will compile your project and store the build artifacts in the `dist/` directory. By default, the production build optimizes your application for performance and speed.
+---
 
-## Running unit tests
-
-To execute unit tests with the [Karma](https://karma-runner.github.io) test runner, use the following command:
-
-```bash
-ng test
-```
-
-## Running end-to-end tests
-
-For end-to-end (e2e) testing, run:
-
-```bash
-ng e2e
-```
-
-Angular CLI does not come with an end-to-end testing framework by default. You can choose one that suits your needs.
-
-## Additional Resources
-
-For more information on using the Angular CLI, including detailed command references, visit the [Angular CLI Overview and Command Reference](https://angular.dev/tools/cli) page.
