@@ -36,10 +36,35 @@
       <mat-icon>help_outline</mat-icon>
     </button>
 
-    <!-- Botón de Acceso principal, se oculta en la vista móvil. -->
+    <!-- Botón de Acceso principal, se oculta en la vista móvil.
     <button mat-flat-button class="cta-button" (click)="openLoginDialog()" aria-label="Acceder">
       Acceder
-    </button>
+    </button> -->
+
+    <!--
+      Lógica de renderizado condicional.
+      1. Se suscribe al observable 'currentUser$' con el pipe 'async'.
+      2. Si el observable emite un usuario (no es null), lo asigna a la variable 'user'
+          y renderiza el bloque @if.
+      3. Si el observable emite 'null' (nadie logueado), renderiza el bloque @else.
+    -->
+    @if (currentUser$ | async; as user) {
+      <!-- Bloque que se muestra SI HAY un usuario logueado -->
+      <div class="user-menu">
+        <button mat-flat-button color="primary" class="logout-button" (click)="logout()">
+          <mat-icon>logout</mat-icon>
+          <span class="hide-on-mobile">Salir</span>
+        </button>
+      </div>
+    } @else {
+      <!-- Bloque que se muestra SI NO HAY un usuario logueado -->
+      <button mat-flat-button class="cta-button" (click)="openLoginDialog()" aria-label="Acceder">
+        Acceder
+      </button>
+      <button mat-icon-button class="show-on-mobile" (click)="openLoginDialog()" aria-label="Acceder">
+        <mat-icon>account_circle</mat-icon>
+      </button>
+    }
 
     <!-- Ícono de Acceso/Usuario, se muestra solo en la vista móvil en lugar del botón principal. -->
     <button mat-icon-button class="show-on-mobile" (click)="openLoginDialog()" aria-label="Acceder">

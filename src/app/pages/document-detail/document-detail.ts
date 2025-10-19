@@ -6,7 +6,7 @@ import { MatCardModule } from '@angular/material/card';
 import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
 // Servicios y Tipos
-import { Documento, DocumentService } from '../../services/document-service';
+import { Documento, DocumentoListItem, DocumentService } from '../../services/document-service';
 
 /**
  * @Component
@@ -28,8 +28,14 @@ import { Documento, DocumentService } from '../../services/document-service';
 })
 export class DocumentDetail implements OnInit {
 
-  /** Se declara una propiedad para almacenar los datos del documento a mostrar. Puede ser indefinido si no se encuentra. */
+  /** Almacena los datos completos del documento a mostrar. */
   documento?: Documento;
+
+  /**
+   * Se declara e inicializa la propiedad para las referencias.
+   * Almacenará los detalles de los documentos referenciados.
+   */
+  documentosReferenciados: DocumentoListItem[] = [];
 
   /**
    * Se inyectan las dependencias necesarias.
@@ -46,16 +52,40 @@ export class DocumentDetail implements OnInit {
    * Se ejecuta al inicializar el componente. Es el lugar ideal para obtener datos iniciales.
    */
   ngOnInit(): void {
-    // Se obtiene el parámetro 'id' de la URL actual.
-    const idString = this.route.snapshot.paramMap.get('id');
+    this.route.paramMap.subscribe(params => {
+      const idString = params.get('id');
 
-    // Se verifica que el ID exista en la URL.
-    if (idString) {
-      // Se convierte el ID de string a número.
-      const documentoId = parseInt(idString, 10);
+      if (idString) {
+        const documentoId = parseInt(idString, 10);
+        this.documento = this.documentService.getDocumentoById(documentoId);
 
-      // Se utiliza el servicio para buscar el documento por su ID y se asigna a la propiedad local.
-      this.documento = this.documentService.getDocumentoById(documentoId);
-    }
+        // Se resetea la lista de referencias para evitar duplicados al navegar.
+        this.documentosReferenciados = [];
+
+        if (this.documento && this.documento.referencias.length > 0) {
+          this.documento.referencias.forEach(refId => {
+            const docReferenciado = this.documentService.getDocumentoById(refId);
+
+            if (docReferenciado) {
+              // Se convierte el Documento completo a DocumentoListItem
+              // y se añade al array para que el HTML lo pueda mostrar.
+              this.documentosReferenciados.push({
+                idDocumento: docReferenciado.idDocumento,
+                titulo: docReferenciado.titulo,
+                numDocumento: docReferenciado.numDocumento,
+                fechaCreacion: docReferenciado.fechaCreacion,
+                resumen: docReferenciado.resumen,
+                tipoDocumento: docReferenciado.tipoDocumento
+              });
+            }
+          });
+        }
+      }
+    });
+  }
+
+  getNumDocumento(id: number): string {
+    const doc = this.documentService.getDocumentoById(id);
+    return doc ? doc.numDocumento : `Documento ${id}`;
   }
 }

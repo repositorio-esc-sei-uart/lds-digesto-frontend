@@ -1,5 +1,6 @@
 import { Component, OnInit } from '@angular/core';
-import { RouterModule } from '@angular/router';
+import { CommonModule } from '@angular/common';
+import { Router, RouterModule } from '@angular/router';
 // Módulos de Angular Material
 import { MatToolbarModule } from '@angular/material/toolbar';
 import { MatIconModule } from '@angular/material/icon';
@@ -10,11 +11,12 @@ import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 // Formularios Reactivos
 import { FormControl, ReactiveFormsModule } from '@angular/forms';
 // RxJS
-import { debounceTime, distinctUntilChanged } from 'rxjs';
+import { debounceTime, distinctUntilChanged, Observable } from 'rxjs';
 // Componentes y Servicios
 import { LoginComponent } from '../../pages/login/login';
 import { GlobalConfigurationService } from '../../services/global-configuration-service';
 import { SearchService } from '../../services/search-service';
+import { AuthenticationService, UserProfile } from '../../services/authentication-service';
 
 /**
  * @Component
@@ -25,6 +27,7 @@ import { SearchService } from '../../services/search-service';
   selector: 'app-header-component',
   standalone: true,
   imports: [
+    CommonModule,
     RouterModule,
     MatToolbarModule,
     MatIconModule,
@@ -45,6 +48,9 @@ export class HeaderComponent implements OnInit {
   /** Se instancia un FormControl para gestionar el input de búsqueda de forma reactiva. */
   searchControl = new FormControl('');
 
+  /** Observable que emite el perfil del usuario actualmente autenticado. */
+  currentUser$: Observable<UserProfile | null>;
+
   /**
    * Se inyectan los servicios necesarios para el funcionamiento del componente.
    * @param configService Servicio para obtener la configuración global (logo, títulos).
@@ -54,8 +60,14 @@ export class HeaderComponent implements OnInit {
   constructor(
     public configService: GlobalConfigurationService,
     public dialog: MatDialog,
-    private searchService: SearchService
-  ) {}
+    private searchService: SearchService,
+    private router: Router,
+    private authService: AuthenticationService
+  ) {
+    // Se inicializa la propiedad 'currentUser$' en el constructor,
+    // asignándole el observable del servicio de autenticación.
+    this.currentUser$ = this.authService.currentUser$;
+  }
 
   /**
    * @LifecycleHook ngOnInit
@@ -90,8 +102,35 @@ export class HeaderComponent implements OnInit {
    * Se abre el diálogo modal para el inicio de sesión.
    */
   openLoginDialog(): void {
-    this.dialog.open(LoginComponent, {
-      width: '500px' // Se define un ancho fijo para el diálogo.
+    const dialogRef = this.dialog.open(LoginComponent, {
+      width: '500px',
+      // Es una buena práctica deshabilitar el cierre al hacer clic fuera.
+      disableClose: false
     });
+
+    // El Header se queda "escuchando" hasta que el diálogo se cierre.
+    dialogRef.afterClosed().subscribe(result => {
+      // El LoginComponent nos enviará 'true' si el login fue exitoso.
+      if (result === true) {
+        console.log('HeaderComponent: El login fue exitoso. Navegando al dashboard...');
+        // Si fue exitoso, el Header se encarga de redirigir al usuario.
+        this.router.navigate(['/dashboard']);
+      }
+    });
+  }
+
+  /**
+   * Llama al servicio para cerrar la sesión del usuario.
+   */
+  logout(): void {
+    this.authService.logout();
+    this.router.navigate(['/home']);
+  }
+
+  /**
+   * Se actualiza el método para que navegue a la ruta '/login'.
+   */
+  navigateToLogin(): void {
+    this.router.navigate(['/login']);
   }
 }
