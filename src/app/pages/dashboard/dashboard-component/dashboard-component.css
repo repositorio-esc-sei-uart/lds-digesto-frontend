@@ -1,0 +1,24 @@
+/*
+  Estilos para el layout principal del dashboard.
+  Se utiliza Flexbox para crear una estructura de dos columnas.
+*/
+.dashboard-container {
+  display: flex;
+  /* Se calcula la altura para que ocupe el espacio disponible menos la altura del header/footer.
+     Ajusta '128px' si la altura combinada de tu header y footer es diferente. */
+  min-height: calc(100vh - 128px);
+}
+
+.dashboard-sidebar {
+  width: 280px; /* Ancho fijo para la barra lateral */
+  background-color: #f8f9fa;
+  border-right: 1px solid #dee2e6;
+  padding: 1.5rem;
+  flex-shrink: 0; /* Evita que la barra lateral se encoja */
+}
+
+.dashboard-content {
+  flex-grow: 1; /* El contenido principal ocupa todo el espacio restante */
+  padding: 2rem;
+  background-color: #ffffff;
+}

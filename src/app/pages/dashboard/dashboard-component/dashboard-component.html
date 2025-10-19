@@ -1,0 +1,27 @@
+<!--
+  Plantilla principal para la sección de administración (Dashboard).
+  Esta estructura define el layout que verán todos los usuarios logueados.
+  Se divide en dos grandes columnas: la barra lateral y el contenido principal.
+-->
+<div class="dashboard-container">
+
+  <!-- Columna 1: La barra lateral (aside) -->
+  <aside class="dashboard-sidebar">
+    <!--
+      Se inserta el componente de la barra lateral que ya hemos preparado.
+      Este componente mostrará la información del usuario y los enlaces de navegación.
+    -->
+    <app-sidebar-component></app-sidebar-component>
+  </aside>
+
+  <!-- Columna 2: El contenido principal que cambiará dinámicamente -->
+  <main class="dashboard-content">
+    <!--
+      ESTE ES EL <router-outlet> SECUNDARIO.
+      Aquí es donde Angular cargará los componentes de las rutas hijas
+      (DocumentManagementComponent, UserManagementComponent, etc.).
+    -->
+    <router-outlet></router-outlet>
+  </main>
+
+</div>

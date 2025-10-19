@@ -40,7 +40,14 @@
 
         <!-- Acciones del formulario, contiene el botón de envío. -->
         <mat-card-actions>
-          <button mat-flat-button color="primary" class="login-button" type="submit">Iniciar Sesión</button>
+          <!-- El botón se deshabilita durante la carga y muestra un spinner. -->
+          <button mat-flat-button color="primary" class="login-button" type="submit" [disabled]="isLoading">
+            @if (!isLoading) {
+              <span>Iniciar Sesión</span>
+            } @else {
+              <mat-spinner diameter="24"></mat-spinner>
+            }
+          </button>
         </mat-card-actions>
 
       </form>

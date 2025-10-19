@@ -1,47 +1,54 @@
 /**
  * @fileoverview Hoja de estilos para el componente DocumentDetail.
  * @description Se definen los estilos para la página de detalle de un documento,
- * utilizando un layout de grilla que se adapta a dispositivos móviles.
+ * replicando un diseño limpio y profesional.
  */
 
 /** @section Contenedor Principal y Acciones */
 
-/* Se estiliza el contenedor de acciones de la página (botón 'Volver'). */
 .page-actions {
   max-width: 1200px;
   margin: 1rem auto;
-  padding: 0 1.5rem 1.5rem 1.5rem; /* Se añade espacio inferior. */
+  padding: 0 1.5rem 1.5rem 1.5rem;
 }
 
-/* Se define el contenedor principal con un layout de grilla de dos columnas. */
 .detail-container {
   display: grid;
-  grid-template-columns: 2fr 1fr; /* Se asigna 2/3 al contenido y 1/3 a la barra lateral. */
+  grid-template-columns: 2fr 1fr;
   gap: 1.5rem;
   padding: 1.5rem;
   max-width: 1200px;
-  margin: 0 auto; /* Se centra el contenedor en la página. */
+  margin: 0 auto;
 }
 
-/** @section Contenido Principal del Documento */
+/** @section Estilo General de las Tarjetas */
 
-/* Se ajusta el tamaño y peso del título principal del documento. */
+/* Se aplica un estilo base a todas las tarjetas para consistencia */
+.document-content mat-card,
+.document-sidebar mat-card {
+  border-radius: 0.75rem; /* Bordes redondeados */
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05); /* Sombra sutil */
+  border: 1px solid #e9ecef; /* Borde muy suave */
+  background-color: #ffffff; /* Fondo blanco por defecto */
+}
+
+/** @section Contenido Principal (Columna Izquierda) */
+
 .document-content mat-card-title {
   font-size: 1.8rem;
   font-weight: 500;
   line-height: 1.3;
 }
 
-/* Se estiliza el subtítulo. */
 .document-content mat-card-subtitle {
   font-size: 1rem;
-  color: #6c757d;
+  font-weight: 600;
+  color: var(--color-fondo-footer); /* Color azul institucional */
   margin-top: 0.5rem;
 }
 
-/* Se estiliza el título de la sección 'Resumen'. */
 .summary-title {
-  font-size: 1rem;
+  font-size: 0.8rem;
   font-weight: 500;
   color: #6c757d;
   margin-top: 1.5rem;
@@ -50,35 +57,39 @@
   letter-spacing: 0.5px;
 }
 
-/* Se estiliza el cuerpo del texto del resumen para mejorar la legibilidad. */
 .document-body {
   padding: 0;
   margin-top: 0;
   line-height: 1.7;
-  text-align: justify; /* Se justifica el texto para una apariencia más formal. */
+  text-align: justify;
   color: #343a40;
 }
 
-/** @section Barra Lateral de Metadatos */
+/** @section Barra Lateral (Columna Derecha) */
 
-/* Se aplica un fondo y borde sutil a la tarjeta de la barra lateral para diferenciarla. */
-.document-sidebar mat-card {
-  background-color: #f8f9fa;
-  border: 1px solid #dee2e6;
+.document-sidebar {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem; /* Espacio entre las tarjetas de la barra lateral */
 }
 
-/* Se estiliza cada ítem de metadato con Flexbox para alinear el ícono y el texto. */
+.document-sidebar mat-card {
+  background-color: #f8f9fa; /* Fondo gris claro para diferenciar */
+}
+
 .metadata-item {
   display: flex;
   align-items: center;
   gap: 1rem;
   margin-bottom: 1.2rem;
 }
+.metadata-item:last-child {
+  margin-bottom: 0;
+}
 .metadata-item mat-icon {
   color: #6c757d;
 }
 
-/* Se apila la etiqueta y el valor del metadato verticalmente. */
 .metadata-text {
   display: flex;
   flex-direction: column;
@@ -92,19 +103,77 @@
   color: #212529;
 }
 
-/* Se estiliza el título de la sección 'Detalles'. */
+/** @section Títulos de Sección */
+
 h3 {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
   font-size: 1.1rem;
   font-weight: 500;
   margin-top: 0;
-  margin-bottom: 1.5rem;
+  margin-bottom: 1rem;
   border-bottom: 1px solid #dee2e6;
   padding-bottom: 0.75rem;
 }
 
+/** @section Estilos para los Estados del Documento */
+
+.status-vigente {
+  color: #198754; /* Verde */
+  font-weight: 600;
+}
+.status-derogado {
+  color: #dc3545; /* Rojo */
+  font-weight: 600;
+}
+
+/** @section Estilos para las Nuevas Secciones */
+
+/* Espacio superior para las tarjetas de sección adicionales */
+.section-card {
+  margin-top: 1.5rem;
+}
+
+/* Estilos para las listas de archivos y referencias */
+.file-list, .references-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem; /* Espacio entre ítems */
+}
+
+/* Estilo para cada ítem de archivo o referencia (enlace) */
+.file-item, .reference-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  text-decoration: none;
+  color: #0d6efd; /* Color de enlace azul estándar */
+  transition: color 0.2s ease-in-out;
+}
+.file-item:hover, .reference-item:hover {
+  color: #0a58ca; /* Azul más oscuro al pasar el mouse */
+  text-decoration: underline;
+}
+
+/* Contenedor para las palabras clave */
+.keywords-container {
+  display: flex;
+  flex-wrap: wrap; /* Permite que las píldoras pasen a la siguiente línea */
+  gap: 0.5rem; /* Espacio entre píldoras */
+}
+
+/* Estilo para cada píldora de palabra clave */
+.keyword-chip {
+  background-color: #e9ecef; /* Fondo gris claro */
+  color: #495057; /* Texto gris oscuro */
+  padding: 0.25rem 0.75rem;
+  border-radius: 1rem; /* Bordes redondeados para forma de píldora */
+  font-size: 0.85rem;
+}
+
 /** @section Vista de 'No Encontrado' */
 
-/* Se centran y estilizan los elementos del mensaje de error. */
 .not-found-container {
   text-align: center;
   padding: 4rem;
@@ -118,9 +187,8 @@ h3 {
 
 /** @section Diseño Responsivo */
 
-/* Para pantallas de menos de 992px, se apilan las columnas. */
 @media (max-width: 992px) {
   .detail-container {
-    grid-template-columns: 1fr; /* Se cambia a una sola columna. */
+    grid-template-columns: 1fr; /* Una sola columna en pantallas pequeñas */
   }
 }

@@ -8,7 +8,7 @@ import { MatCardModule } from '@angular/material/card';
 import { MatTooltipModule } from '@angular/material/tooltip';
 // Servicios y Tipos
 import { GlobalConfigurationService } from '../../services/global-configuration-service';
-import { Documento, DocumentService } from '../../services/document-service';
+import { Documento, DocumentoListItem, DocumentService } from '../../services/document-service';
 import { TipoDocumento, TypeDocumentService } from '../../services/type-document-service';
 import { SearchService } from '../../services/search-service';
 
@@ -34,9 +34,9 @@ import { SearchService } from '../../services/search-service';
 export class HomeComponent implements OnInit {
 
   /** Almacena la lista completa de documentos obtenida del servicio. */
-  todosLosDocumentos: Documento[] = [];
+  todosLosDocumentos: DocumentoListItem[] = [];
   /** Almacena la lista de documentos que se muestra en la vista, después de aplicar filtros. */
-  documentosFiltrados: Documento[] = [];
+  documentosFiltrados: DocumentoListItem[] = [];
   /** Almacena la lista de tipos de documento para generar los botones de filtro. */
   tiposDeDocumento: TipoDocumento[] = [];
   /** Guarda la categoría actualmente seleccionada por el usuario. */
