@@ -1,35 +1,7 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { BehaviorSubject, catchError, delay, Observable, of, tap, throwError } from 'rxjs';
-
-/**
- * @interface UserProfile
- * Representa los datos del usuario logueado, alineado con tu modelo de datos.
- */
-export interface UserProfile {
-  id: number;
-  nombre: string;
-  apellido: string;
-  email: string;
-  legajo: string;
-  rol: 'Administrador' | 'Editor';
-  estado: 'Activo' | 'Suspendido' | 'Baneado';
-}
-
-/**
- * @interface AuthResponse
- * Define la estructura de la respuesta del endpoint de autenticación.
- */
-export interface AuthResponse {
-  success: boolean;
-  message: string;
-  token?: string;
-  user?: UserProfile;
-}
-
-// Se crea un tipo interno para la base de datos simulada que incluye la contraseña.
-// Esto soluciona el error de tipado y es una buena práctica de seguridad.
-type MockUser = UserProfile & { password?: string };
+import { UserProfile, MockUser, AuthResponse } from '../interfaces/user-model';
 
 /**
  * @Injectable

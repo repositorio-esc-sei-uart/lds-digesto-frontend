@@ -6,7 +6,8 @@ import { MatCardModule } from '@angular/material/card';
 import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
 // Servicios y Tipos
-import { Documento, DocumentoListItem, DocumentService } from '../../services/document-service';
+import { DocumentService } from '../../services/document-service';
+import { Documento, DocumentoListItem } from '../../interfaces/document-model';
 
 /**
  * @Component

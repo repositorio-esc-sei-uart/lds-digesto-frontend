@@ -5,48 +5,7 @@
  */
 
 import { Injectable } from '@angular/core';
-
-/**
- * @interface Archivo
- * Se define la estructura de un archivo adjunto asociado a un documento.
- */
-export interface Archivo {
-  idArchivo: number;
-  nombre: string;
-  url: string; // URL para acceder/descargar el archivo PDF, DOCX, etc.
-}
-
-/**
- * @interface DocumentoListItem
- * Se define la estructura para los elementos de la lista de documentos.
- * Contiene solo los datos necesarios para mostrar en las tarjetas.
- */
-export interface DocumentoListItem {
-  idDocumento: number;
-  titulo: string;
-  numDocumento: string;
-  fechaCreacion: Date;
-  resumen: string;
-  tipoDocumento: string;
-}
-
-/**
- * @interface Documento
- * Se define la estructura de datos que representa a un documento en la aplicación.
- */
-export interface Documento {
-  idDocumento: number;
-  titulo: string;
-  resumen: string;
-  numDocumento: string;
-  fechaCreacion: Date;
-  tipoDocumento: string;
-  sector: string;
-  estado: string;
-  archivos: Archivo[];
-  palabrasClave: string[];
-  referencias: number[];
-}
+import { Documento, DocumentoListItem } from '../interfaces/document-model';
 
 /**
  * @Injectable

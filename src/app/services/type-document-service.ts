@@ -5,17 +5,7 @@
  */
 
 import { Injectable } from '@angular/core';
-
-/**
- * @interface TipoDocumento
- * Se define la estructura de datos para una categoría o tipo de documento.
- */
-export interface TipoDocumento {
-  idTipoDocumento: number;
-  nombre: string;
-  descripcion: string;
-  icono: string; // Se almacena el nombre del ícono de Material a mostrar.
-}
+import { TipoDocumento } from '../interfaces/type-document-model';
 
 /**
  * @Injectable

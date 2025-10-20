@@ -16,7 +16,8 @@ import { debounceTime, distinctUntilChanged, Observable } from 'rxjs';
 import { LoginComponent } from '../../pages/login/login';
 import { GlobalConfigurationService } from '../../services/global-configuration-service';
 import { SearchService } from '../../services/search-service';
-import { AuthenticationService, UserProfile } from '../../services/authentication-service';
+import { AuthenticationService } from '../../services/authentication-service';
+import { UserProfile } from '../../interfaces/user-model';
 
 /**
  * @Component
