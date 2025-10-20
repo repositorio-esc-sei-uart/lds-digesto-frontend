@@ -12,11 +12,12 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { MatSlideToggleModule } from '@angular/material/slide-toggle';
 import { GlobalConfigurationService } from '../../services/global-configuration-service';
-import { AuthenticationService, AuthResponse } from '../../services/authentication-service';
+import { AuthenticationService } from '../../services/authentication-service';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { Router } from '@angular/router';
 import { finalize } from 'rxjs';
 import { MatDialogRef } from '@angular/material/dialog';
+import { AuthResponse } from '../../interfaces/user-model';
 
 /**
  * @Component

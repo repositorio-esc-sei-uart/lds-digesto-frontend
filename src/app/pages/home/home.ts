@@ -8,9 +8,11 @@ import { MatCardModule } from '@angular/material/card';
 import { MatTooltipModule } from '@angular/material/tooltip';
 // Servicios y Tipos
 import { GlobalConfigurationService } from '../../services/global-configuration-service';
-import { Documento, DocumentoListItem, DocumentService } from '../../services/document-service';
-import { TipoDocumento, TypeDocumentService } from '../../services/type-document-service';
+import { DocumentService } from '../../services/document-service';
+import { TypeDocumentService } from '../../services/type-document-service';
 import { SearchService } from '../../services/search-service';
+import { DocumentoListItem } from '../../interfaces/document-model';
+import { TipoDocumento } from '../../interfaces/type-document-model';
 
 /**
  * @Component

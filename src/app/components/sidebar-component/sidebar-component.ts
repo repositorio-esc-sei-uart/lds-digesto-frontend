@@ -7,7 +7,8 @@ import { MatListModule } from '@angular/material/list';
 import { MatIconModule } from '@angular/material/icon';
 import { MatDividerModule } from '@angular/material/divider';
 // Se importa el servicio de autenticación y la interfaz del perfil de usuario.
-import { AuthenticationService, UserProfile } from '../../services/authentication-service';
+import { AuthenticationService } from '../../services/authentication-service';
+import { UserProfile } from '../../interfaces/user-model';
 
 /**
  * @Component
