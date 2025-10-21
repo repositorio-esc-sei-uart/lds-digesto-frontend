@@ -1,0 +1,32 @@
+[
+  {
+    "idTipoDocumento": 1,
+    "nombre": "Acuerdos",
+    "descripcion": "acuerdos",
+    "icono": "gavel"
+  },
+  {
+    "idTipoDocumento": 2,
+    "nombre": "Resoluciones",
+    "descripcion": "resoluciones",
+    "icono": "assignment"
+  },
+  {
+    "idTipoDocumento": 3,
+    "nombre": "Disposiciones",
+    "descripcion": "disposiciones",
+    "icono": "receipt_long"
+  },
+  {
+    "idTipoDocumento": 4,
+    "nombre": "Circulares",
+    "descripcion": "circulares",
+    "icono": "campaign"
+  },
+  {
+    "idTipoDocumento": 5,
+    "nombre": "Ordenanzas",
+    "descripcion": "ordenanzas",
+    "icono": "article"
+  }
+]

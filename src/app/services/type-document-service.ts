@@ -6,6 +6,8 @@
 
 import { Injectable } from '@angular/core';
 import { TipoDocumento } from '../interfaces/type-document-model';
+import { HttpClient } from '@angular/common/http';
+import { Observable } from 'rxjs';
 
 /**
  * @Injectable
@@ -16,31 +18,23 @@ import { TipoDocumento } from '../interfaces/type-document-model';
 })
 export class TypeDocumentService {
 
-  /**
-   * Se define un arreglo privado con los tipos de documento disponibles.
-   * Esto simula una fuente de datos fija mientras no se implemente una API.
-   */
-  private tipos: TipoDocumento[] = [
-    { idTipoDocumento: 1, nombre: 'Acuerdos', descripcion: 'acuerdos', icono: 'gavel' },
-    { idTipoDocumento: 2, nombre: 'Resoluciones', descripcion: 'resoluciones', icono: 'assignment' },
-    { idTipoDocumento: 3, nombre: 'Disposiciones', descripcion: 'disposiciones', icono: 'receipt_long' },
-    { idTipoDocumento: 4, nombre: 'Circulares', descripcion: 'circulares', icono: 'campaign' },
-    { idTipoDocumento: 5, nombre: 'Ordenanzas', descripcion: 'ordenanzas', icono: 'article' },
-  ];
+  // URL del nuevo archivo JSON
+  private dataUrl = './assets/data/types-document.json';
 
   /**
    * @constructor
    * El constructor del servicio. Actualmente no realiza ninguna acción.
    */
-  constructor() { }
+  constructor(
+    private http: HttpClient
+  ) { }
 
   /**
    * @method getTiposDocumento
    * Se obtiene la lista completa de tipos de documento.
    * @returns Un arreglo de objetos de tipo `TipoDocumento`.
    */
-  getTiposDocumento(): TipoDocumento[] {
-    // TODO: Reemplazar esta lógica con una llamada a una API RESTful.
-    return this.tipos;
+  getTiposDocumento(): Observable<TipoDocumento[]> {
+    return this.http.get<TipoDocumento[]>(this.dataUrl);
   }
 }

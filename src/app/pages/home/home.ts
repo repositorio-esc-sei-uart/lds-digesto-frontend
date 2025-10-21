@@ -68,17 +68,20 @@ export class HomeComponent implements OnInit {
    */
   ngOnInit(): void {
     // Se obtienen los datos de los servicios.
-    this.todosLosDocumentos = this.documentService.getDocumentos();
-    this.tiposDeDocumento = this.typeDocumentService.getTiposDocumento();
+    this.documentService.getDocumentos().subscribe(documentos => {
+      this.todosLosDocumentos = documentos;
+      this.aplicarFiltros();
+    });
+
+    this.typeDocumentService.getTiposDocumento().subscribe(tipos => {
+      this.tiposDeDocumento = tipos;
+    });
 
     // Se suscribe a los cambios en el término de búsqueda.
     this.searchService.searchTerm$.subscribe(term => {
       this.terminoDeBusqueda = term;
-      this.aplicarFiltros(); // Se reaplican los filtros cada vez que cambia la búsqueda.
+      this.aplicarFiltros();
     });
-
-    // Se aplica el filtro inicial para mostrar todos los documentos.
-    this.aplicarFiltros();
   }
 
   /**
