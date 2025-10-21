@@ -36,23 +36,16 @@
       <!-- Se itera sobre la lista 'documentosFiltrados' para mostrar una tarjeta por cada documento. -->
       @for (doc of documentosFiltrados; track doc.idDocumento) {
         <mat-card class="document-card" (click)="onCardClick(doc.idDocumento)">
-          <mat-card-header class="card-header-colored">
-            <mat-icon mat-card-avatar>article</mat-icon>
-            <div class="card-header-content">
-              <mat-card-title>
-                <!-- Se trunca el texto del título y se muestra completo en un tooltip. -->
-                <span class="truncate-text" [matTooltip]="doc.titulo">{{ doc.titulo }}</span>
-              </mat-card-title>
-              <div class="spacer"></div>
-              <mat-card-subtitle>{{ doc.numDocumento }}</mat-card-subtitle>
-            </div>
+          <mat-card-header>
+            <mat-card-title>{{ doc.titulo }}</mat-card-title>
+            <mat-card-subtitle>{{ doc.numDocumento }}</mat-card-subtitle>
           </mat-card-header>
+
           <mat-card-content>
             <p>
               <!-- Se trunca el texto del resumen. -->
               <span class="truncate-text" [matTooltip]="doc.resumen">{{ doc.resumen }}</span>
             </p>
-            <div class="spacer"></div>
             <span class="creation-date">
               Fecha de creación {{ doc.fechaCreacion | date:'dd/MM/yyyy' }}
             </span>
