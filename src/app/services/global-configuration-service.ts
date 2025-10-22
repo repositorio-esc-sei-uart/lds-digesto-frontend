@@ -20,7 +20,7 @@ export class GlobalConfigurationService {
   /** @section Configuración del Header */
 
   /** Se define la URL del logo que se mostrará en la barra de navegación. */
-  logoUrl: string = 'assets/logoUNPA.jpg';
+  logoUrl: string = './assets/img/logoUART.jpg';
   /** Se define la primera línea del título principal de la aplicación. */
   titleLine1: string = 'Sistema Digesto 2025';
   /** Se define la segunda línea del título, generalmente para indicar la versión o un subtítulo. */

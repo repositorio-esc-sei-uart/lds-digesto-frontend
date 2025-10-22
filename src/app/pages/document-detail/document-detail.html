@@ -24,6 +24,7 @@
           <mat-card-title>{{ documento.titulo }}</mat-card-title>
           <mat-card-subtitle>{{ documento.numDocumento }}</mat-card-subtitle>
         </mat-card-header>
+
         <mat-card-content>
           <h3 class="summary-title">Resumen</h3>
           <p class="document-body">{{ documento.resumen }}</p>
@@ -51,7 +52,23 @@
       @if (documentosReferenciados && documentosReferenciados.length > 0) {
         <mat-card class="section-card">
           <mat-card-content>
-            <h3><mat-icon>link</mat-icon> Documentos Relacionados</h3>
+            <h3><mat-icon>link</mat-icon> Este documento hace referencia a:</h3>
+            <div class="references-list">
+              <!-- Se itera sobre la nueva propiedad que contiene los detalles -->
+              @for (ref of documentosReferenciados; track ref.idDocumento) {
+                <a class="reference-item" [routerLink]="['/documento', ref.idDocumento]">
+                  <mat-icon>article</mat-icon>
+                  <!-- Se muestra el número de documento en lugar del ID -->
+                  <span>{{ ref.numDocumento }}</span>
+                </a>
+              }
+            </div>
+          </mat-card-content>
+        </mat-card>
+
+        <mat-card class="section-card">
+          <mat-card-content>
+            <h3><mat-icon>link</mat-icon> Este documento es referenciado por:</h3>
             <div class="references-list">
               <!-- Se itera sobre la nueva propiedad que contiene los detalles -->
               @for (ref of documentosReferenciados; track ref.idDocumento) {

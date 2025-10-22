@@ -1,0 +1,32 @@
+[
+  {
+    "id": 1,
+    "nombre": "Admin",
+    "apellido": "Dev",
+    "email": "admin@unpa.edu.ar",
+    "legajo": "admin",
+    "password": "admin",
+    "rol": "Administrador",
+    "estado": "Activo"
+  },
+  {
+    "id": 2,
+    "nombre": "Editor",
+    "apellido": "Dev",
+    "email": "editor@unpa.edu.ar",
+    "legajo": "editor",
+    "password": "editor",
+    "rol": "Editor",
+    "estado": "Activo"
+  },
+  {
+    "id": 3,
+    "nombre": "Jorgito",
+    "apellido": "Gpt",
+    "email": "editor@unpa.edu.ar",
+    "legajo": "jorgito",
+    "password": "jorgito",
+    "rol": "Editor",
+    "estado": "Suspendido"
+  }
+]

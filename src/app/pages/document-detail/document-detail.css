@@ -27,9 +27,12 @@
 .document-content mat-card,
 .document-sidebar mat-card {
   border-radius: 0.75rem; /* Bordes redondeados */
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05); /* Sombra sutil */
+  /*box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05); */
   border: 1px solid #e9ecef; /* Borde muy suave */
   background-color: #ffffff; /* Fondo blanco por defecto */
+  border-top: 5px solid var(--color-fondo-card-header);
+  border-top-left-radius: 0;
+  border-top-right-radius: 0;
 }
 
 /** @section Contenido Principal (Columna Izquierda) */

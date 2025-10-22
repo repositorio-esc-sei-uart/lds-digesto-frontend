@@ -1,4 +1,4 @@
-import { Archivo } from "./archive-model";
+import { Archivo } from "./archive-document-model";
 
 /**
  * @interface DocumentoListItem

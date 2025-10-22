@@ -55,38 +55,32 @@ export class DocumentDetail implements OnInit {
   ngOnInit(): void {
     this.route.paramMap.subscribe(params => {
       const idString = params.get('id');
-
       if (idString) {
         const documentoId = parseInt(idString, 10);
-        this.documento = this.documentService.getDocumentoById(documentoId);
 
-        // Se resetea la lista de referencias para evitar duplicados al navegar.
-        this.documentosReferenciados = [];
+        this.documentService.getDocumentoById(documentoId).subscribe(documentoEncontrado => {
+          this.documento = documentoEncontrado; // Asignamos el documento una vez que llega
+          this.documentosReferenciados = [];
 
-        if (this.documento && this.documento.referencias.length > 0) {
-          this.documento.referencias.forEach(refId => {
-            const docReferenciado = this.documentService.getDocumentoById(refId);
+          if (this.documento && this.documento.referencias.length > 0) {
+            this.documento.referencias.forEach(refId => {
 
-            if (docReferenciado) {
-              // Se convierte el Documento completo a DocumentoListItem
-              // y se añade al array para que el HTML lo pueda mostrar.
-              this.documentosReferenciados.push({
-                idDocumento: docReferenciado.idDocumento,
-                titulo: docReferenciado.titulo,
-                numDocumento: docReferenciado.numDocumento,
-                fechaCreacion: docReferenciado.fechaCreacion,
-                resumen: docReferenciado.resumen,
-                tipoDocumento: docReferenciado.tipoDocumento
+              this.documentService.getDocumentoById(refId).subscribe(docReferenciado => {
+                if (docReferenciado) {
+                  this.documentosReferenciados.push({
+                    idDocumento: docReferenciado.idDocumento,
+                    titulo: docReferenciado.titulo,
+                    numDocumento: docReferenciado.numDocumento,
+                    fechaCreacion: docReferenciado.fechaCreacion,
+                    resumen: docReferenciado.resumen,
+                    tipoDocumento: docReferenciado.tipoDocumento
+                  });
+                }
               });
-            }
-          });
-        }
+            });
+          }
+        });
       }
     });
-  }
-
-  getNumDocumento(id: number): string {
-    const doc = this.documentService.getDocumentoById(id);
-    return doc ? doc.numDocumento : `Documento ${id}`;
   }
 }
