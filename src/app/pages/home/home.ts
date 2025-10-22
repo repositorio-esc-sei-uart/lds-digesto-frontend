@@ -110,7 +110,7 @@ export class HomeComponent implements OnInit {
 
     // Primero, se filtra por la categoría seleccionada.
     if (this.categoriaSeleccionada !== 'todos') {
-      documentos = documentos.filter(doc => doc.tipoDocumento === this.categoriaSeleccionada);
+      documentos = documentos.filter(doc => doc.tipoDocumento.nombre === this.categoriaSeleccionada);
     }
 
     // Segundo, sobre el resultado anterior, se filtra por el término de búsqueda.

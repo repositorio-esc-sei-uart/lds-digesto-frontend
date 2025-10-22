@@ -12,6 +12,7 @@ import { DashboardComponent } from './pages/dashboard/dashboard-component/dashbo
 import { authGuard } from './guards/auth-guard';
 import { DocumentManagementComponent } from './pages/dashboard/document-management-component/document-management-component';
 import { UserManagementComponent } from './pages/dashboard/user-management-component/user-management-component';
+import { roleGuard } from './guards/role-guard';
 
 /**
  * @const routes
@@ -47,8 +48,25 @@ export const routes: Routes = [
     // Se definen las rutas hijas que se mostrarán DENTRO del DashboardComponent
     children: [
       { path: '', redirectTo: 'documentos', pathMatch: 'full' }, // Redirige /dashboard a /dashboard/documentos
-      { path: 'documentos', component: DocumentManagementComponent },
-      { path: 'usuarios', component: UserManagementComponent } // Protegeremos esta con un guardia de rol más adelante
+      // Ruta de Gestión de Documentos (ahora protegida por rol)
+      {
+        path: 'documentos',
+        component: DocumentManagementComponent,
+        canActivate: [roleGuard], // Debe tener el rol correcto
+        data: {
+          expectedRoles: ['Administrador', 'Editor'] // Lista de roles permitidos
+        }
+      },
+
+      // Ruta de Gestión de Usuarios (protegida por rol de Admin)
+      {
+        path: 'usuarios',
+        component: UserManagementComponent,
+        canActivate: [roleGuard],
+        data: {
+          expectedRoles: ['Administrador'] // Solo Admin puede ver esto
+        }
+      }
     ]
   },
 ];
