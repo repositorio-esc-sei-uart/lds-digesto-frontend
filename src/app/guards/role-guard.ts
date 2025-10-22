@@ -20,21 +20,29 @@ export const roleGuard: CanActivateFn = (route, state) => {
   const authService = inject(AuthenticationService);
   const router = inject(Router);
 
-  // Se obtiene el rol esperado desde la configuración de la ruta.
-  const expectedRole = route.data['expectedRole'];
-
-  // Se obtiene el usuario actual desde el servicio de autenticación.
+  // Se obtiene el rol esperado desde la configuración de la ruta
+  const expectedRoles = route.data['expectedRoles'] as string[];
   const currentUser = authService.currentUserValue;
 
-  // Si no hay un usuario logueado o su rol no coincide con el esperado...
-  if (!currentUser || currentUser.rol !== expectedRole) {
-    console.error(`RoleGuard: Acceso denegado. Se requiere el rol '${expectedRole}' pero el usuario tiene el rol '${currentUser?.rol || 'ninguno'}'.`);
-
-    // ...lo redirigimos a una página segura (la raíz del dashboard).
+  // Si no hay un usuario logueado o su rol no coincide con el esperado
+  if (!currentUser || !expectedRoles || expectedRoles.length === 0) {
+    console.error('RoleGuard: Acceso denegado. No hay usuario o no se definieron roles para la ruta.');
     router.navigate(['/dashboard']);
-    return false; // Se bloquea el acceso.
+    return false;
   }
 
-  // Si el rol del usuario coincide con el esperado, se permite el acceso.
-  return true;
+  // Si el rol del usuario coincide con el esperado, se permite el acceso
+  if (expectedRoles.includes(currentUser.rol)) {
+    return true;
+  }
+
+  // Si no coincide, se bloquea el acceso.
+  console.error(
+    `RoleGuard: Acceso denegado. Se requiere uno de los roles: [${expectedRoles.join(', ')}]`,
+    `pero el usuario tiene el rol: '${currentUser.rol}'.`
+  );
+
+  // Se redirige a una página segura (la raíz del dashboard)
+  router.navigate(['/dashboard']);
+  return false;
 };
