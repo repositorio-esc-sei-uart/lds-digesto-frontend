@@ -1,4 +1,8 @@
 import { Archivo } from "./archive-document-model";
+import { PalabraClave } from "./keyword-document-model";
+import { Sector } from "./sector-model";
+import { EstadoDocumento } from "./status-document-model";
+import { TipoDocumento } from "./type-document-model";
 
 /**
  * @interface DocumentoListItem
@@ -11,7 +15,17 @@ export interface DocumentoListItem {
   numDocumento: string;
   fechaCreacion: Date;
   resumen: string;
-  tipoDocumento: string;
+  tipoDocumento: TipoDocumento;
+}
+
+/**
+ * @interface ReferenciaDocumento
+ * Define la estructura resumida para mostrar en las listas de referencias.
+ * Es la versión "desnormalizada" que envía el backend para optimizar.
+ */
+export interface ReferenciaDocumento {
+  idDocumento: number;
+  numDocumento: string;
 }
 
 /**
@@ -24,10 +38,11 @@ export interface Documento {
   resumen: string;
   numDocumento: string;
   fechaCreacion: Date;
-  tipoDocumento: string;
-  sector: string;
-  estado: string;
+  tipoDocumento: TipoDocumento;
+  sector: Sector;
+  estado: EstadoDocumento;
   archivos: Archivo[];
-  palabrasClave: string[];
-  referencias: number[];
+  palabrasClave: PalabraClave[];
+  referencias: ReferenciaDocumento[];
+  referenciadoPor: ReferenciaDocumento[];
 }

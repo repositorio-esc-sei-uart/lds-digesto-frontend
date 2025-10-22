@@ -49,32 +49,31 @@
       }
 
       <!-- Card de Documentos Relacionados (Referencias) -->
-      @if (documentosReferenciados && documentosReferenciados.length > 0) {
+      @if (documento.referencias && documento.referencias.length > 0) {
         <mat-card class="section-card">
           <mat-card-content>
             <h3><mat-icon>link</mat-icon> Este documento hace referencia a:</h3>
             <div class="references-list">
-              <!-- Se itera sobre la nueva propiedad que contiene los detalles -->
-              @for (ref of documentosReferenciados; track ref.idDocumento) {
+              @for (ref of documento.referencias; track ref.idDocumento) {
                 <a class="reference-item" [routerLink]="['/documento', ref.idDocumento]">
                   <mat-icon>article</mat-icon>
-                  <!-- Se muestra el número de documento en lugar del ID -->
                   <span>{{ ref.numDocumento }}</span>
                 </a>
               }
             </div>
           </mat-card-content>
         </mat-card>
+      }
 
+      <!-- Card de Documentos Relacionados (Referenciado Por) -->
+      @if (documento.referenciadoPor && documento.referenciadoPor.length > 0) {
         <mat-card class="section-card">
           <mat-card-content>
             <h3><mat-icon>link</mat-icon> Este documento es referenciado por:</h3>
             <div class="references-list">
-              <!-- Se itera sobre la nueva propiedad que contiene los detalles -->
-              @for (ref of documentosReferenciados; track ref.idDocumento) {
+              @for (ref of documento.referenciadoPor; track ref.idDocumento) {
                 <a class="reference-item" [routerLink]="['/documento', ref.idDocumento]">
                   <mat-icon>article</mat-icon>
-                  <!-- Se muestra el número de documento en lugar del ID -->
                   <span>{{ ref.numDocumento }}</span>
                 </a>
               }
@@ -95,21 +94,21 @@
             <mat-icon>label_important</mat-icon>
             <div class="metadata-text">
               <span>Estado</span>
-              <strong [ngClass]="'status-' + documento.estado.split(' ')[0]">{{ documento.estado }}</strong>
+              <strong [ngClass]="'status-' + documento.estado.nombre.split(' ')[0]">{{ documento.estado.nombre }}</strong>
             </div>
           </div>
           <div class="metadata-item">
             <mat-icon>assignment</mat-icon>
             <div class="metadata-text">
               <span>Tipo</span>
-              <strong>{{ documento.tipoDocumento }}</strong>
+              <strong>{{ documento.tipoDocumento.nombre }}</strong>
             </div>
           </div>
           <div class="metadata-item">
             <mat-icon>corporate_fare</mat-icon>
             <div class="metadata-text">
               <span>Sector Emisor</span>
-              <strong>{{ documento.sector }}</strong>
+              <strong>{{ documento.sector.nombre }}</strong>
             </div>
           </div>
           <div class="metadata-item">

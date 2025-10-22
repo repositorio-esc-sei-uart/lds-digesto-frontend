@@ -7,19 +7,19 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
 // Servicios y Tipos
 import { DocumentService } from '../../services/document-service';
-import { Documento, DocumentoListItem } from '../../interfaces/document-model';
+import { Documento } from '../../interfaces/document-model';
+import { filter, map, switchMap, tap } from 'rxjs';
 
 /**
  * @Component
  * Se define el componente encargado de mostrar el detalle de un documento específico.
- * Obtiene el ID del documento desde la URL y utiliza un servicio para cargar sus datos.
  */
 @Component({
   selector: 'app-document-detail',
   standalone: true,
   imports: [
-    CommonModule, // Se importa para usar directivas como ngIf, ngFor, y pipes.
-    RouterModule, // Se importa para funcionalidades de enrutamiento como routerLink.
+    CommonModule,
+    RouterModule,
     MatCardModule,
     MatIconModule,
     MatButtonModule
@@ -32,55 +32,37 @@ export class DocumentDetail implements OnInit {
   /** Almacena los datos completos del documento a mostrar. */
   documento?: Documento;
 
-  /**
-   * Se declara e inicializa la propiedad para las referencias.
-   * Almacenará los detalles de los documentos referenciados.
-   */
-  documentosReferenciados: DocumentoListItem[] = [];
-
-  /**
-   * Se inyectan las dependencias necesarias.
-   * @param route Servicio para acceder a la información de la ruta activa, como los parámetros de la URL.
-   * @param documentService Servicio que provee la lógica para obtener los datos de los documentos.
-   */
   constructor (
     private route: ActivatedRoute,
     private documentService: DocumentService
   ) {}
 
-  /**
-   * @LifecycleHook ngOnInit
-   * Se ejecuta al inicializar el componente. Es el lugar ideal para obtener datos iniciales.
-   */
   ngOnInit(): void {
-    this.route.paramMap.subscribe(params => {
-      const idString = params.get('id');
-      if (idString) {
-        const documentoId = parseInt(idString, 10);
+    this.route.paramMap.pipe(
+      // Obtiene el ID como string y lo convierte a número
+      map(params => parseInt(params.get('id')!, 10)),
 
-        this.documentService.getDocumentoById(documentoId).subscribe(documentoEncontrado => {
-          this.documento = documentoEncontrado; // Asignamos el documento una vez que llega
-          this.documentosReferenciados = [];
+      // Filtro de protección para IDs inválidos (NaN)
+      filter(id => !isNaN(id)),
 
-          if (this.documento && this.documento.referencias.length > 0) {
-            this.documento.referencias.forEach(refId => {
+      // Usa switchMap para obtener el documento principal
+      switchMap(id => this.documentService.getDocumentoById(id)),
 
-              this.documentService.getDocumentoById(refId).subscribe(docReferenciado => {
-                if (docReferenciado) {
-                  this.documentosReferenciados.push({
-                    idDocumento: docReferenciado.idDocumento,
-                    titulo: docReferenciado.titulo,
-                    numDocumento: docReferenciado.numDocumento,
-                    fechaCreacion: docReferenciado.fechaCreacion,
-                    resumen: docReferenciado.resumen,
-                    tipoDocumento: docReferenciado.tipoDocumento
-                  });
-                }
-              });
-            });
-          }
-        });
-      }
+      tap(documento => {
+        console.log("--- DEBUG: Documento Recibido del Servicio ---");
+        console.log(documento);
+        if (documento) {
+          console.log("Propiedad 'referenciadoPor':", documento.referenciadoPor);
+        } else {
+          console.log("El documento es undefined.");
+        }
+        console.log("-------------------------------------------");
+      })
+
+    ).subscribe(documentoEncontrado => {
+      // Asigna el resultado.
+      this.documento = documentoEncontrado;
     });
   }
 }
+
