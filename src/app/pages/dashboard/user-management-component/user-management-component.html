@@ -1,1 +1,76 @@
-<p>user-management-component works!</p>
+<!-- Contenedor principal de la vista de gestión de usuarios -->
+<div class="user-management-container">
+  <!-- Título principal de la sección -->
+    <h2>
+        <span class="material-icons title-icon">
+            group
+        </span>
+        Gestión de Usuarios
+    </h2>
+
+  <!-- Botón para crear un nuevo usuario -->
+  <!-- Al hacer clic, ejecuta el método goToNewUser() definido en el componente -->
+    <button class="btn-NuevoUser" (click)="goToNewUser()">
+        <span class="material-icons button-icon">person_add</span>
+        Nuevo Usuario
+    </button>
+
+  <!-- Tabla que muestra la lista de usuarios -->
+  <table class="user-table">
+    <thead>
+      <tr>
+        <!-- Encabezados de las columnas -->
+        <th>ID</th>
+        <th>Legajo</th>
+        <th>Nombre</th>
+        <th>Apellido</th>
+        <th>Email</th>
+        <th>Rol</th>
+        <th>Estado</th>
+        <th>Acciones</th>
+      </tr>
+    </thead>
+
+    <tbody>
+      <!-- Bucle *ngFor que recorre la lista de usuarios obtenida desde el observable users$ -->
+      <!-- El pipe async suscribe automáticamente al observable y obtiene los datos -->
+      <tr *ngFor="let user of users$ | async">
+        <!-- Muestra los datos del usuario en cada columna -->
+        <td>{{ user.id }}</td>
+        <td>{{ user.legajo }}</td>
+        <td>{{ user.nombre }}</td>
+        <td>{{ user.apellido }}</td>
+        <td>{{ user.email }}</td>
+        <td>{{ user.rol }}</td>
+
+      <span 
+        [ngClass]="{
+          'status-active': user.estado.nombre === 'Activo', 
+          'status-suspended': user.estado.nombre === 'Inactivo'
+        }">
+        {{ user.estado.nombre }}
+      </span>
+
+        <!-- Columna de acciones con botones para editar o eliminar el usuario -->
+       <td class="actions-cell">
+                     <button class="btn-action edit">
+                <span class="material-icons">edit</span>
+            </button>
+
+                     <button class="btn-action delete">
+                <span class="material-icons">delete</span>
+            </button>
+       </td>
+     </tr>
+
+      <!-- Fila que se muestra solo si no hay usuarios cargados -->
+      <!-- *ngIf evalúa si la lista está vacía o aún se están cargando los datos -->
+      <tr *ngIf="!(users$ | async)?.length">
+        <td colspan="8" class="no-data">
+          No Existen Usuarios Registrados
+        </td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
