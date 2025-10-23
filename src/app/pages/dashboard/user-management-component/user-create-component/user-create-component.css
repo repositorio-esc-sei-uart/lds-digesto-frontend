@@ -1,0 +1,70 @@
+/* Estilos para el título del diálogo */
+h2[mat-dialog-title] {
+    font-family: Roboto, "Helvetica Neue", sans-serif;
+    font-size: 1.5rem; /* Tamaño de fuente legible */
+    font-weight: 600; /* Peso de fuente regular */
+    color: #271ad5; /* Color de texto oscuro */
+    
+    /* Usamos flexbox para alinear el icono y el texto */
+    display: flex; 
+    align-items: center; /* Centrar verticalmente los elementos */
+    justify-content: center; /* Centrar horizontalmente el contenido */
+    
+    border-bottom: 8px ; /* Agregado un borde sutil para separación visual, ¡puedes ajustarlo! */
+    padding-bottom: 8px; /* Pequeño relleno para que la línea no esté pegada al texto */
+    margin-bottom: 16px; /* Espacio después del título */
+}
+
+/* Estilos específicos para los iconos dentro del título */
+h2[mat-dialog-title] mat-icon {
+    /* Ajusta el tamaño del icono */
+    font-size: 1.8rem; 
+    height: 1.8rem;
+    width: 1.8rem;
+    
+    /* CAMBIO CLAVE: Espacio solo a la derecha para separarlo del texto. 
+       Un valor de 8px a 12px suele ser adecuado. */
+    margin-right: 10px; 
+    /* margin: 0 2000px; <--- Este era el problema original */
+    
+    /* Alineación si el icono es ligeramente más pequeño o grande que el texto */
+    line-height: 1; 
+}
+
+/* Estilos para el contenido del diálogo (sin cambios significativos, se limpia el comentario) */
+mat-dialog-content.mat-typography {
+    padding: 0 24px 24px 24px; /* Relleno alrededor del contenido */
+    max-width: 600px; /* Ancho máximo para mantener los campos compactos */
+    margin: 0 auto; /* Centrar el contenido si es posible */
+}
+
+
+/* Estilo para todas las filas de campos */
+.row-fields {
+    display: flex;
+    gap: 20px; /* Espacio horizontal limpio entre campos */
+    margin-top: 0.5rem;
+    margin-bottom: 0px; /* Espacio vertical para separar las filas */
+    width: 100%;
+    /* Permite que los campos seapilen en pantallas pequeñas */
+    flex-wrap: wrap; 
+}
+
+/* Para los campos que deben ocupar el mismo espacio en una fila (la mayoría ahora) */
+.row-fields mat-form-field {
+    flex: 1; /* Ocupar el espacio disponible por igual */
+    min-width: 0; 
+}
+
+/* Estilo específico para el campo que ocupa todo el ancho (ej: Email) */
+.row-fields.full-width mat-form-field {
+    flex: 1 1 100%; /* Asegurar que ocupe todo el ancho */
+}
+
+/* En móviles, todos los campos ocupan su propia línea para una mejor experiencia */
+@media (max-width: 600px) {
+    .row-fields mat-form-field {
+        flex: 1 1 100%; 
+        min-width: unset; 
+    }
+}

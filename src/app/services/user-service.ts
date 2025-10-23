@@ -13,7 +13,7 @@ import { EstadoUsuario } from '../interfaces/status-user-model';
 export class UserService {
   // Rutas de los archivos JSON para simulación de datos.
   private usersUrl = './assets/data/users.json';
-  private estadosUrl = './assets/data/status-user.json';
+  private estadosUrl = './assets/data/estadoUser.json';
   
   // Base de datos local simulada.
   private users: User[] = [];
@@ -90,4 +90,35 @@ export class UserService {
       })
     ).subscribe(); 
   }
+   /**
+   * @method createUser
+   * Simulación de creación de un nuevo usuario (POST).
+   * Opera sobre el arreglo `users` en memoria, ya que no se puede escribir en el archivo JSON.
+   * @param newUser El objeto `User` (sin ID o con ID temporal) a guardar.
+   * @returns Un Observable que emite el objeto `User` creado, ahora con su ID asignado.
+   */
+  createUser(newUser: User | null | undefined): Observable<User> {
+    if (!newUser) {
+      console.error('❌ No se recibió un usuario válido para crear.');
+      // devolvemos un Observable vacío pero con un valor compatible con el tipo esperado
+      return of({} as User);
+    }
+
+    // Asigna un nuevo ID único y agrega el usuario al array local
+    const userToAdd: User = {
+      ...newUser,
+      id: this.nextId++
+    };
+
+    this.users.push(userToAdd);
+
+    // Notifica a todos los suscriptores que la lista cambió
+    this.usersSubject.next([...this.users]);
+
+    console.log(`[UserService] ✅ Usuario creado con ID ${userToAdd.id}`);
+
+    // Retorna el usuario recién creado como Observable
+    return of(userToAdd);
+  }
+
 }

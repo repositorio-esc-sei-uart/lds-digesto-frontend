@@ -1,1 +1,113 @@
-<p>user-create-component works!</p>
+<h2 mat-dialog-title>
+    <mat-icon class="mr-2 text-indigo-600">person_add</mat-icon>
+    Registrar Nuevo Usuario
+</h2>
+
+<form [formGroup]="userForm" (ngSubmit)="onSubmit()">
+    <mat-dialog-content class="mat-typography">
+
+        <div class="row-fields">
+            <mat-form-field appearance="outline">
+                <mat-label>Nombre*</mat-label>
+                <input matInput formControlName="nombre" required>
+            </mat-form-field>
+
+            <mat-form-field appearance="outline">
+                <mat-label>Apellido*</mat-label>
+                <input matInput formControlName="apellido" required>
+            </mat-form-field>
+        </div>
+
+        <div class="row-fields full-width">
+            <mat-form-field appearance="outline">
+                <mat-label>Email*</mat-label>
+                <input matInput formControlName="email" type="email" required>
+            </mat-form-field>
+        </div>
+
+        <div class="row-fields full-width">
+            <mat-form-field appearance="outline">
+                <mat-label>Contraseña*</mat-label>
+                <input matInput formControlName="password" type="password" required>
+            </mat-form-field>
+        </div>
+
+
+        <div class="row-fields">
+            <mat-form-field appearance="outline">
+                <mat-label>DNI*</mat-label>
+                <input matInput formControlName="dni" type="number" required>
+            </mat-form-field>
+
+            <mat-form-field appearance="outline">
+                <mat-label>Legajo*</mat-label>
+                <input matInput type="text" [formControlName]="'legajo'">
+                <mat-error *ngIf="userForm.get('legajo')?.hasError('pattern')">
+                    El legajo no tiene un formato válido (solo números, guiones o barras).
+                </mat-error>
+                <mat-error *ngIf="userForm.get('legajo')?.hasError('required') && userForm.get('legajo')?.touched">
+                    El legajo es requerido.
+                </mat-error>
+            </mat-form-field>
+        </div>
+
+        <div class="row-fields">
+
+            <mat-form-field appearance="outline">
+                <mat-label>Sector*</mat-label>
+                <mat-select [formControlName]="'idSector'">
+                    <mat-option *ngFor="let sector of sectores" [value]="sector.id">
+                        {{ sector.nombre }}
+                    </mat-option>
+                </mat-select>
+                <mat-error *ngIf="userForm.get('idSector')?.hasError('required') && userForm.get('idSector')?.touched">
+                    El sector es requerido.
+                </mat-error>
+            </mat-form-field>
+
+            <mat-form-field appearance="outline">
+                <mat-label>Cargo*</mat-label>
+                <mat-select [formControlName]="'idCargo'">
+                    <mat-option *ngFor="let cargo of cargos" [value]="cargo.id">
+                        {{ cargo.nombre }}
+                    </mat-option>
+                </mat-select>
+                <mat-error *ngIf="userForm.get('idCargo')?.hasError('required') && userForm.get('idCargo')?.touched">
+                    El cargo es requerido.
+                </mat-error>
+            </mat-form-field>
+        </div>
+
+        <div class="row-fields">
+            <mat-form-field appearance="outline">
+                <mat-label>Rol*</mat-label>
+                <mat-select [formControlName]="'idRol'">
+                    <mat-option *ngFor="let rol of roles" [value]="rol.id">
+                        {{ rol.nombre }}
+                    </mat-option>
+                </mat-select>
+                <mat-error *ngIf="userForm.get('idRol')?.hasError('required') && userForm.get('idRol')?.touched">
+                    El rol es requerido.
+                </mat-error>
+            </mat-form-field>
+
+            <mat-form-field appearance="outline">
+                <mat-label>Estado*</mat-label>
+                <mat-select [formControlName]="'idEstado'">
+                    <mat-option *ngFor="let estado of estados" [value]="estado.id">
+                        {{ estado.nombre }}
+                    </mat-option>
+                </mat-select>
+                <mat-error *ngIf="userForm.get('idEstado')?.hasError('required') && userForm.get('idEstado')?.touched">
+                    El estado es requerido.
+                </mat-error>
+            </mat-form-field>
+        </div>
+
+    </mat-dialog-content>
+
+    <mat-dialog-actions align="end">
+        <button mat-button (click)="onCancel()" type="button">Cancelar</button>
+        <button mat-raised-button color="primary" [disabled]="userForm.invalid || isLoadingData" type="submit">Guardar Usuario</button>
+    </mat-dialog-actions>
+</form>

@@ -1,0 +1,16 @@
+[
+  { "idSector": 1,
+   "nombre": "Rectorado", 
+   "descripcion": "Sector Rectorado" 
+  },
+  { "idSector": 2, 
+  "nombre": "Secretaría Académica", 
+  "descripcion": "Sector Secretaría Académica" 
+  },
+  {
+    "idSector": 3,
+    "nombre": "Administracion",
+    "descripcion": "Sector administración."
+  }
+  
+]
