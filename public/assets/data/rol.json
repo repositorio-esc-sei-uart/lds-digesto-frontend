@@ -1,0 +1,17 @@
+[
+  {
+    "idRol": 1,
+    "nombre": "Administrador",
+    "descripcion": "Usuario con acceso total al sistema."
+  },
+  {
+    "idRol": 2,
+    "nombre": "Editor",
+    "descripcion": "Usuario encargado de la gestión de documentos."
+  },
+  {
+    "idRol": 3,
+    "nombre": "Lector",
+    "descripcion": "Usuario encargado de Leer."
+  }
+]

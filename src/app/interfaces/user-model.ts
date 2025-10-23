@@ -4,6 +4,11 @@
  * para la estructura de los datos en toda la aplicación.
  */
 
+import { Cargo } from "./job-title-user-model";
+import { Rol } from "./role-user-model";
+import { Sector } from "./sector-model";
+import { EstadoUsuario } from "./status-user-model";
+
 /**
  * Representa el perfil público de un usuario, con la información que se puede
  * mostrar de forma segura en la aplicación.
@@ -14,9 +19,28 @@ export interface UserProfile {
   apellido: string;
   email: string;
   legajo: string;
-  rol: 'Administrador' | 'Editor';
-  estado: 'Activo' | 'Suspendido';
+  rol: Rol;
+  estado: EstadoUsuario;
 }
+
+/**
+ * @interface User
+ * Se define la estructura de datos que representa a un usuario en la aplicación.
+ */
+export interface User {
+  id: number;
+  dni: number;
+  nombre: string;
+  apellido: string;
+  email: string;
+  password:string;
+  legajo: string;
+  rol: Rol;
+  estado: EstadoUsuario;
+  sector: Sector;
+  cargo: Cargo;
+}
+
 
 /**
  * Define la estructura estándar de la respuesta del endpoint de autenticación.

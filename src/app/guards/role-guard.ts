@@ -31,8 +31,8 @@ export const roleGuard: CanActivateFn = (route, state) => {
     return false;
   }
 
-  // Si el rol del usuario coincide con el esperado, se permite el acceso
-  if (expectedRoles.includes(currentUser.rol)) {
+  // Si el rol del usuario coincide con el esperado, se permite el acceso CAMBIO DEL .NOMBRE
+  if (expectedRoles.includes(currentUser.rol.nombre)) {
     return true;
   }
 
