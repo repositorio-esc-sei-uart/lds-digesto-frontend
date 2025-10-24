@@ -1,0 +1,276 @@
+/*
+ * Hoja de Estilos CSS para el Módulo de Gestión de Usuarios
+ *
+ * Objetivo: Definir la apariencia de un panel de gestión de usuarios moderno y limpio,
+ * incluyendo el contenedor principal, el encabezado, un botón de acción y la tabla de datos.
+ */
+
+/* ------------------------------------------- */
+/* 1. Contenedor Principal y Estilos Base */
+/* ------------------------------------------- */
+/* Define los estilos generales de diseño: fuente, centrado de contenido, ancho máximo,
+   relleno y bordes. Es la "caja" que envuelve toda la interfaz. */
+
+.user-management-container {
+    font-family: Roboto, "Helvetica Neue", sans-serif;
+    max-width: 1200px;
+    margin: 8px auto; 
+    padding: 8px;
+    background-color:#ffffff;
+    border-radius: 20px;
+}
+
+/* ------------------------------------------- */
+/* 2. Título de la Sección (h2) */
+/* ------------------------------------------- */
+/* Establece la tipografía, el color y el formato del título principal (h2).
+   Utiliza Flexbox para alinear el texto y el ícono de "grupo/usuarios" (title-icon)
+   vertical y horizontalmente, y añade una línea divisoria inferior. */
+
+.user-management-container h2 {
+    color: #000000;
+    font-weight: 600;
+    font-size: 1.8rem;
+    border-bottom: 1px solid #dee2e6;
+    padding-bottom: 15px;
+    margin-bottom: 25px;
+    text-transform:capitalize;
+    letter-spacing: 0.5px;
+    display: flex;
+    align-items: center; 
+}
+
+/* Estilo para el ícono de Material Icons */
+.user-management-container h2 .title-icon {
+    font-family: 'Material Icons'; 
+    color: #000000;
+    margin-right: 12px;
+    font-size: 2rem; 
+    line-height: 1; 
+}
+
+/* ------------------------------------------- */
+/* 3. Botón de Nuevo Usuario */
+/* ------------------------------------------- */
+/* Define el estilo del botón principal de acción: fondo azul, texto blanco,
+   bordes redondeados (cápsula), transiciones (hover/active) y usa Flexbox
+   para la correcta alineación interna del ícono y el texto. */
+
+.btn-NuevoUser {
+    background-color:  #0056b3; 
+    color: #ffffff;
+    border: none;
+    border-radius: 30px; 
+    padding: 10px 20px;
+    font-size: 1rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background-color 0.2s ease, transform 0.1s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px; 
+    margin-bottom: 20px; 
+}
+
+/* Efecto Hover */
+.btn-NuevoUser:hover {
+    background-color: #007bff;
+}
+
+/* Efecto al hacer click (Active) */
+.btn-NuevoUser:active {
+    transform: translateY(1px); 
+}
+
+/* Estilo para el ícono del botón */
+.btn-NuevoUser .button-icon {
+    font-size: 1.2rem;
+    line-height: 1;
+}
+
+/* ------------------------------------------- */
+/* 4. Estilo de la Tabla (user-table) */
+/* ------------------------------------------- */
+/* Define la estructura principal y la tipografía de la tabla.
+   Establece el diseño fijo (table-layout: fixed) para controlar los anchos
+   de columna. Aplica estilos distintos a los encabezados (thead) y filas (tbody),
+   incluyendo el efecto hover en las filas. */
+
+.user-table {
+    width: 100%;
+    border-collapse: collapse; 
+    table-layout: fixed; 
+    margin-bottom: 20px;
+}
+
+/* Encabezados (thead) */
+.user-table thead tr {
+    background-color: #F6E7FA; 
+    border-bottom: 1px solid #D8B3E8; 
+    border-top: 5px solid #D8B3E8;
+}
+
+.user-table th {
+    color: #000000;
+    font-weight: 600;
+    font-size: 0.9rem;
+    text-align:left;
+    padding: 12px 15px;
+    text-transform:uppercase;
+    letter-spacing: 0.5px;
+}
+
+/* Centrado para la Primera Columna (ID) */
+.user-table th:first-child {
+    text-align: center;
+}
+
+/* Celdas del Cuerpo (tbody) */
+.user-table td {
+    color: #222222;
+    padding: 12px 15px;
+    font-size: 0.95rem;
+    border-bottom: 2px solid #dee2e6;
+}
+
+/* Centrado para la Primera Columna (ID) */
+.user-table td:first-child {
+    text-align: center;
+}
+
+/* Efecto Hover sobre las filas */
+.user-table tbody tr:hover {
+    background-color: whitesmoke; 
+}
+
+/* ------------------------------------------- */
+/* 5. Estilo de Columna de Estado (Minimalista) */
+/* ------------------------------------------- */
+/* Crea los estilos visuales para las etiquetas de estado (p. ej., "Activo", "Suspendido").
+   Utiliza fondos de color muy claro y texto de color para un diseño minimalista
+   pero claro y fácil de distinguir. *
+
+/* Contenedor del estado */
+td span[class*="status-"] {
+  padding: 0.25rem 0.75rem;
+  border-radius: 16px;
+  font-size: 1rem;
+  font-weight: 500;
+  text-transform: capitalize;
+  display: inline-block;
+  white-space: nowrap;
+  line-height: 1.4;
+  vertical-align: middle;
+  border: 1px solid transparent; /* Añadir borde para definición */
+}
+
+/* Estado Activo (Verde sutil) */
+.status-active {
+    background-color:#e8f5e9; 
+    color: #2e7d32; 
+    border-color: var(#2e7d32)
+}
+
+/* Estado Suspendido (Naranja sutil) */
+.status-suspended {
+    background-color: #fff3e0;
+    color: #ff9800;
+    border-color: var(#ff9800);
+}
+
+/* ------------------------------------------- */
+/* 6. Estilo de Acciones (Iconos) */
+/* ------------------------------------------- */
+/* Da formato a los botones de acción (Editar, Eliminar) dentro de la tabla.
+   Define los estilos base del botón (sin fondo/borde), el color inicial de los íconos
+   y los efectos hover, donde el ícono cambia de color para indicar interactividad. */
+
+.actions-cell {
+    text-align: center;
+}
+
+.btn-action {
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 5px;
+    margin: 0 5px;
+    border-radius: 4px;
+    transition: background-color 0.2s, color 0.2s;
+    line-height: 1; 
+}
+
+/* Estilo para el icono de Editar */
+.btn-action.edit .material-icons {
+    color: #222222; 
+    font-size: 1.2rem;
+}
+
+/* Estilo para el icono de Eliminar */
+.btn-action.delete .material-icons {
+    color: #222222; 
+    font-size: 1.2rem;
+}
+
+/* Efecto Hover: Resaltar el botón */
+.btn-action:hover {
+    background-color: #f0f0f0; 
+}
+
+/* Efecto Hover para EDITAR: Color Azul */
+.btn-action.edit:hover .material-icons {
+    color: #007bff; /* Color azul, como lo deseas */
+}
+
+/* Efecto Hover para EDITAR: Color Azul */
+.btn-action.delete:hover .material-icons {
+    color: #dc3545; /* Color rojo, como lo deseas */
+}
+
+/* ------------------------------------------- */
+/* 7. Definición de Anchos de Columna */
+/* ------------------------------------------- */
+/* Asigna anchos específicos a cada una de las 8 columnas de la tabla.
+   Esto es crucial ya que se está utilizando 'table-layout: fixed' para asegurar
+   que las columnas mantengan su tamaño independientemente del contenido. */
+
+
+/* Columna 1: ID (3%) */
+.user-table th:nth-child(1),.user-table td:nth-child(1) {
+    width: 3%; 
+}
+
+/* Columna 2: Legajo (17%) */
+.user-table th:nth-child(2),.user-table td:nth-child(2) {
+    width: 17%;
+}
+
+/* Columna 3: Nombre (10%) */
+.user-table th:nth-child(3),.user-table td:nth-child(3) {
+    width: 10%;
+}
+
+/* Columna 4: Apellido (10%) */
+.user-table th:nth-child(4), .user-table td:nth-child(4) {
+    width: 10%;
+}
+
+/* Columna 5: Email (25%) - La más ancha */
+.user-table th:nth-child(5),.user-table td:nth-child(5) {
+    width: 25%; 
+}
+
+/* Columna 6: Rol (14%) */
+.user-table th:nth-child(6), .user-table td:nth-child(6) {
+    width: 14%;
+}
+
+/* Columna 7: Estado (10%) */
+.user-table th:nth-child(7),.user-table td:nth-child(7) {
+    width: 10%;
+}
+
+/* Columna 8: Acciones (12%) */
+.user-table th:nth-child(8), .user-table td:nth-child(8) {
+    width: 12%; 
+}

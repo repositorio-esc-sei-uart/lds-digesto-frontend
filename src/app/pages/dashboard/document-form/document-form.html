@@ -146,16 +146,17 @@
 
   <mat-dialog-actions align="end">
 
-    <button mat-stroked-button (click)="onCancel()" [disabled]="isLoading">
+    <button mat-stroked-button (click)="onCancel()" [disabled]="isLoading" class="dialog-button">
       Cancelar
     </button>
 
     <button mat-flat-button color="primary" type="submit"
-      [disabled]="isLoading || documentForm.invalid || (archivosParaSubir.length === 0 && !isEditMode)">
-      @if (isLoading) {
+            [disabled]="isLoading || documentForm.invalid || (archivosParaSubir.length === 0 && !isEditMode)"
+            class="dialog-button"
+            #submitButton> @if (isLoading) {
         <mat-spinner diameter="24"></mat-spinner>
       } @else {
-        <span>{{ isEditMode ? 'Guardar Cambios' : 'Crear Documento' }}</span>
+        <span>{{ isEditMode ? 'Guardar Cambios' : 'Vista Documento' }}</span>
       }
     </button>
 

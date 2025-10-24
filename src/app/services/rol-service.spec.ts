@@ -1,14 +1,13 @@
 import { TestBed } from '@angular/core/testing';
 
-import { SectorService } from './sector-service';
+import { RolService } from './rol-service';
 
-describe('SectorService', () => {
-
-  let service: SectorService;
+describe('RolService', () => {
+  let service: RolService;
 
   beforeEach(() => {
     TestBed.configureTestingModule({});
-    service = TestBed.inject(SectorService);
+    service = TestBed.inject(RolService);
   });
 
   it('should be created', () => {

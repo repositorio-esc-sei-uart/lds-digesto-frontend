@@ -1,0 +1,12 @@
+[
+{
+  "idEstadoU": 1,
+  "nombre": "Activo",
+  "descripcion": "La cuenta del usuario está plenamente operativa y en uso."
+},
+{
+  "idEstadoU": 2,
+  "nombre": "Inactivo",
+  "descripcion": "La cuenta del usuario desactivada."
+}
+]

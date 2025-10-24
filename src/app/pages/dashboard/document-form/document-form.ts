@@ -1,5 +1,5 @@
 // Importaciones necesarias
-import { Component, Inject, OnInit } from '@angular/core';
+import { Component, ElementRef, Inject, OnInit, ViewChild } from '@angular/core';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { MAT_DIALOG_DATA, MatDialogRef, MatDialogModule, MatDialog } from '@angular/material/dialog';
 import { Observable, take } from 'rxjs';
@@ -64,6 +64,7 @@ export class DocumentForm implements OnInit {
   palabrasClave$!: Observable<PalabraClave[]>;
   todosLosDocumentos$!: Observable<DocumentoListItem[]>;
   archivosParaSubir: File[] = [];
+  @ViewChild('submitButton', { read: ElementRef }) submitButton!: ElementRef;
 
   constructor(
     private fb: FormBuilder,
@@ -124,25 +125,24 @@ export class DocumentForm implements OnInit {
 
   // Lógica de envío
   onSubmit(): void {
-    console.log('onSubmit iniciado.'); // <-- LOG 1
+    console.log('onSubmit iniciado.');
+    // Validaciones
     if (this.documentForm.invalid) {
-      console.error('Formulario inválido:', this.documentForm.errors); // <-- LOG 2
-      this.documentForm.markAllAsTouched(); // Muestra errores si los hay
+      console.error('Formulario inválido:', this.documentForm.errors);
+      this.documentForm.markAllAsTouched();
       return;
     }
-
-    // Validamos que haya subido al menos un archivo
     if (this.archivosParaSubir.length === 0 && !this.isEditMode) {
       console.error("Debe subir al menos un archivo");
-      // Aquí podrías mostrar un snackbar de error
       return;
     }
 
-    console.log('Validaciones pasadas.'); // <-- LOG 3
+    console.log('Validaciones pasadas.');
+
     this.isLoading = true;
 
-    // Construcción del objeto
-    try { // <-- Añadimos try...catch por si acaso
+    try {
+      // Construcción del objeto
       const archivosSimulados: Archivo[] = this.archivosParaSubir.map((file, index) => ({
         idArchivo: 100 + index,
         nombre: file.name,
@@ -150,7 +150,7 @@ export class DocumentForm implements OnInit {
       }));
 
       const referenciasFormateadas: ReferenciaDocumento[] =
-        this.documentForm.value.referencias.map((doc: DocumentoListItem) => ({
+        (this.documentForm.value.referencias || []).map((doc: DocumentoListItem) => ({
           idDocumento: doc.idDocumento,
           numDocumento: doc.numDocumento
         }));
@@ -164,42 +164,42 @@ export class DocumentForm implements OnInit {
         tipoDocumento: this.documentForm.value.tipoDocumento,
         sector: this.documentForm.value.sector,
         estado: this.documentForm.value.estado,
-        palabrasClave: this.documentForm.value.palabrasClave,
+        palabrasClave: this.documentForm.value.palabrasClave || [],
         archivos: archivosSimulados,
         referencias: referenciasFormateadas,
         referenciadoPor: []
       };
 
-      console.log('Objeto nuevoDocumento construido:', nuevoDocumento); // <-- LOG 4
+      console.log('Objeto nuevoDocumento construido:', nuevoDocumento);
 
       // --- Abrir el Modal de Preview ---
-      console.log('Intentando abrir modal de previsualización...'); // <-- LOG 5
+      console.log('Intentando abrir modal de previsualización...');
       const previewDialogRef = this.dialog.open(DocumentPreviewComponent, {
-        // ... (opciones del modal) ...
+        width: '85%', // Ajusta el ancho como prefieras
+        maxWidth: '1200px',
+        maxHeight: '90vh',
         data: { documento: nuevoDocumento }
       });
       console.log('Modal de previsualización abierto (o debería).'); // <-- LOG 6
 
-      // --- 👇 AQUÍ ESTÁ EL CAMBIO 👇 ---
+
       // Escuchamos la respuesta del preview
       previewDialogRef.afterClosed().subscribe(result => {
         console.log('Modal de previsualización cerrado con resultado:', result); // <-- LOG 7
 
-        // SOLO si el resultado es TRUE, intentamos guardar
         if (result === true) {
+          // Si confirma, llamamos a guardar (que maneja su propio isLoading)
           this.guardarDocumento(nuevoDocumento);
         } else {
-          // SI EL RESULTADO ES FALSE (o cualquier otra cosa),
-          // simplemente quitamos el loader para volver a editar.
+          // Si cancela la previsualización, quitamos el loader
           this.isLoading = false;
+          this.submitButton.nativeElement.blur();
         }
-        // NOTA: No ponemos isLoading = false DENTRO de guardarDocumento,
-        // porque esa función ya maneja su propio isLoading.
       });
 
     } catch (error) {
         console.error('Error durante la construcción del objeto o apertura del modal:', error); // <-- LOG DE ERROR
-        this.isLoading = false; // También quitar el loader si hay un error antes de abrir el modal
+        this.isLoading = false; // Quitar loader si falla antes de abrir preview
     }
   }
 

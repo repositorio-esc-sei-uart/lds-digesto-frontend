@@ -30,15 +30,37 @@ export class AuthenticationService {
 
   // Base de datos simulada con diferentes roles y estados.
   private mockUserDatabase: MockUser[] = [
-    { id: 1, nombre: 'Admin', apellido: 'Dev', email: 'admin@unpa.edu.ar', legajo: 'admin', password: 'admin', rol: 'Administrador', estado: 'Activo' },
-    { id: 2, nombre: 'Editor', apellido: 'Dev', email: 'editor@unpa.edu.ar', legajo: 'editor', password: 'editor', rol: 'Editor', estado: 'Activo' },
-    { id: 3, nombre: 'Jorgito', apellido: 'Gpt', email: 'editor@unpa.edu.ar', legajo: 'jorgito', password: 'jorgito', rol: 'Editor', estado: 'Suspendido' }
+    { id: 1, nombre: 'Admin',
+       apellido: 'Dev',
+       email: 'admin@unpa.edu.ar',
+       legajo: 'admin',
+       password: 'admin',
+       rol: { "idRol": 1, "nombre": "Administrador", "descripcion": "Usuario con acceso total al sistema."},
+       estado: { "idEstadoU": 1, "nombre": "Activo", "descripcion": "La cuenta del usuario está plenamente operativa y en uso."}
+    },
+    { id: 2, nombre: 'Editor',
+      apellido: 'Dev',
+      email: 'editor@unpa.edu.ar',
+      legajo: 'editor',
+      password: 'editor',
+      rol: {"idRol": 2, "nombre": "Editor", "descripcion": "Usuario encargado de la gestión de documentos." },
+      estado: { "idEstadoU": 1, "nombre": "Activo", "descripcion": "La cuenta del usuario está plenamente operativa y en uso." }
+    },
+    { id: 3,
+      nombre: 'Jorgito',
+      apellido: 'Gpt',
+       email: 'editor@unpa.edu.ar',
+       legajo: 'jorgito',
+       password: 'jorgito',
+        rol:  { "idRol": 3, "nombre": "Lector", "descripcion": "Usuario encargado de Leer."},
+        estado: {"idEstadoU": 2, "nombre": "Inactivo","descripcion": "La cuenta del usuario desactivada."}
+    }
   ];
 
   constructor(private http: HttpClient) {
     // Al iniciar el servicio, intenta cargar al usuario desde localStorage.
     // Esto mantiene la sesión activa si el usuario refresca la página.
-    const storedUser = localStorage.getItem('currentUser');
+    const storedUser = sessionStorage.getItem('currentUser');
     if (storedUser) {
       this.currentUserSubject.next(JSON.parse(storedUser));
     }
@@ -67,7 +89,7 @@ export class AuthenticationService {
       tap(response => {
         if (response.success && response.user) {
           // Si el login es exitoso, guardamos en localStorage y ANUNCIAMOS el nuevo usuario.
-          localStorage.setItem('currentUser', JSON.stringify(response.user));
+          sessionStorage.setItem('currentUser', JSON.stringify(response.user));
           this.currentUserSubject.next(response.user);
         }
       })
@@ -76,7 +98,7 @@ export class AuthenticationService {
 
   logout(): void {
     // Se elimina al usuario de localStorage y se ANUNCIA que ya no hay nadie logueado.
-    localStorage.removeItem('currentUser');
+    sessionStorage.removeItem('currentUser');
     this.currentUserSubject.next(null);
   }
 
@@ -107,7 +129,7 @@ export class AuthenticationService {
     }
 
     // Caso 2: Usuario encontrado, se verifica su estado.
-    if (userFound.estado !== 'Activo') {
+    if (userFound.estado?.nombre !== 'Activo') {
       const response: AuthResponse = { success: false, message: `Acceso denegado. Su cuenta se encuentra en estado: ${userFound.estado}.` };
       return of(response).pipe(delay(1500));
     }
@@ -117,7 +139,7 @@ export class AuthenticationService {
     const response: AuthResponse = {
       success: true,
       message: 'Login exitoso.',
-      token: `fake-jwt-token-for-${userProfile.rol.toLowerCase()}-${userProfile.id}`,
+      token: `fake-jwt-token-for-${userProfile.rol?.nombre.toLowerCase()}-${userProfile.id}`,
       user: userProfile
     };
     return of(response).pipe(delay(1500));
