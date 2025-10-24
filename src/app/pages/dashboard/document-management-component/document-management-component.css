@@ -1,0 +1,208 @@
+/* Variables de Color */
+:host {
+  --app-primary-color: #3f51b5; /* Azul primario (botones) */
+  --app-accent-color: #673ab7;  /* Púrpura (título) */
+  --app-warn-color: #f44336;    /* Rojo (eliminar, derogado total) */
+  --app-warn-light-bg: #ffebee; /* Fondo rojo pálido */
+  --app-attention-color: #ff9800; /* Naranja/Amarillo (derogado parcial) */
+  --app-attention-light-bg: #fff3e0;/* Fondo naranja/amarillo pálido */
+  --app-success-color: #2e7d32;   /* Verde oscuro (vigente) */
+  --app-success-light-bg: #e8f5e9; /* Fondo verde pálido */
+  --app-text-dark: #212121;
+  --app-text-medium: #616161;
+  --app-text-light: #757575;
+  --app-border-color: #e0e0e0;
+  --app-hover-background: #f5f5f5;
+  --app-header-background: #f8f9fa;
+  --app-chip-other-bg: #eeeeee; /* Gris claro para estado 'otro' */
+  --app-chip-other-text: #616161;
+}
+
+/* Contenedor principal y cabecera */
+.management-container {
+  padding: auto;
+  max-width: 100%;
+  margin: auto;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid var(--app-border-color);
+}
+
+.header h1 {
+  font-size: 2.2rem;
+  font-weight: 500;
+  margin: 0;
+  color: var(--app-accent-color);
+  line-height: 1.2;
+}
+
+.header a[mat-flat-button] {
+  border-radius: 20px;
+  padding: 0.6rem 1.2rem;
+}
+
+/* Campo de filtro */
+.filter-field {
+  width: 100%;
+  max-width: 400px; /* Limitar ancho del filtro */
+  margin-bottom: 1.5rem;
+}
+
+/* Contenedor de la tabla */
+.table-container {
+  border-radius: 8px;
+  overflow: scroll; /* Permite scroll horizontal si es necesario */
+  position: relative;
+  border: 1px solid var(--app-border-color);
+}
+
+/* Sombra de carga */
+.loading-shade {
+  position: absolute; top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(255, 255, 255, 0.8); z-index: 100;
+  display: flex; align-items: center; justify-content: center;
+  min-height: 200px;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 950px;
+}
+
+/* Cabecera de la tabla */
+.mat-mdc-header-row {
+  background-color: var(--app-header-background);
+  border-bottom: 2px solid var(--app-border-color);
+  height: 48px;
+}
+
+.mat-mdc-header-cell {
+  padding: 0 1rem;
+  font-weight: 500;
+  font-size: 0.8rem;
+  color: var(--app-text-medium);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  box-sizing: border-box;
+  vertical-align: middle;
+}
+
+/* Filas de la tabla */
+.mat-mdc-row {
+  border-bottom: 1px solid var(--app-border-color);
+  transition: background-color 0.2s ease-out;
+  height: 48px;
+}
+
+.mat-mdc-row:last-child {
+  border-bottom: none;
+}
+
+.mat-mdc-row:hover {
+  background-color: var(--app-hover-background);
+}
+
+/* Celdas de la tabla */
+.mat-mdc-cell {
+  padding: 0 1rem;
+  color: var(--app-text-dark);
+  vertical-align: middle;
+  font-size: 0.875rem;
+  box-sizing: border-box;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* --- Control de Ancho de Columnas --- */
+.mat-column-numDocumento { width: 13%; flex: 0 0 18%; } /* Flex para responsividad básica */
+.mat-column-titulo { width: 35%; flex: 0 0 35%; }
+.mat-column-tipoDocumento { width: 10%; flex: 0 0 15%; }
+.mat-column-fechaCreacion { width: 7%; flex: 0 0 10%; }
+.mat-column-estado { width: 4%; flex: 0 0 10%; text-align: center; }
+.mat-column-acciones { width: 12%; flex: 0 0 12%; text-align: right; }
+
+/* Celdas de Acciones */
+.col-acciones {
+  text-align: right;
+  padding-right: 0.5rem;
+  overflow: visible; /* Permitir tooltips */
+  white-space: nowrap;
+}
+.col-acciones-header {
+  text-align: right;
+  padding-right: 0.5rem;
+}
+
+.col-acciones a[mat-icon-button],
+.col-acciones button[mat-icon-button] {
+ margin-left: 0.25rem;
+}
+
+/* Chip de Estado */
+.status-chip {
+  padding: 0.25rem 0.75rem;
+  border-radius: 16px;
+  min-width: 6rem;
+  font-size: 0.75rem;
+  font-weight: 500;
+  text-transform: capitalize;
+  display: inline-block;
+  white-space: nowrap;
+  line-height: 1.4;
+  vertical-align: middle;
+  border: 1px solid transparent; /* Añadir borde para definición */
+}
+
+/* Colores de Chip ACTUALIZADOS */
+.status-vigente {
+  background-color: var(--app-success-light-bg);
+  color: var(--app-success-color);
+  border-color: var(--app-success-color);
+}
+
+/* --- NUEVAS REGLAS --- */
+.status-derogado-parcial { /* Amarillo/Naranja */
+  background-color: var(--app-attention-light-bg);
+  color: var(--app-attention-color);
+  border-color: var(--app-attention-color);
+}
+
+.status-derogado-total { /* Rojo */
+  background-color: var(--app-warn-light-bg);
+  color: var(--app-warn-color);
+  border-color: var(--app-warn-color);
+}
+/* --- FIN NUEVAS REGLAS --- */
+
+.status-otro {
+  background-color: var(--app-chip-other-bg);
+  color: var(--app-chip-other-text);
+  border-color: #bdbdbd; /* Borde gris medio */
+}
+
+/* Mensaje de "No hay datos" */
+.mat-row-no-data {
+  height: 60px;
+  text-align: center;
+}
+.mat-row-no-data .mat-cell {
+  font-style: italic;
+  color: var(--app-text-light);
+  font-size: 0.9rem;
+}
+
+/* Paginador (estilos base para cuando se active) */
+.mat-mdc-paginator {
+  border-top: 1px solid var(--app-border-color);
+  background-color: var(--app-header-background); /* Fondo consistente con cabecera */
+  border-bottom-left-radius: 8px; /* Redondear esquina inferior */
+  border-bottom-right-radius: 8px;
+}

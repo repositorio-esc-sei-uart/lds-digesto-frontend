@@ -1,0 +1,163 @@
+<form [formGroup]="documentForm" (ngSubmit)="onSubmit()">
+
+  <h1 mat-dialog-title>
+    {{ isEditMode ? 'Editar Documento' : 'Nuevo Documento' }}
+  </h1>
+
+  <p class="mat-dialog-subtitle">
+    Completá los campos requeridos para registrar una nueva normativa en el digesto.
+  </p>
+
+  <mat-dialog-content class="mat-typography">
+    <div class="form-container">
+
+      <mat-form-field appearance="outline" class="full-width">
+        <mat-label>Título</mat-label>
+        <input matInput formControlName="titulo" required>
+        @if (documentForm.get('titulo')?.hasError('required')) {
+          <mat-error>El título es requerido</mat-error>
+        }
+      </mat-form-field>
+
+      <div class="form-row">
+        <mat-form-field appearance="outline" class="flex-field">
+          <mat-label>N° Documento</mat-label>
+          <input matInput formControlName="numDocumento" required>
+          @if (documentForm.get('numDocumento')?.hasError('required')) {
+            <mat-error>El N° es requerido</mat-error>
+          }
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="flex-field">
+          <mat-label>Fecha de Creación</mat-label>
+          <input matInput [matDatepicker]="picker" formControlName="fechaCreacion" required>
+          <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
+          <mat-datepicker #picker></mat-datepicker>
+        </mat-form-field>
+      </div>
+
+      <div class="form-row">
+        <mat-form-field appearance="outline" class="flex-field">
+          <mat-label>Tipo de Documento</mat-label>
+          <mat-select formControlName="tipoDocumento" required>
+            @for (tipo of (tipos$ | async); track tipo.idTipoDocumento) {
+              <mat-option [value]="tipo">{{ tipo.nombre }}</mat-option>
+            }
+          </mat-select>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="flex-field">
+          <mat-label>Sector Emisor</mat-label>
+          <mat-select formControlName="sector" required>
+            @for (sector of (sectores$ | async); track sector.idSector) {
+              <mat-option [value]="sector">{{ sector.nombre }}</mat-option>
+            }
+          </mat-select>
+        </mat-form-field>
+      </div>
+
+      <mat-form-field appearance="outline" class="full-width">
+        <mat-label>Estado</mat-label>
+        <mat-select formControlName="estado" required>
+          @for (estado of (estados$ | async); track estado.idEstado) {
+            <mat-option [value]="estado">{{ estado.nombre }}</mat-option>
+          }
+        </mat-select>
+      </mat-form-field>
+
+      <mat-form-field appearance="outline" class="full-width">
+        <mat-label>Resumen</mat-label>
+        <textarea matInput formControlName="resumen" rows="4" required></textarea>
+      </mat-form-field>
+
+      <div class="file-upload-container">
+        <h3 class="file-upload-title">
+          <mat-icon>attach_file</mat-icon>
+          Archivos Adjuntos (PDF)
+        </h3>
+        <input
+          type="file"
+          hidden
+          multiple
+          (change)="onFileSelected($event)"
+          #fileInput>
+
+        <button mat-stroked-button type="button" (click)="fileInput.click()">
+          <mat-icon>upload_file</mat-icon>
+          Seleccionar archivos
+        </button>
+
+        @if (archivosParaSubir.length > 0) {
+          <mat-list role="list">
+            @for (file of archivosParaSubir; track file.name) {
+              <mat-list-item role="listitem">
+                <mat-icon matListItemIcon>picture_as_pdf</mat-icon>
+
+                <div matListItemTitle class="file-item-line">
+
+                  <span class="file-name">{{ file.name }}</span>
+
+                  <span class="file-size">{{ (file.size / 1024).toFixed(1) }} KB</span>
+
+                  <button mat-icon-button color="warn" type="button"
+                          (click)="removerArchivo(file)"
+                          aria-label="Quitar archivo"
+                          class="delete-button">
+                    <mat-icon>delete</mat-icon>
+                  </button>
+                </div>
+
+                </mat-list-item>
+            }
+          </mat-list>
+        }
+      </div>
+
+      <mat-form-field appearance="outline" class="full-width">
+        <mat-label>Este documento hace referencia a:</mat-label>
+        <mat-select formControlName="referencias" multiple>
+          @for (doc of (todosLosDocumentos$ | async); track doc.idDocumento) {
+            <mat-option [value]="doc">{{ doc.numDocumento }} - {{ doc.titulo }}</mat-option>
+          }
+        </mat-select>
+      </mat-form-field>
+
+      <mat-form-field appearance="outline" class="full-width">
+        <mat-label>Este documento es referenciado por:</mat-label>
+        <mat-select formControlName="referencias" multiple>
+          @for (doc of (todosLosDocumentos$ | async); track doc.idDocumento) {
+            <mat-option [value]="doc">{{ doc.numDocumento }} - {{ doc.titulo }}</mat-option>
+          }
+        </mat-select>
+      </mat-form-field>
+
+      <mat-form-field appearance="outline" class="full-width">
+        <mat-label>Palabras Clave</mat-label>
+        <mat-select formControlName="palabrasClave" multiple>
+          <mat-option #allSelected (click)="toggleAllSelection(allSelected.selected)">Seleccionar Todas</mat-option>
+          @for (palabra of (palabrasClave$ | async); track palabra.idPalabraClave) {
+            <mat-option [value]="palabra">{{ palabra.nombre }}</mat-option>
+          }
+        </mat-select>
+      </mat-form-field>
+
+    </div>
+  </mat-dialog-content>
+
+  <mat-dialog-actions align="end">
+
+    <button mat-stroked-button (click)="onCancel()" [disabled]="isLoading">
+      Cancelar
+    </button>
+
+    <button mat-flat-button color="primary" type="submit"
+      [disabled]="isLoading || documentForm.invalid || (archivosParaSubir.length === 0 && !isEditMode)">
+      @if (isLoading) {
+        <mat-spinner diameter="24"></mat-spinner>
+      } @else {
+        <span>{{ isEditMode ? 'Guardar Cambios' : 'Crear Documento' }}</span>
+      }
+    </button>
+
+  </mat-dialog-actions>
+</form>

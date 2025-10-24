@@ -9,7 +9,7 @@
     "sector": { "idSector": 1, "nombre": "Rectorado", "descripcion": "Sector Rectorado" },
     "estado": { "idEstado": 1, "nombre": "vigente", "descripcion": "Documento vigente" },
     "archivos": [
-      { "idArchivo": 1, "nombre": "RES-2024-101-UART.pdf", "url": "/archivos/RES-2024-101-UART.pdf" }
+      { "idArchivo": 1, "nombre": "RES-2024-101-UART.pdf", "url": "/assets/archivos/RES-2024-101-UART.pdf" }
     ],
     "palabrasClave": ["presupuesto", "anual", "partidas", "rectorado"],
     "referencias": [],
@@ -28,8 +28,8 @@
     "sector": { "idSector": 2, "nombre": "Secretaría Académica", "descripcion": "Sector Secretaría Académica" },
     "estado": { "idEstado": 1, "nombre": "vigente", "descripcion": "Documento vigente" },
     "archivos": [
-      { "idArchivo": 2, "nombre": "DIS-2024-052-UART.pdf", "url": "/archivos/DIS-2024-052-UART.pdf" },
-      { "idArchivo": 3, "nombre": "DIS-2024-052-UART anexo A.pdf", "url": "/archivos/DIS-2024-052-UART-anexo-A.pdf" }
+      { "idArchivo": 2, "nombre": "DIS-2024-052-UART.pdf", "url": "/assets/archivos/DIS-2024-052-UART.pdf" },
+      { "idArchivo": 3, "nombre": "DIS-2024-052-UART anexo A.pdf", "url": "/assets/archivos/DIS-2024-052-UART-anexo-A.pdf" }
     ],
     "palabrasClave": ["designacion", "personal", "nombramiento", "academica"],
     "referencias": [],
@@ -45,7 +45,7 @@
     "sector": { "idSector": 3, "nombre": "Administración", "descripcion": "Sector Administración" },
     "estado": { "idEstado": 1, "nombre": "vigente", "descripcion": "Documento vigente" },
     "archivos": [
-      { "idArchivo": 4, "nombre": "RES-2024-102-UART.pdf", "url": "/archivos/RES-2024-102-UART.pdf" }
+      { "idArchivo": 4, "nombre": "RES-2024-102-UART.pdf", "url": "/assets/archivos/RES-2024-102-UART.pdf" }
     ],
     "palabrasClave": ["licitacion", "publica", "mantenimiento", "infraestructura"],
     "referencias": [],
@@ -63,7 +63,7 @@
     "sector": { "idSector": 4, "nombre": "Consejo Superior", "descripcion": "Sector Consejo Superior" },
     "estado": { "idEstado": 2, "nombre": "derogado parcial", "descripcion": "Documento derogado parcialmente" },
     "archivos": [
-      { "idArchivo": 5, "nombre": "ORD-2024-003-CS.pdf", "url": "/archivos/ORD-2024-003-CS.pdf" }
+      { "idArchivo": 5, "nombre": "ORD-2024-003-CS.pdf", "url": "/assets/archivos/ORD-2024-003-CS.pdf" }
     ],
     "palabrasClave": ["calendario", "academico", "fechas", "examen"],
     "referencias": [],
@@ -81,7 +81,7 @@
     "sector": { "idSector": 5, "nombre": "Higiene y Seguridad", "descripcion": "Sector Higiene y Seguridad" },
     "estado": { "idEstado": 3, "nombre": "derogado total", "descripcion": "Documento derogado totalmente" },
     "archivos": [
-      { "idArchivo": 6, "nombre": "CIR-2024-015-UART.pdf", "url": "/archivos/CIR-2024-015-UART.pdf" }
+      { "idArchivo": 6, "nombre": "CIR-2024-015-UART.pdf", "url": "/assets/archivos/CIR-2024-015-UART.pdf" }
     ],
     "palabrasClave": ["protocolo", "bioseguridad", "higiene", "laboratorios"],
     "referencias": [],
@@ -99,7 +99,7 @@
     "sector": { "idSector": 4, "nombre": "Consejo Superior", "descripcion": "Sector Consejo Superior" },
     "estado": { "idEstado": 1, "nombre": "vigente", "descripcion": "Documento vigente" },
     "archivos": [
-      { "idArchivo": 7, "nombre": "ORD-2024-004-CS.pdf", "url": "/archivos/ORD-2024-004-CS.pdf" }
+      { "idArchivo": 7, "nombre": "ORD-2024-004-CS.pdf", "url": "/assets/archivos/ORD-2024-004-CS.pdf" }
     ],
     "palabrasClave": ["modificacion", "plan", "estudios", "analista", "sistemas"],
     "referencias": [],
@@ -115,7 +115,7 @@
     "sector": { "idSector": 4, "nombre": "Consejo Superior", "descripcion": "Sector Consejo Superior" },
     "estado": { "idEstado": 1, "nombre": "vigente", "descripcion": "Documento vigente" },
     "archivos": [
-      { "idArchivo": 8, "nombre": "RES-2025-001-CS.pdf", "url": "/archivos/RES-2025-001-CS.pdf" }
+      { "idArchivo": 8, "nombre": "RES-2025-001-CS.pdf", "url": "/assets/archivos/RES-2025-001-CS.pdf" }
     ],
     "palabrasClave": ["rectificacion", "fechas", "calendario", "examen"],
     "referencias": [
@@ -133,7 +133,7 @@
     "sector": { "idSector": 1, "nombre": "Rectorado", "descripcion": "Sector Rectorado" },
     "estado": { "idEstado": 1, "nombre": "vigente", "descripcion": "Documento vigente" },
     "archivos": [
-      { "idArchivo": 9, "nombre": "DIS-2024-080-UART.pdf", "url": "/archivos/DIS-2024-080-UART.pdf" }
+      { "idArchivo": 9, "nombre": "DIS-2024-080-UART.pdf", "url": "/assets/archivos/DIS-2024-080-UART.pdf" }
     ],
     "palabrasClave": ["comision", "seguimiento", "presupuestario", "ejecucion"],
     "referencias": [
@@ -151,7 +151,7 @@
     "sector": { "idSector": 4, "nombre": "Consejo Superior", "descripcion": "Sector Consejo Superior" },
     "estado": { "idEstado": 1, "nombre": "vigente", "descripcion": "Documento vigente" },
     "archivos": [
-      { "idArchivo": 10, "nombre": "ORD-2025-001-CS.pdf", "url": "/archivos/ORD-2025-001-CS.pdf" }
+      { "idArchivo": 10, "nombre": "ORD-2025-001-CS.pdf", "url": "/assets/archivos/ORD-2025-001-CS.pdf" }
     ],
     "palabrasClave": ["nuevo", "protocolo", "bioseguridad", "2025"],
     "referencias": [
@@ -169,8 +169,8 @@
     "sector": { "idSector": 3, "nombre": "Administración", "descripcion": "Sector Administración" },
     "estado": { "idEstado": 1, "nombre": "vigente", "descripcion": "Documento vigente" },
     "archivos": [
-      { "idArchivo": 11, "nombre": "CIR-2024-020-UART.pdf", "url": "/archivos/CIR-2024-020-UART.pdf" },
-      { "idArchivo": 12, "nombre": "CIR-2024-020-UART - anexo B.pdf", "url": "/archivos/CIR-2024-020-UART-anexo-B.pdf" }
+      { "idArchivo": 11, "nombre": "CIR-2024-020-UART.pdf", "url": "/assets/archivos/CIR-2024-020-UART.pdf" },
+      { "idArchivo": 12, "nombre": "CIR-2024-020-UART - anexo B.pdf", "url": "/assets/archivos/CIR-2024-020-UART-anexo-B.pdf" }
     ],
     "palabrasClave": ["aclaratoria", "licitacion", "pliegos", "condiciones"],
     "referencias": [

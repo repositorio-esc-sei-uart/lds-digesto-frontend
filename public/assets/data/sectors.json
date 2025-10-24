@@ -1,0 +1,27 @@
+[
+  {
+    "idSector": 1,
+    "nombre": "Rectorado",
+    "descripcion": "Sector Rectorado"
+  },
+  {
+    "idSector": 2,
+    "nombre": "Secretaría Académica",
+    "descripcion": "Sector Secretaría Académica"
+  },
+  {
+    "idSector": 3,
+    "nombre": "Administración",
+    "descripcion": "Sector Administración"
+  },
+  {
+    "idSector": 4,
+    "nombre": "Consejo Superior",
+    "descripcion": "Sector Consejo Superior"
+  },
+  {
+    "idSector": 5,
+    "nombre": "Higiene y Seguridad",
+    "descripcion": "Sector Higiene y Seguridad"
+  }
+]
