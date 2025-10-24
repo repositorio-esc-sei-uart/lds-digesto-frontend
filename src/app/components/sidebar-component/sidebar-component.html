@@ -33,7 +33,7 @@
         ESTA ES LA LÓGICA DE AUTORIZACIÓN EN LA VISTA.
         Este enlace solo se renderiza en el HTML si el rol del usuario es 'Administrador'.
       -->
-      @if (user.rol.nombre === 'Administrador') {
+      @if (user.rol?.nombre === 'Administrador') {
         <a mat-list-item routerLink="/dashboard/usuarios" routerLinkActive="active-link">
           <mat-icon matListItemIcon>group</mat-icon>
           <span matListItemTitle>Gestionar Usuarios</span>

@@ -2,7 +2,8 @@ import { TestBed } from '@angular/core/testing';
 
 import { SectorService } from './sector-service';
 
-describe('Sector', () => {
+describe('SectorService', () => {
+
   let service: SectorService;
 
   beforeEach(() => {

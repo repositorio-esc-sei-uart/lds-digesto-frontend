@@ -1,0 +1,117 @@
+/**
+ * @fileoverview Hoja de estilos para el formulario modal de Documentos.
+ * @description Define la estructura y espaciado de los campos del formulario
+ * dentro del MatDialog.
+ */
+
+/** @section Contenido del Modal */
+
+/* Centra el título y le da el mismo tamaño que el login */
+h1[mat-dialog-title] {
+  text-align: center;
+  color: blue;
+  font-size: 1.8rem;
+  font-weight: 500;
+  padding-top: 1rem;
+  margin-bottom: 0;
+}
+
+/* Estilo para la nueva leyenda/subtítulo */
+.mat-dialog-subtitle {
+  text-align: center;
+  font-size: 0.9rem;
+  color: #6c757d; /* Color gris suave */
+  margin-top: 0.5rem; /* Lo acerca al título */
+  margin-bottom: 1rem; /* Lo separa del formulario */
+}
+
+/* * Se añade padding al contenido del diálogo, pero se quita el padding
+ * superior para que el título (mat-dialog-title) quede bien alineado.
+ */
+mat-dialog-content {
+  padding: 0 1.5rem 1.5rem 1.5rem;
+}
+
+/** @section Contenedor y Campos del Formulario */
+
+/* * Usamos Flexbox (column) para apilar los campos y las filas.
+ * Se define un 'gap' para crear un espaciado vertical consistente.
+ */
+.form-container {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem; /* Un poco menos que el login para que entren más campos */
+}
+
+/* * Clase de utilidad para que un campo ocupe todo el ancho disponible.
+ */
+.full-width {
+  width: 100%;
+}
+
+/** @section Filas Flexibles */
+
+/* * Define una fila horizontal para agrupar campos (ej. N° y Fecha).
+ * Usamos Flexbox (row) y un 'gap' para el espaciado horizontal.
+ */
+.form-row {
+  display: flex;
+  flex-direction: row;
+  gap: 1.5rem;
+}
+
+/* * Clase para los campos dentro de un .form-row.
+ * 'flex: 1' hace que los campos compartan el espacio equitativamente.
+ */
+.flex-field {
+  flex: 1;
+}
+
+.file-title-container {
+  display: flex;
+  justify-content: space-between; /* Texto a la izq, botón a la der */
+  align-items: center;
+  width: 100%; /* Asegura que ocupe todo el ancho */
+}
+
+/** * @section Estilo para la lista de archivos (Todo en una línea)
+ */
+.file-item-line {
+  display: flex;
+  align-items: center; /* Centra todo verticalmente */
+  width: 100%;
+}
+
+.file-name {
+  flex-grow: 1; /* El nombre del archivo ocupa el espacio principal */
+
+  /* Opcional: para truncar nombres largos */
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+
+  margin-right: 1rem; /* Espacio antes del tamaño */
+}
+
+.file-size {
+  flex-shrink: 0; /* Evita que el tamaño se encoja */
+  color: #6c757d; /* Un color más suave para el tamaño */
+  font-size: 0.9em;
+  margin-right: 0.5rem; /* Espacio antes del botón */
+}
+
+.delete-button {
+  flex-shrink: 0; /* Evita que el botón se encoja */
+}
+
+/** @section Ajustes Responsivos */
+
+/* * En pantallas pequeñas (móviles), hacemos que las filas se apilen
+ * verticalmente para evitar que los campos se vean apretados.
+ */
+@media (max-width: 600px) {
+  .form-row {
+    flex-direction: column;
+    gap: 1.25rem; /* Mantenemos el mismo gap vertical */
+  }
+}

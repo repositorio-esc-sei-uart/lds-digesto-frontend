@@ -28,7 +28,7 @@
         <!-- @if: Se muestra un mensaje de error si el formulario tiene el error 'invalidCredentials'. -->
         @if (loginForm.hasError('invalidCredentials')) {
           <div class="form-error-message">
-            El legajo o la contraseña son incorrectos.
+            {{ loginForm.errors?.['invalidCredentials'] }}
           </div>
         }
 

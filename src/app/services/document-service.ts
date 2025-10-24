@@ -7,7 +7,7 @@
 import { Injectable } from '@angular/core';
 import { Documento, DocumentoListItem } from '../interfaces/document-model';
 import { HttpClient } from '@angular/common/http';
-import { map, Observable } from 'rxjs';
+import { delay, map, Observable, of } from 'rxjs';
 
 /**
  * @Injectable
@@ -50,7 +50,8 @@ export class DocumentService {
           numDocumento: doc.numDocumento,
           fechaCreacion: doc.fechaCreacion, // Esta ya es un objeto Date
           resumen: doc.resumen,
-          tipoDocumento: doc.tipoDocumento
+          tipoDocumento: doc.tipoDocumento,
+          estado: doc.estado
         }))
       )
     );
@@ -72,6 +73,28 @@ export class DocumentService {
       // Encuentra el documento por su ID
       map(documentos => documentos.find(doc => doc.idDocumento === id))
     );
+  }
+
+  /**
+   * Simula la creación de un nuevo documento.
+   * En un futuro, esto será un http.post()
+   */
+  createDocumento(documento: Documento): Observable<Documento> {
+    // Simulación: Asigna un ID aleatorio y loguea.
+    const nuevoId = Math.floor(Math.random() * 10000) + 100;
+    const documentoCreado = { ...documento, idDocumento: nuevoId };
+
+    console.log(`[DocumentService-SIMULACIÓN] POST a ${this.dataUrl}`, documentoCreado);
+
+    // Devolvemos el documento creado después de 1 segundo
+    return of(documentoCreado).pipe(delay(1000));
+
+    /*
+    // ---- Implementación REAL ----
+    // return this.http.post<Documento>(this.apiUrl, documento).pipe(
+    //   catchError(this.handleError) // <-- Necesitarías un handleError
+    // );
+    */
   }
 
   /**

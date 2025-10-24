@@ -1,0 +1,17 @@
+[
+  {
+    "idEstado": 1,
+    "nombre": "vigente",
+    "descripcion": "Documento vigente"
+  },
+  {
+    "idEstado": 2,
+    "nombre": "derogado parcial",
+    "descripcion": "Documento derogado parcialmente"
+  },
+  {
+    "idEstado": 3,
+    "nombre": "derogado total",
+    "descripcion": "Documento derogado totalmente"
+  }
+]
