@@ -19,8 +19,8 @@ export interface UserProfile {
   apellido: string;
   email: string;
   legajo: string;
-  rol: Rol;
-  estado: EstadoUsuario;
+  rol?: Rol;
+  estado?: EstadoUsuario;
 }
 
 /**
@@ -35,10 +35,10 @@ export interface User {
   email: string;
   password:string;
   legajo: string;
-  rol: Rol;
-  estado: EstadoUsuario;
-  sector: Sector;
-  cargo: Cargo;
+  rol?: Rol;
+  estado?: EstadoUsuario;
+  sector?: Sector;
+  cargo?: Cargo;
 }
 
 

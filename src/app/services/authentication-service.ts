@@ -129,7 +129,7 @@ export class AuthenticationService {
     }
 
     // Caso 2: Usuario encontrado, se verifica su estado.
-    if (userFound.estado.nombre !== 'Activo') {
+    if (userFound.estado?.nombre !== 'Activo') {
       const response: AuthResponse = { success: false, message: `Acceso denegado. Su cuenta se encuentra en estado: ${userFound.estado}.` };
       return of(response).pipe(delay(1500));
     }
@@ -139,7 +139,7 @@ export class AuthenticationService {
     const response: AuthResponse = {
       success: true,
       message: 'Login exitoso.',
-      token: `fake-jwt-token-for-${userProfile.rol.nombre.toLowerCase()}-${userProfile.id}`,
+      token: `fake-jwt-token-for-${userProfile.rol?.nombre.toLowerCase()}-${userProfile.id}`,
       user: userProfile
     };
     return of(response).pipe(delay(1500));

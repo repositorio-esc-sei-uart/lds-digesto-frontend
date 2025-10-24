@@ -2,7 +2,7 @@
 h2[mat-dialog-title] {
     font-family: Roboto, "Helvetica Neue", sans-serif;
     font-size: 1.5rem; /* Tamaño de fuente legible */
-    font-weight: 600; /* Peso de fuente regular */
+    font-weight: 800; /* Peso de fuente regular */
     color: #271ad5; /* Color de texto oscuro */
     
     /* Usamos flexbox para alinear el icono y el texto */
