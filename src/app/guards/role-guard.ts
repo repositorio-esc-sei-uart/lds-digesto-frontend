@@ -5,16 +5,6 @@ import { AuthenticationService } from '../services/authentication-service';
 /**
  * @const roleGuard
  * Guardia de ruta funcional para proteger rutas basadas en el rol del usuario.
- *
- * @description
- * 1. Obtiene el rol esperado desde la propiedad 'data' de la configuración de la ruta.
- * 2. Llama al AuthenticationService para obtener el perfil del usuario actual.
- * 3. Compara el rol del usuario con el rol esperado.
- * 4. Si el usuario no existe o su rol no coincide, bloquea el acceso y lo redirige
- * a una página segura (en este caso, la página principal del dashboard).
- * 5. Si el rol coincide, permite el acceso.
- *
- * Este guardia responde a la pregunta: "¿Tiene este usuario el permiso para ver esta página específica?"
  */
 export const roleGuard: CanActivateFn = (route, state) => {
   const authService = inject(AuthenticationService);
@@ -24,22 +14,34 @@ export const roleGuard: CanActivateFn = (route, state) => {
   const expectedRoles = route.data['expectedRoles'] as string[];
   const currentUser = authService.currentUserValue;
 
-  // Si no hay un usuario logueado o su rol no coincide con el esperado
+  // --- PRIMERA VERIFICACIÓN: Usuario y Roles en la Ruta ---
+  // Si no hay un usuario logueado, se bloquea.
+  // Si no se definieron roles esperados en la ruta, también se bloquea por seguridad.
   if (!currentUser || !expectedRoles || expectedRoles.length === 0) {
-    console.error('RoleGuard: Acceso denegado. No hay usuario o no se definieron roles para la ruta.');
+    console.error('RoleGuard: Acceso denegado. No hay usuario logueado o no se definieron roles para la ruta.');
     router.navigate(['/dashboard']);
     return false;
   }
-
-  // Si el rol del usuario coincide con el esperado, se permite el acceso
-  if (expectedRoles.includes(currentUser.rol)) {
+  
+  // --- VERIFICACIÓN DE ROL DEL USUARIO (Corrección del Error de Tipado) ---
+  
+  // 1. Obtener el nombre del rol del usuario de forma segura.
+  // El tipo será string | undefined.
+  const userRoleName = currentUser.rol?.nombre;
+  
+  // 2. Verificar que el rol exista y esté incluido en los roles esperados.
+  // La primera condición (userRoleName) garantiza que no es undefined, resolviendo el error de tipado.
+  if (userRoleName && expectedRoles.includes(userRoleName)) {
     return true;
   }
 
+  // --- ACCESO DENEGADO Y REDIRECCIÓN ---
+  
   // Si no coincide, se bloquea el acceso.
   console.error(
     `RoleGuard: Acceso denegado. Se requiere uno de los roles: [${expectedRoles.join(', ')}]`,
-    `pero el usuario tiene el rol: '${currentUser.rol}'.`
+    // Corrección de la lógica de error: muestra el nombre del rol, o un mensaje si no existe
+    `pero el usuario tiene el rol: '${userRoleName || 'NO ASIGNADO'}.'`
   );
 
   // Se redirige a una página segura (la raíz del dashboard)

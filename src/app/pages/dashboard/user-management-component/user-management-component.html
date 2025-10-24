@@ -1,1 +1,66 @@
-<p>user-management-component works!</p>
+<div class="user-management-container">
+    <h2>
+        <span class="material-icons title-icon">
+            group
+        </span>
+        Gestión de Usuarios
+    </h2>
+
+    <button class="btn-NuevoUser" (click)="goToNewUser()">
+        <span class="material-icons button-icon">person_add</span>
+        Nuevo Usuario
+    </button>
+
+    <table class="user-table">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Legajo</th>
+                <th>Nombre</th>
+                <th>Apellido</th>
+                <th>Email</th>
+                <th>Rol</th>
+                <th>Estado</th>
+                <th>Acciones</th>
+            </tr>
+        </thead>
+
+        <tbody>
+            <tr *ngFor="let user of users$ | async">
+                <td>{{ user.id }}</td>
+                <td>{{ user.legajo }}</td>
+                <td>{{ user.nombre }}</td>
+                <td>{{ user.apellido }}</td>
+                <td>{{ user.email }}</td>
+                
+                <td>{{ user.rol?.nombre }}</td>
+                
+                <td> 
+                    <span 
+                        [ngClass]="{
+                            'status-active': user.estado?.nombre === 'Activo', 
+                            'status-suspended': user.estado?.nombre === 'Inactivo'
+                        }">
+                        {{ user.estado?.nombre }}
+                    </span>
+                </td>
+
+                <td class="actions-cell">
+                    <button class="btn-action edit">
+                        <span class="material-icons">edit</span>
+                    </button>
+
+                    <button class="btn-action delete">
+                        <span class="material-icons">delete</span>
+                    </button>
+                </td>
+            </tr>
+
+            <tr *ngIf="!(users$ | async)?.length">
+                <td colspan="8" class="no-data">
+                    No Existen Usuarios 
+                </td>
+            </tr>
+        </tbody>
+    </table>
+</div>

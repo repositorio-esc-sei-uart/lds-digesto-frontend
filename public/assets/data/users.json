@@ -6,8 +6,9 @@
     "email": "admin@unpa.edu.ar",
     "legajo": "admin",
     "password": "admin",
-    "rol": "Administrador",
-    "estado": "Activo"
+    "rol":   { "idRol": 1, "nombre": "Administrador", "descripcion": "Usuario con acceso total al sistema."},
+    "estado": { "idEstadoU": 1, "nombre": "Activo", "descripcion": "La cuenta del usuario está plenamente operativa y en uso."
+}
   },
   {
     "id": 2,
@@ -16,8 +17,9 @@
     "email": "editor@unpa.edu.ar",
     "legajo": "editor",
     "password": "editor",
-    "rol": "Editor",
-    "estado": "Activo"
+    "rol":   {"idRol": 2, "nombre": "Editor", "descripcion": "Usuario encargado de la gestión de documentos." },
+    "estado": { "idEstadoU": 1, "nombre": "Activo", "descripcion": "La cuenta del usuario está plenamente operativa y en uso."
+}
   },
   {
     "id": 3,
@@ -26,7 +28,7 @@
     "email": "editor@unpa.edu.ar",
     "legajo": "jorgito",
     "password": "jorgito",
-    "rol": "Editor",
-    "estado": "Suspendido"
+    "rol":   { "idRol": 3, "nombre": "Lector", "descripcion": "Usuario encargado de Leer."},
+    "estado": {"idEstadoU": 2, "nombre": "Inactivo","descripcion": "La cuenta del usuario desactivada."}
   }
 ]
