@@ -152,24 +152,30 @@
 
 /* Contenedor del estado */
 td span[class*="status-"] {
-    display: inline-block;
-    padding: 3px 8px;
-    border-radius: 8px;
-    font-size: 0.95rem;
-    font-weight: 500;
-    text-transform:capitalize;
+  padding: 0.25rem 0.75rem;
+  border-radius: 16px;
+  font-size: 1rem;
+  font-weight: 500;
+  text-transform: capitalize;
+  display: inline-block;
+  white-space: nowrap;
+  line-height: 1.4;
+  vertical-align: middle;
+  border: 1px solid transparent; /* Añadir borde para definición */
 }
 
 /* Estado Activo (Verde sutil) */
 .status-active {
-    background-color: #e6f7ed; 
-    color: #18a957; 
+    background-color:#e8f5e9; 
+    color: #2e7d32; 
+    border-color: var(#2e7d32)
 }
 
 /* Estado Suspendido (Naranja sutil) */
 .status-suspended {
-    background-color: #fff8e6;
-    color: #e59a00;
+    background-color: #fff3e0;
+    color: #ff9800;
+    border-color: var(#ff9800);
 }
 
 /* ------------------------------------------- */
