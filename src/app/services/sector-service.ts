@@ -2,13 +2,17 @@ import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 import { Sector } from '../interfaces/sector-model';
+import { environment } from '../../environments/environment.development';
 
 @Injectable({
   providedIn: 'root'
 })
 export class SectorService {
   // URL del archivo JSON con datos de sectores
-  private dataUrl = './assets/data/sectors.json';
+  // private dataUrl = './assets/data/sectors.json'; //antes
+
+  // Construye la URL base del endpoint usando la variable del environment
+  private dataUrl = `${environment.apiUrl}/api/v1/sectores`;
 
   constructor(private http: HttpClient) { }
 

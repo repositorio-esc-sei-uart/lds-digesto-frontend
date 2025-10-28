@@ -8,6 +8,7 @@ import { Injectable } from '@angular/core';
 import { TipoDocumento } from '../interfaces/type-document-model';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { environment } from '../../environments/environment.development';
 
 /**
  * @Injectable
@@ -19,7 +20,10 @@ import { Observable } from 'rxjs';
 export class TypeDocumentService {
 
   // URL del nuevo archivo JSON
-  private dataUrl = './assets/data/types-document.json';
+  // private dataUrl = './assets/data/types-document.json'; // antes
+
+  // Construye la URL base del endpoint usando la variable del environment
+  private dataUrl = `${environment.apiUrl}/api/tipos-documento`; // falta v1
 
   /**
    * @constructor

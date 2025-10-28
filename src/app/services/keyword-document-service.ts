@@ -2,13 +2,17 @@ import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 import { PalabraClave } from '../interfaces/keyword-document-model';
+import { environment } from '../../environments/environment.development';
 
 @Injectable({
   providedIn: 'root'
 })
 export class KeywordDocumentService {
   // URL del archivo JSON con datos de palabras clave
-  private dataUrl = './assets/data/keywords-document.json';
+  // private dataUrl = './assets/data/keywords-document.json'; // antes
+
+  // Construye la URL base del endpoint usando la variable del environment
+  private dataUrl = `${environment.apiUrl}/api/palabras-clave`;
 
   constructor(private http: HttpClient) { }
 
