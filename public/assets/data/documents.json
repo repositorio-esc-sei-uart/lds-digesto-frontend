@@ -5,7 +5,7 @@
     "resumen": "Se aprueban las partidas presupuestarias para el ejercicio fiscal del año 2024",
     "numDocumento": "RES-2024-101-UART",
     "fechaCreacion": "2024-10-15",
-    "tipoDocumento": { "idTipoDocumento": 2, "nombre": "Resoluciones", "descripcion": "resoluciones", "icono": "assignment" },
+    "tipoDocumento": { "idTipoDocumento": 2, "nombre": "Resolución", "descripcion": "resoluciones", "icono": "assignment" },
     "sector": { "idSector": 1, "nombre": "Rectorado", "descripcion": "Sector Rectorado" },
     "estado": { "idEstado": 1, "nombre": "vigente", "descripcion": "Documento vigente" },
     "archivos": [
@@ -24,7 +24,7 @@
     "resumen": "Nombramiento de personal administrativo para el área de secretaría académica.",
     "numDocumento": "DIS-2024-052-UART",
     "fechaCreacion": "2024-10-12",
-    "tipoDocumento": { "idTipoDocumento": 3, "nombre": "Disposiciones", "descripcion": "disposiciones", "icono": "receipt_long" },
+    "tipoDocumento": { "idTipoDocumento": 3, "nombre": "Disposición", "descripcion": "disposiciones", "icono": "receipt_long" },
     "sector": { "idSector": 2, "nombre": "Secretaría Académica", "descripcion": "Sector Secretaría Académica" },
     "estado": { "idEstado": 1, "nombre": "vigente", "descripcion": "Documento vigente" },
     "archivos": [
@@ -41,7 +41,7 @@
     "resumen": "Convocatoria para la licitación del servicio de mantenimiento de infraestructura edilicia.",
     "numDocumento": "RES-2024-102-UART",
     "fechaCreacion": "2024-10-11",
-    "tipoDocumento": { "idTipoDocumento": 2, "nombre": "Resoluciones", "descripcion": "resoluciones", "icono": "assignment" },
+    "tipoDocumento": { "idTipoDocumento": 2, "nombre": "Resolución", "descripcion": "resoluciones", "icono": "assignment" },
     "sector": { "idSector": 3, "nombre": "Administración", "descripcion": "Sector Administración" },
     "estado": { "idEstado": 1, "nombre": "vigente", "descripcion": "Documento vigente" },
     "archivos": [
@@ -59,7 +59,7 @@
     "resumen": "Establecimiento de las fechas de inicio, finalización de cuatrimestres y mesas de examen.",
     "numDocumento": "ORD-2024-003-CS",
     "fechaCreacion": "2024-09-30",
-    "tipoDocumento": { "idTipoDocumento": 5, "nombre": "Ordenanzas", "descripcion": "ordenanzas", "icono": "article" },
+    "tipoDocumento": { "idTipoDocumento": 5, "nombre": "Ordenanza", "descripcion": "ordenanzas", "icono": "article" },
     "sector": { "idSector": 4, "nombre": "Consejo Superior", "descripcion": "Sector Consejo Superior" },
     "estado": { "idEstado": 2, "nombre": "derogado parcial", "descripcion": "Documento derogado parcialmente" },
     "archivos": [
@@ -77,7 +77,7 @@
     "resumen": "Actualización de las medidas y protocolos de seguridad e higiene para los laboratorios.",
     "numDocumento": "CIR-2024-015-UART",
     "fechaCreacion": "2024-09-25",
-    "tipoDocumento": { "idTipoDocumento": 4, "nombre": "Circulares", "descripcion": "circulares", "icono": "campaign" },
+    "tipoDocumento": { "idTipoDocumento": 4, "nombre": "Circular", "descripcion": "circulares", "icono": "campaign" },
     "sector": { "idSector": 5, "nombre": "Higiene y Seguridad", "descripcion": "Sector Higiene y Seguridad" },
     "estado": { "idEstado": 3, "nombre": "derogado total", "descripcion": "Documento derogado totalmente" },
     "archivos": [
@@ -95,7 +95,7 @@
     "resumen": "Ajustes en la currícula de la carrera de Analista de Sistemas.",
     "numDocumento": "ORD-2024-004-CS",
     "fechaCreacion": "2024-09-22",
-    "tipoDocumento": { "idTipoDocumento": 5, "nombre": "Ordenanzas", "descripcion": "ordenanzas", "icono": "article" },
+    "tipoDocumento": { "idTipoDocumento": 5, "nombre": "Ordenanza", "descripcion": "ordenanzas", "icono": "article" },
     "sector": { "idSector": 4, "nombre": "Consejo Superior", "descripcion": "Sector Consejo Superior" },
     "estado": { "idEstado": 1, "nombre": "vigente", "descripcion": "Documento vigente" },
     "archivos": [
@@ -111,7 +111,7 @@
     "resumen": "Se rectifican las fechas de mesas de examen del segundo cuatrimestre del Calendario Académico 2025.",
     "numDocumento": "RES-2025-001-CS",
     "fechaCreacion": "2025-03-10",
-    "tipoDocumento": { "idTipoDocumento": 2, "nombre": "Resoluciones", "descripcion": "resoluciones", "icono": "assignment" },
+    "tipoDocumento": { "idTipoDocumento": 2, "nombre": "Resolución", "descripcion": "resoluciones", "icono": "assignment" },
     "sector": { "idSector": 4, "nombre": "Consejo Superior", "descripcion": "Sector Consejo Superior" },
     "estado": { "idEstado": 1, "nombre": "vigente", "descripcion": "Documento vigente" },
     "archivos": [
@@ -129,7 +129,7 @@
     "resumen": "Se crea una comisión ad-hoc para el seguimiento de la ejecución de las partidas del Presupuesto Anual 2024.",
     "numDocumento": "DIS-2024-080-UART",
     "fechaCreacion": "2024-11-05",
-    "tipoDocumento": { "idTipoDocumento": 3, "nombre": "Disposiciones", "descripcion": "disposiciones", "icono": "receipt_long" },
+    "tipoDocumento": { "idTipoDocumento": 3, "nombre": "Disposición", "descripcion": "disposiciones", "icono": "receipt_long" },
     "sector": { "idSector": 1, "nombre": "Rectorado", "descripcion": "Sector Rectorado" },
     "estado": { "idEstado": 1, "nombre": "vigente", "descripcion": "Documento vigente" },
     "archivos": [
@@ -147,7 +147,7 @@
     "resumen": "Se establece el nuevo protocolo de bioseguridad para el ciclo lectivo 2025, derogando normativas anteriores.",
     "numDocumento": "ORD-2025-001-CS",
     "fechaCreacion": "2025-02-20",
-    "tipoDocumento": { "idTipoDocumento": 5, "nombre": "Ordenanzas", "descripcion": "ordenanzas", "icono": "article" },
+    "tipoDocumento": { "idTipoDocumento": 5, "nombre": "Ordenanza", "descripcion": "ordenanzas", "icono": "article" },
     "sector": { "idSector": 4, "nombre": "Consejo Superior", "descripcion": "Sector Consejo Superior" },
     "estado": { "idEstado": 1, "nombre": "vigente", "descripcion": "Documento vigente" },
     "archivos": [
@@ -165,7 +165,7 @@
     "resumen": "Se emite circular aclaratoria sobre los pliegos y condiciones de la Licitación Pública N°5 para mantenimiento.",
     "numDocumento": "CIR-2024-020-UART",
     "fechaCreacion": "2024-10-25",
-    "tipoDocumento": { "idTipoDocumento": 4, "nombre": "Circulares", "descripcion": "circulares", "icono": "campaign" },
+    "tipoDocumento": { "idTipoDocumento": 4, "nombre": "Circular", "descripcion": "circulares", "icono": "campaign" },
     "sector": { "idSector": 3, "nombre": "Administración", "descripcion": "Sector Administración" },
     "estado": { "idEstado": 1, "nombre": "vigente", "descripcion": "Documento vigente" },
     "archivos": [

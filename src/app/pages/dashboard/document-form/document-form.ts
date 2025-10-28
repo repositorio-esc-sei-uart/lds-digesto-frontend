@@ -10,6 +10,7 @@ import { Sector } from '../../../interfaces/sector-model';
 import { EstadoDocumento } from '../../../interfaces/status-document-model';
 import { PalabraClave } from '../../../interfaces/keyword-document-model';
 import { Documento, DocumentoListItem, ReferenciaDocumento } from '../../../interfaces/document-model';
+import { Archivo } from '../../../interfaces/archive-document-model';
 
 // Servicios para los Comboboxes
 import { TypeDocumentService } from '../../../services/type-document-service';
@@ -29,8 +30,7 @@ import { MatChipsModule } from '@angular/material/chips';
 import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
-import { MatListItem, MatList, MatListModule } from "@angular/material/list";
-import { Archivo } from '../../../interfaces/archive-document-model';
+import { MatListModule } from "@angular/material/list";
 import { DocumentPreviewComponent } from '../document-preview/document-preview';
 
 @Component({
@@ -125,6 +125,7 @@ export class DocumentForm implements OnInit {
 
   // Lógica de envío
   onSubmit(): void {
+    // datos simulados
     console.log('onSubmit iniciado.');
     // Validaciones
     if (this.documentForm.invalid) {
@@ -228,6 +229,8 @@ export class DocumentForm implements OnInit {
    * Se llama después de que el usuario confirma en la previsualización.
    */
   private guardarDocumento(documento: Documento): void {
+
+    // datos similados
     this.isLoading = true;
 
     console.log("Enviando (simulado):", documento);

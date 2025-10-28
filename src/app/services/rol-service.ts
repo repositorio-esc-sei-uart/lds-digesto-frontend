@@ -2,13 +2,17 @@ import { Injectable } from '@angular/core';
 import { Rol } from '../interfaces/role-user-model';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { environment } from '../../environments/environment.development';
 
 @Injectable({
   providedIn: 'root'
 })
 export class RolService {
-    // URL del archivo JSON con datos de sectores
-  private dataUrl = './assets/data/roles.json';
+  // URL del archivo JSON con datos de sectores
+  // private dataUrl = './assets/data/roles.json'; // antes
+
+  // Construye la URL base del endpoint usando la variable del environment
+  private dataUrl = `${environment.apiUrl}/api/v1/roles`;
 
   constructor(private http: HttpClient) { }
 
@@ -16,7 +20,7 @@ export class RolService {
    * Obtiene la lista completa de sectores.
    * @returns Un Observable que emite un arreglo de objetos Sector.
    */
-  getRol(): Observable<Rol[]> {
+  getRoles(): Observable<Rol[]> {
     return this.http.get<Rol[]>(this.dataUrl);
   }
 }

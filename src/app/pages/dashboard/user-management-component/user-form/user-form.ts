@@ -46,12 +46,12 @@ constructor(
     // Inyectamos los datos pasados al diálogo
     @Inject(MAT_DIALOG_DATA) public data: { isEditMode: boolean; usuario?: User }
   ) {
- }  
-
- ngOnInit():void{
-  this.sectores$=this.sectorService.getSectores();
-  this.cargos$= this.cargoService.getCargo();
-  this.estados$= this.estadoUsuarioService.getEstadoUser();
-  this.roles$= this.rolService.getRol();
  }
+
+  ngOnInit():void{
+    this.sectores$=this.sectorService.getSectores();
+    this.cargos$= this.cargoService.getCargos();
+    this.estados$= this.estadoUsuarioService.getEstadosUser();
+    this.roles$= this.rolService.getRoles();
+  }
  }
