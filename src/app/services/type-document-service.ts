@@ -23,7 +23,7 @@ export class TypeDocumentService {
   // private dataUrl = './assets/data/types-document.json'; // antes
 
   // Construye la URL base del endpoint usando la variable del environment
-  private dataUrl = `${environment.apiUrl}/api/tipos-documento`; // falta v1
+  private dataUrl = `${environment.apiUrl}/api/v1/tipos-documento`; // falta v1
 
   /**
    * @constructor
