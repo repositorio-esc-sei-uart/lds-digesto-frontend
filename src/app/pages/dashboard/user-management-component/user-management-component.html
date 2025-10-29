@@ -27,7 +27,7 @@
 
         <tbody>
             <tr *ngFor="let user of users$ | async">
-                <td>{{ user.id }}</td>
+                <td>{{ user.idUsuario }}</td>
                 <td>{{ user.legajo }}</td>
                 <td>{{ user.nombre }}</td>
                 <td>{{ user.apellido }}</td>
@@ -38,10 +38,10 @@
                 <td> 
                     <span 
                         [ngClass]="{
-                            'status-active': user.estado?.nombre === 'Activo', 
-                            'status-suspended': user.estado?.nombre === 'Inactivo'
+                            'status-active': user.estadoU?.nombre === 'Activo', 
+                            'status-suspended': user.estadoU?.nombre === 'Inactivo'
                         }">
-                        {{ user.estado?.nombre }}
+                        {{ user.estadoU?.nombre }}
                     </span>
                 </td>
 
