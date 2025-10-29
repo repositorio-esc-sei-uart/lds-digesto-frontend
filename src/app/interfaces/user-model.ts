@@ -14,13 +14,13 @@ import { EstadoUsuario } from "./status-user-model";
  * mostrar de forma segura en la aplicación.
  */
 export interface UserProfile {
-  id: number;
+  idUsuario: number;
   nombre: string;
   apellido: string;
   email: string;
   legajo: string;
   rol?: Rol;
-  estado?: EstadoUsuario;
+  estadoU?: EstadoUsuario;
 }
 
 /**
@@ -28,7 +28,7 @@ export interface UserProfile {
  * Se define la estructura de datos que representa a un usuario en la aplicación.
  */
 export interface User {
-  id: number;
+  idUsuario: number;
   dni: number;
   nombre: string;
   apellido: string;

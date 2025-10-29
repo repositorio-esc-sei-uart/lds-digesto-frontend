@@ -1,19 +1,14 @@
 <!-- Contenedor principal del sidebar -->
 <div class="sidebar-container">
-  <!--
-    Se utiliza el pipe 'async' para suscribirse al Observable currentUser$
-    y obtener los datos del usuario logueado.
-  -->
   @if (currentUser$ | async; as user) {
     <!-- Sección 1: Perfil del Usuario -->
     <div class="user-profile">
       <div class="user-avatar">
-        <!-- Se muestra la inicial del nombre del usuario como avatar -->
         <span>{{ user.nombre.charAt(0) }}</span>
       </div>
       <div class="user-info">
         <h3 class="user-name">{{ user.nombre }} {{ user.apellido }}</h3>
-        <p class="user-role">{{ user.rol }}</p>
+        <p class="user-role">{{ user.rol?.nombre }}</p>
       </div>
     </div>
 
@@ -23,23 +18,19 @@
     <mat-nav-list class="nav-list">
       <h3 matSubheader>Menú de Gestión</h3>
 
-      <!-- Enlace para 'Gestionar Documentos', visible para ambos roles -->
+      <!-- Enlace para ambos roles -->
       <a mat-list-item routerLink="/dashboard/documentos" routerLinkActive="active-link">
         <mat-icon matListItemIcon>article</mat-icon>
         <span matListItemTitle>Gestionar Documentos</span>
       </a>
 
-      <!--
-        ESTA ES LA LÓGICA DE AUTORIZACIÓN EN LA VISTA.
-        Este enlace solo se renderiza en el HTML si el rol del usuario es 'Administrador'.
-      -->
+      <!-- Enlace exclusivo para Administrador -->
       @if (user.rol?.nombre === 'Administrador') {
         <a mat-list-item routerLink="/dashboard/usuarios" routerLinkActive="active-link">
           <mat-icon matListItemIcon>group</mat-icon>
           <span matListItemTitle>Gestionar Usuarios</span>
         </a>
       }
-
     </mat-nav-list>
   }
 </div>
