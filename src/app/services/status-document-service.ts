@@ -12,7 +12,7 @@ export class StatusDocumentService {
   // private dataUrl = './assets/data/statuses-document.json'; // antes
 
   // Construye la URL base del endpoint usando la variable del environment
-  private dataUrl = `${environment.apiUrl}/api/estados`; // falta v1
+  private dataUrl = `${environment.apiUrl}/api/v1/estados`; // falta v1
 
   constructor(private http: HttpClient) { }
 

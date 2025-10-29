@@ -12,7 +12,7 @@ export class KeywordDocumentService {
   // private dataUrl = './assets/data/keywords-document.json'; // antes
 
   // Construye la URL base del endpoint usando la variable del environment
-  private dataUrl = `${environment.apiUrl}/api/palabras-clave`;
+  private dataUrl = `${environment.apiUrl}/api/v1/palabras-clave`;
 
   constructor(private http: HttpClient) { }
 
