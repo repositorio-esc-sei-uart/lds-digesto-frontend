@@ -51,7 +51,9 @@
                     </button>
 
                     <button class="btn-action delete">
-                        <span class="material-icons">delete</span>
+                        <button class="btn-action delete" (click)="onEliminar(user.idUsuario, user.nombre)">
+                            <span class="material-icons">delete</span>
+                        </button>
                     </button>
                 </td>
             </tr>
