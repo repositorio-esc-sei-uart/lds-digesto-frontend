@@ -33,13 +33,28 @@ export interface User {
   nombre: string;
   apellido: string;
   email: string;
-  password:string;
+  password?: string | null;
   legajo: string;
   rol?: Rol;
-  estado?: EstadoUsuario;
+  estadoU?: EstadoUsuario;
   sector?: Sector;
   cargo?: Cargo;
 }
+
+export interface UsuarioUpdateDTO {
+  dni: number;
+  email: string;
+  password: string | null;
+  nombre: string;
+  apellido: string;
+  legajo: string;
+  idRol: number;
+  idSector: number;
+  idEstadoU: number;
+  idCargo: number;
+}
+
+
 
 
 /**
