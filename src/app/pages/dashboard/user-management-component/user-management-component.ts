@@ -103,7 +103,7 @@ export class UserManagementComponent implements OnInit {
     if (confirmacion) {
       
       
-      // Llama al servicio que creamos en el Paso 1 (Frontend)
+      // Llama al servicio (Frontend)
       this.userService.eliminarUsuario(userId).subscribe({
         next: () => {
           console.log(`Usuario ID ${userId} eliminado.`);
