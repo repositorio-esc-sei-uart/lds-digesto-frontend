@@ -33,7 +33,7 @@
         <td>
           <span [ngClass]="{
             'status-active': user.estadoU?.nombre === 'Activo',
-            'status-suspended': user.estadoU?.nombre === 'Inactivo'
+            'status-inactivo': user.estadoU?.nombre === 'Inactivo'
           }">
             {{ user.estadoU?.nombre }}
           </span>

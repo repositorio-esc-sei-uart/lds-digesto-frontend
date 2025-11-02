@@ -13,9 +13,9 @@
 
 .user-management-container {
     font-family: Roboto, "Helvetica Neue", sans-serif;
-    max-width: 1200px;
-    margin: 8px auto; 
-    padding: 8px;
+    max-width: 100%;
+    margin: auto; 
+    padding: auto;
     background-color:#ffffff;
     border-radius: 20px;
 }
@@ -105,14 +105,16 @@
 
 /* Encabezados (thead) */
 .user-table thead tr {
-    background-color: #F6E7FA; 
-    border-bottom: 1px solid #D8B3E8; 
-    border-top: 5px solid #D8B3E8;
+    background-color: whitesmoke; 
+    border-bottom: 2px solid #e0e0e0; 
+    /*border-top: 5px solid #D8B3E8;*/
+    height: 48px;
+
 }
 
 .user-table th {
-    color: #000000;
-    font-weight: 600;
+    color: #616161;
+    font-weight: 500;
     font-size: 0.9rem;
     text-align:left;
     padding: 12px 15px;
@@ -127,8 +129,8 @@
 
 /* Celdas del Cuerpo (tbody) */
 .user-table td {
-    color: #222222;
-    padding: 12px 15px;
+    color: #212121;
+    padding: 5px 5px;
     font-size: 0.95rem;
     border-bottom: 2px solid #dee2e6;
 }
@@ -146,38 +148,35 @@
 /* ------------------------------------------- */
 /* 5. Estilo de Columna de Estado (Minimalista) */
 /* ------------------------------------------- */
-/* Crea los estilos visuales para las etiquetas de estado (p. ej., "Activo", "Suspendido").
-   Utiliza fondos de color muy claro y texto de color para un diseño minimalista
-   pero claro y fácil de distinguir. *
 
 /* Contenedor del estado */
 td span[class*="status-"] {
   padding: 0.25rem 0.75rem;
   border-radius: 16px;
-  font-size: 1rem;
+  font-size: 0.75rem;
   font-weight: 500;
   text-transform: capitalize;
   display: inline-block;
   white-space: nowrap;
   line-height: 1.4;
   vertical-align: middle;
-  border: 1px solid transparent; /* Añadir borde para definición */
+  /* border: 1px solid transparent; /* Añadir borde para definición */
 }
 
 /* Estado Activo (Verde sutil) */
 .status-active {
-    background-color:#e8f5e9; 
-    color: #2e7d32; 
-    border-color: var(#2e7d32)
+  background-color: #e8f5e9; /* Fondo muy claro */
+  color: #2e7d32; /* Texto verde oscuro */
+  border: 0.2px solid #2e7d32;
 }
 
-/* Estado Suspendido (Naranja sutil) */
-.status-suspended {
-    background-color: #fff3e0;
-    color: #ff9800;
-    border-color: var(#ff9800);
-}
+/* Estado Inactivo (Rojo sutil) */
+.status-inactivo {
+  background-color: #ffebee; /* Fondo rojo muy claro (similar a Material Red 50) */
+  color: #f44336; /* Texto rojo oscuro (similar a Material Red 700) */
+  border: 0.2px solid #f44336;
 
+}
 /* ------------------------------------------- */
 /* 6. Estilo de Acciones (Iconos) */
 /* ------------------------------------------- */
@@ -242,35 +241,36 @@ td span[class*="status-"] {
 
 /* Columna 2: Legajo (17%) */
 .user-table th:nth-child(2),.user-table td:nth-child(2) {
-    width: 17%;
+    width: 15%;
 }
 
 /* Columna 3: Nombre (10%) */
 .user-table th:nth-child(3),.user-table td:nth-child(3) {
-    width: 10%;
+    width: 13%;
 }
 
 /* Columna 4: Apellido (10%) */
 .user-table th:nth-child(4), .user-table td:nth-child(4) {
-    width: 10%;
+    width: 13%;
 }
 
 /* Columna 5: Email (25%) - La más ancha */
 .user-table th:nth-child(5),.user-table td:nth-child(5) {
-    width: 25%; 
+    width: 28%; 
 }
 
 /* Columna 6: Rol (14%) */
 .user-table th:nth-child(6), .user-table td:nth-child(6) {
-    width: 14%;
+    width: 8%;
 }
 
 /* Columna 7: Estado (10%) */
 .user-table th:nth-child(7),.user-table td:nth-child(7) {
-    width: 10%;
+    width: 8%;
 }
 
 /* Columna 8: Acciones (12%) */
 .user-table th:nth-child(8), .user-table td:nth-child(8) {
     width: 12%; 
 }
+
