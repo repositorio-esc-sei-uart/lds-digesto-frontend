@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
-import { BehaviorSubject, catchError, Observable, of, tap } from 'rxjs';
+// Versión combinada y limpia:
+import { BehaviorSubject, catchError, Observable, of, tap, throwError } from 'rxjs';
 import { User, UserProfile, UsuarioUpdateDTO } from '../interfaces/user-model';
 import { EstadoUsuario } from '../interfaces/status-user-model';
 import { Rol } from '../interfaces/role-user-model';
@@ -170,6 +171,34 @@ actualizarUsuario(id: number, datos: UsuarioUpdateDTO): Observable<any> {
     return [...this.roles];
   }
 
+
+  /**
+   * Llama al endpoint DELETE del backend para eliminar un usuario.
+   * Luego, actualiza el BehaviorSubject para notificar a todos los
+   * componentes suscritos (como tu tabla) que los datos cambiaron.
+   * @param id El ID del usuario a eliminar.
+   */
+  eliminarUsuario(id: number): Observable<void> {
+    return this.http.delete<void>(`${this.usersUrl}/${id}`).pipe(
+      tap(() => {
+        // Éxito:
+        console.log(`[UserService] Usuario ${id} eliminado. Actualizando estado local.`);
+        
+        // 1. Filtra el usuario eliminado de la lista local
+        this.users = this.users.filter(user => user.idUsuario !== id);
+        
+        // 2. Notifica a todos los suscriptores (tu tabla) con la nueva lista
+        this.usersSubject.next([...this.users]);
+      }),
+      catchError((error: HttpErrorResponse) => {
+        // Error:
+        console.error(`❌ Error al eliminar usuario con ID ${id}`, error);
+        
+        // Pasa el error al componente para que lo pueda manejar (ej. mostrar un alert)
+        return throwError(() => error); 
+      })
+    );
+  }
   getCargos(): Observable<Cargo[]> {
     return this.http.get<Cargo[]>(this.cargoUrl).pipe(
       catchError((error: HttpErrorResponse) => {
