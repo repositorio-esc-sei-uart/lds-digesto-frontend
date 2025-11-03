@@ -3,10 +3,12 @@
   Esta estructura define el layout que verán todos los usuarios logueados.
   Se divide en dos grandes columnas: la barra lateral y el contenido principal.
 -->
-<div class="dashboard-container">
+<div class="dashboard-container"[class.sidebar-closed]="!isSidebarOpen">
 
   <!-- Columna 1: La barra lateral (aside) -->
   <aside class="dashboard-sidebar">
+    <!-- Botón siempre accesible aunque sidebar esté colapsado -->
+    <button class="menu-btn" (click)="toggleSidebar()">☰</button>
     <!--
       Se inserta el componente de la barra lateral que ya hemos preparado.
       Este componente mostrará la información del usuario y los enlaces de navegación.
