@@ -114,10 +114,39 @@ export class UserService {
     );
   }
 
-  /** Crea un nuevo usuario en el backend. */
-  createUser(newUser: User): Observable<User> {
-    return this.http.post<User>(this.usersUrl, newUser);
-  }
+/** Crea un nuevo usuario en el backend y actualiza la lista local. */
+createUser(newUser: User): Observable<User> {
+  return this.http.post<User>(this.usersUrl, newUser).pipe(
+    // 1. Usa 'tap' para interceptar la respuesta exitosa del servidor.
+    tap((createdUser: User) => {
+// 1. Mapear el usuario simple a UserProfile, manejando posibles 'undefined'
+      const newUserProfile: UserProfile = {
+        // Campos directos...
+        idUsuario: createdUser.idUsuario,
+        legajo: createdUser.legajo,
+        nombre: createdUser.nombre,
+        apellido: createdUser.apellido,
+        email: createdUser.email,
+        
+        // 2. Rellenar Rol y Estado buscando por ID:
+        // Usamos '?.' para acceder al ID (previniendo el error 18048)
+        // y usamos '?? undefined' si la búsqueda falla o si la lista estaba vacía.
+        rol: this.roles.find(r => r.idRol === createdUser.rol?.idRol) ?? undefined,
+        estadoU: this.estados.find(e => e.idEstadoU === createdUser.estadoU?.idEstadoU) ?? undefined,
+        
+      };
+      
+      // 2. Agrega el nuevo usuario al array local
+      this.users.push(newUserProfile); // Usamos unshift para que aparezca primero
+
+      // 3. Notifica a todos los suscriptores (la tabla) del nuevo array de usuarios.
+      // Creamos una nueva copia para asegurar que Angular detecte el cambio.
+      this.usersSubject.next([...this.users]);
+      
+      console.log(`[UserService] ✅ Usuario ${newUserProfile.idUsuario} creado y lista actualizada.`);
+    })
+  );
+}
 
   /** Actualiza un usuario existente en el backend. */
 actualizarUsuario(id: number, datos: UsuarioUpdateDTO): Observable<any> {

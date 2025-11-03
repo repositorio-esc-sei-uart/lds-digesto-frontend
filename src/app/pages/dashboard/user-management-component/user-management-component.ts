@@ -13,6 +13,7 @@ import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { MatTableDataSource } from '@angular/material/table';
 
 
 // Servicios, Interfaces y Componentes
@@ -40,8 +41,9 @@ import { UserEditComponent } from '../user-edit-component/user-edit-component';
   styleUrl: './user-management-component.css'
 })
 export class UserManagementComponent implements OnInit {
-  displayedColumns: string[] = ['id', 'nombreCompleto', 'email', 'estado', 'acciones'];
-  public users$!: Observable<UserProfile[]>;
+  displayedColumns: string[] = ['id', 'legajo', 'nombre', 'apellido', 'email', 'rol', 'estado', 'acciones'];
+  /* public users$!: Observable<UserProfile[]>;*/
+  public dataSource = new MatTableDataSource<UserProfile>();
   isLoading = true;
 
   constructor(
@@ -58,8 +60,12 @@ export class UserManagementComponent implements OnInit {
    * Carga la lista de usuarios desde el servicio.
    */
   loadUsers(): void {
-  this.users$ = this.userService.getUsers();
-  this.isLoading = false; // ✅ desactivás el spinner directamente
+   /*this.users$ = this.userService.getUsers();*/
+  this.userService.getUsers().subscribe(usuarios => {
+        this.dataSource.data = usuarios; // Asignamos el array al DataSource
+        this.isLoading = false;
+        console.log(`Componente: Tabla actualizada con ${usuarios.length} usuarios.`);
+    });
 }
 
 
@@ -74,8 +80,9 @@ export class UserManagementComponent implements OnInit {
 
     dialogRef.afterClosed().subscribe(newUser => {
       if (newUser) {
-        console.log(`✅ Usuario ID ${newUser.idUsuario} creado. Recargando tabla...`);
-        this.loadUsers(); // 👈 recarga la tabla
+       /* console.log(`✅ Usuario ID ${newUser.idUsuario} creado. Recargando tabla...`);
+        this.loadUsers(); // 👈 recarga la tabla*/
+        console.log(`✅ Usuario creado. La tabla se actualiza automáticamente.`);
       }
     });
   }
