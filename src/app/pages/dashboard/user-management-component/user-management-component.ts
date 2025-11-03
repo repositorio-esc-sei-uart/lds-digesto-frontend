@@ -92,8 +92,39 @@ export class UserManagementComponent implements OnInit {
   /**
    * Lógica de eliminación (placeholder).
    */
+  /**
+   * Tarea: "Confirmar eliminación", "Front de confirmación" y "Actualizar base de datos"
+   * Se llama al hacer clic en el botón de eliminar.
+   * 1. Muestra un diálogo de confirmación.
+   * 2. Si se confirma, llama al servicio para eliminar el usuario.
+   * 3. Si se elimina con éxito, refresca la tabla.
+   */
   onDelete(userId: number, userName: string): void {
-    console.warn(`(WIP) Se solicitó eliminar al usuario ID: ${userId} (${userName})`);
+    
+    // Tarea: "Front de confirmación" (la UI)
+    const confirmacion = confirm(`¿Estás seguro de que deseas eliminar al usuario ${userName}? Esta acción no se puede deshacer.`);
+
+    // Tarea: "Confirmar eliminación" (la lógica)
+    if (confirmacion) {
+      
+      
+      // Llama al servicio (Frontend)
+      this.userService.eliminarUsuario(userId).subscribe({
+        next: () => {
+          console.log(`Usuario ID ${userId} eliminado.`);
+          // (Opcional: Mostrar un mensaje de éxito "toast")
+          
+          // Tarea: "Actualizar" (Refrescar la lista en pantalla)
+          this.loadUsers(); // Vuelve a cargar los usuarios
+        },
+        error: (err: any) => {
+          console.error('Error al eliminar el usuario:', err);
+          // (Opcional: Mostrar un mensaje de error "toast")
+          alert('No se pudo eliminar el usuario.');
+          this.isLoading = false; // Oculta el spinner en caso de error
+        }
+      });
+    }
   }
 
   /**
