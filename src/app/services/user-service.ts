@@ -1,9 +1,12 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
+// Versión combinada y limpia:
 import { BehaviorSubject, catchError, Observable, of, tap, throwError } from 'rxjs';
-import { User, UserProfile } from '../interfaces/user-model';
+import { User, UserProfile, UsuarioUpdateDTO } from '../interfaces/user-model';
 import { EstadoUsuario } from '../interfaces/status-user-model';
 import { Rol } from '../interfaces/role-user-model';
+import { Sector } from '../interfaces/sector-model';
+import { Cargo } from '../interfaces/job-title-user-model';
 
 /**
  * Servicio centralizado para la gestión de usuarios.
@@ -17,11 +20,15 @@ export class UserService {
   private usersUrl = 'http://localhost:8080/api/v1/usuarios';
   private estadosUrl = 'http://localhost:8080/api/v1/estadosU';
   private rolUrl = 'http://localhost:8080/api/v1/roles';
+  private cargoUrl = 'http://localhost:8080/api/v1/cargos';
+  private sectorUrl = 'http://localhost:8080/api/v1/sectores';
 
   // Datos cargados desde el backend
   private users: UserProfile[] = [];
   private estados: EstadoUsuario[] = [];
   private roles: Rol[] = [];
+  private cargos: Cargo[] = [];
+  private sectores: Sector[] = [];
 
   // BehaviorSubject para notificar cambios
   private usersSubject = new BehaviorSubject<UserProfile[]>([]);
@@ -32,7 +39,7 @@ export class UserService {
   }
 
   /**
-   * Carga inicial de usuarios, estados y roles desde el backend.
+   * Carga inicial de usuarios, estados, roles, cargos y sectores desde el backend.
    */
   private loadInitialData(): void {
     this.http.get<UserProfile[]>(this.usersUrl).pipe(
@@ -69,18 +76,36 @@ export class UserService {
         console.log(`[UserService] 🎭 ${this.roles.length} roles cargados.`);
       })
     ).subscribe();
+
+    this.http.get<Cargo[]>(this.cargoUrl).pipe(
+      catchError((error: HttpErrorResponse) => {
+        console.error('❌ Error al cargar cargos de usuario', error);
+        return of([]);
+      }),
+      tap((cargosData) => {
+        this.cargos = cargosData;
+        console.log(`[UserService] 🧱 ${this.cargos.length} cargos cargados.`);
+      })
+    ).subscribe();
+
+    this.http.get<Sector[]>(this.sectorUrl).pipe(
+      catchError((error: HttpErrorResponse) => {
+        console.error('❌ Error al cargar sectores de usuario', error);
+        return of([]);
+      }),
+      tap((sectoresData) => {
+        this.sectores = sectoresData;
+        console.log(`[UserService] 🏢 ${this.sectores.length} sectores cargados.`);
+      })
+    ).subscribe();
   }
 
-  /**
-   * Obtiene todos los usuarios desde el backend.
-   */
+  /** Obtiene todos los usuarios desde el backend. */
   getUsers(): Observable<UserProfile[]> {
     return this.users$;
   }
 
-  /**
-   * Obtiene un usuario específico por su ID desde el backend.
-   */
+  /** Obtiene un usuario específico por su ID desde el backend. */
   getUserById(id: number): Observable<UserProfile | undefined> {
     return this.http.get<UserProfile>(`${this.usersUrl}/${id}`).pipe(
       catchError((error: HttpErrorResponse) => {
@@ -90,22 +115,31 @@ export class UserService {
     );
   }
 
-  /**
-   * Crea un nuevo usuario en el backend.
-   */
-    createUser(newUser: User): Observable<User> {
-      return this.http.post<User>(this.usersUrl, newUser);
-    }
+  /** Crea un nuevo usuario en el backend. */
+  createUser(newUser: User): Observable<User> {
+    return this.http.post<User>(this.usersUrl, newUser);
+  }
 
-  /**
-   * Accesos a estados y roles cargados.
-   */
+  /** Actualiza un usuario existente en el backend. */
+actualizarUsuario(id: number, datos: UsuarioUpdateDTO): Observable<any> {
+  return this.http.put(`${this.usersUrl}/${id}`, datos);
+}
+
+
+
+
+  /** Obtiene un usuario completo (plano) por ID. */
+  obtenerTodoPorId(id: number): Observable<UsuarioUpdateDTO> {
+    return this.http.get<UsuarioUpdateDTO>(`${this.usersUrl}/all/${id}`);
+  }
+
+  /** Accesos a datos precargados */
   getEstados(): EstadoUsuario[] {
-    return this.estados;
+    return [...this.estados];
   }
 
   getRoles(): Rol[] {
-    return this.roles;
+    return [...this.roles];
   }
 
 
@@ -133,6 +167,31 @@ export class UserService {
         
         // Pasa el error al componente para que lo pueda manejar (ej. mostrar un alert)
         return throwError(() => error); 
+      })
+    );
+  }
+  getCargos(): Observable<Cargo[]> {
+    return this.http.get<Cargo[]>(this.cargoUrl).pipe(
+      catchError((error: HttpErrorResponse) => {
+        console.error('❌ Error al cargar cargos desde backend', error);
+        return of([]);
+      }),
+      tap((cargosData) => {
+        this.cargos = cargosData;
+        console.log(`[UserService] 🧱 ${this.cargos.length} cargos cargados.`);
+      })
+    );
+  }
+
+  getSectores(): Observable<Sector[]> {
+    return this.http.get<Sector[]>(this.sectorUrl).pipe(
+      catchError((error: HttpErrorResponse) => {
+        console.error('❌ Error al cargar sectores desde backend', error);
+        return of([]);
+      }),
+      tap((sectoresData) => {
+        this.sectores = sectoresData;
+        console.log(`[UserService] 🏢 ${this.sectores.length} sectores cargados.`);
       })
     );
   }
