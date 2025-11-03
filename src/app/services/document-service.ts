@@ -7,7 +7,8 @@
 import { Injectable } from '@angular/core';
 import { Documento, DocumentoListItem } from '../interfaces/document-model';
 import { HttpClient } from '@angular/common/http';
-import { delay, map, Observable, of } from 'rxjs';
+import { catchError, delay, map, Observable, of, tap } from 'rxjs';
+import { environment } from '../../environments/environment.development';
 
 /**
  * @Injectable
@@ -79,22 +80,27 @@ export class DocumentService {
    * Simula la creación de un nuevo documento.
    * En un futuro, esto será un http.post()
    */
-  createDocumento(documento: Documento): Observable<Documento> {
-    // Simulación: Asigna un ID aleatorio y loguea.
-    const nuevoId = Math.floor(Math.random() * 10000) + 100;
-    const documentoCreado = { ...documento, idDocumento: nuevoId };
+  /**
+   * Envía el DTO del nuevo documento al backend para su creación.
+   * @param documentoDTO El DTO con los IDs aplanados, listo para el backend.
+   */
+  createDocumento(documentoDTO: any): Observable<any> {
+    
+    // --- ESTA ES LA IMPLEMENTACIÓN REAL ---
+    // Ya no simulamos. Ahora hacemos un POST HTTP real.
+    
+    // Obtenemos la URL del environment (la tenemos de la última vez)
+    const apiUrl = `${environment.apiUrl}/api/v1/documentos`; 
 
-    console.log(`[DocumentService-SIMULACIÓN] POST a ${this.dataUrl}`, documentoCreado);
-
-    // Devolvemos el documento creado después de 1 segundo
-    return of(documentoCreado).pipe(delay(1000));
-
-    /*
-    // ---- Implementación REAL ----
-    // return this.http.post<Documento>(this.apiUrl, documento).pipe(
-    //   catchError(this.handleError) // <-- Necesitarías un handleError
-    // );
-    */
+    console.log(`[DocumentService-REAL] POST a ${apiUrl}`, documentoDTO);
+    
+    // Usamos this.http.post para enviar el DTO al backend.
+    // El backend (DocumentoService.java [cite: 4239-4297]) recibirá este DTO,
+    // buscará los IDs y creará la entidad.
+    return this.http.post<any>(apiUrl, documentoDTO).pipe(
+      tap(response => console.log('Respuesta del backend:', response)),
+      catchError(this.handleError<any>('createDocumento'))
+    );
   }
 
   /**
@@ -107,5 +113,15 @@ export class DocumentService {
       // Convierte el string "YYYY-MM-DD" a un objeto Date
       fechaCreacion: new Date(doc.fechaCreacion)
     }));
+  }
+/**
+   * Manejador de errores simple (¡Añade esto si no lo tienes!)
+   */
+  private handleError<T>(operation = 'operation', result?: T) {
+    return (error: any): Observable<T> => {
+      console.error(`Error en ${operation}:`, error);
+      // Devuelve un resultado seguro para que la app no se rompa
+      return of(result as T);
+    };
   }
 }
