@@ -10,37 +10,30 @@
     </mat-card-header>
 
     <mat-card-content>
-      <!-- Se define el formulario reactivo, vinculando el formGroup y el evento ngSubmit. -->
       <form [formGroup]="loginForm" (ngSubmit)="onSubmit()">
 
-        <!-- Campo de entrada para el correo o legajo. -->
         <mat-form-field color="primary" [appearance]="configService.formFieldAppearance" class="login-input-field">
           <mat-label>Correo electrónico o Legajo</mat-label>
-          <input matInput formControlName="credential">
+          <input matInput formControlName="email">
         </mat-form-field>
 
-        <!-- Campo de entrada para la contraseña. -->
         <mat-form-field color="primary" [appearance]="configService.formFieldAppearance" class="login-input-field">
           <mat-label>Contraseña</mat-label>
           <input matInput type="password" formControlName="password">
         </mat-form-field>
 
-        <!-- @if: Se muestra un mensaje de error si el formulario tiene el error 'invalidCredentials'. -->
         @if (loginForm.hasError('invalidCredentials')) {
           <div class="form-error-message">
             {{ loginForm.errors?.['invalidCredentials'] }}
           </div>
         }
 
-        <!-- Opciones adicionales como 'Recordarme' y 'Olvidé mi contraseña'. -->
         <div class="login-options">
           <mat-slide-toggle color="primary">Recordarme</mat-slide-toggle>
           <a href="#">¿Olvidaste tu contraseña?</a>
         </div>
 
-        <!-- Acciones del formulario, contiene el botón de envío. -->
         <mat-card-actions>
-          <!-- El botón se deshabilita durante la carga y muestra un spinner. -->
           <button mat-flat-button color="primary" class="login-button" type="submit" [disabled]="isLoading">
             @if (!isLoading) {
               <span>Iniciar Sesión</span>
@@ -49,6 +42,11 @@
             }
           </button>
         </mat-card-actions>
+
+        <!-- Mensaje visible de error -->
+        <div *ngIf="mensajeError" class="form-error-message">
+          {{ mensajeError }}
+        </div>
 
       </form>
     </mat-card-content>
