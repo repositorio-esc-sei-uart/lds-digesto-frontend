@@ -2,7 +2,7 @@
 h2[mat-dialog-title] {
     font-family: Roboto, "Helvetica Neue", sans-serif;
     font-size: 1.5rem; /* Tamaño de fuente legible */
-    font-weight: 800; /* Peso de fuente regular */
+    font-weight: 600; /* Peso de fuente regular */
     color: #271ad5; /* Color de texto oscuro */
     
     /* Usamos flexbox para alinear el icono y el texto */
@@ -10,9 +10,10 @@ h2[mat-dialog-title] {
     align-items: center; /* Centrar verticalmente los elementos */
     justify-content: center; /* Centrar horizontalmente el contenido */
     
-    border-bottom: 8px ; /* Agregado un borde sutil para separación visual, ¡puedes ajustarlo! */
-    padding-bottom: 8px; /* Pequeño relleno para que la línea no esté pegada al texto */
-    margin-bottom: 16px; /* Espacio después del título */
+    border-bottom: none ; /* Agregado un borde sutil para separación visual, ¡puedes ajustarlo! */
+    padding-bottom: 0; /* Pequeño relleno para que la línea no esté pegada al texto */
+    padding-top: 10px;
+    margin-bottom: 20px; /* Espacio después del título */
 }
 
 /* Estilos específicos para los iconos dentro del título */
@@ -22,10 +23,8 @@ h2[mat-dialog-title] mat-icon {
     height: 1.8rem;
     width: 1.8rem;
     
-    /* CAMBIO CLAVE: Espacio solo a la derecha para separarlo del texto. 
-       Un valor de 8px a 12px suele ser adecuado. */
     margin-right: 10px; 
-    /* margin: 0 2000px; <--- Este era el problema original */
+    /* margin: 0 2000px;
     
     /* Alineación si el icono es ligeramente más pequeño o grande que el texto */
     line-height: 1; 
@@ -34,7 +33,7 @@ h2[mat-dialog-title] mat-icon {
 /* Estilos para el contenido del diálogo (sin cambios significativos, se limpia el comentario) */
 mat-dialog-content.mat-typography {
     padding: 0 24px 24px 24px; /* Relleno alrededor del contenido */
-    max-width: 600px; /* Ancho máximo para mantener los campos compactos */
+    max-width: 800px; /* Ancho máximo para mantener los campos compactos */
     margin: 0 auto; /* Centrar el contenido si es posible */
 }
 
@@ -42,7 +41,7 @@ mat-dialog-content.mat-typography {
 /* Estilo para todas las filas de campos */
 .row-fields {
     display: flex;
-    gap: 20px; /* Espacio horizontal limpio entre campos */
+    gap: 15px; /* Espacio horizontal limpio entre campos */
     margin-top: 0.5rem;
     margin-bottom: 0px; /* Espacio vertical para separar las filas */
     width: 100%;

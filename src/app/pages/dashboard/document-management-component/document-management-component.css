@@ -57,7 +57,8 @@
 /* Contenedor de la tabla */
 .table-container {
   border-radius: 8px;
-  overflow: scroll; /* Permite scroll horizontal si es necesario */
+  /*overflow: scroll; /* Permite scroll horizontal si es necesario */
+  overflow: hidden;
   position: relative;
   border: 1px solid var(--app-border-color);
 }
@@ -73,7 +74,7 @@
 table {
   width: 100%;
   border-collapse: collapse;
-  min-width: 950px;
+  /* min-width: 950px;*/
 }
 
 /* Cabecera de la tabla */
@@ -111,7 +112,7 @@ table {
 
 /* Celdas de la tabla */
 .mat-mdc-cell {
-  padding: 0 1rem;
+  padding: 0 0.5rem;
   color: var(--app-text-dark);
   vertical-align: middle;
   font-size: 0.875rem;
@@ -122,12 +123,12 @@ table {
 }
 
 /* --- Control de Ancho de Columnas --- */
-.mat-column-numDocumento { width: 13%; flex: 0 0 18%; } /* Flex para responsividad básica */
-.mat-column-titulo { width: 35%; flex: 0 0 35%; }
-.mat-column-tipoDocumento { width: 10%; flex: 0 0 15%; }
-.mat-column-fechaCreacion { width: 7%; flex: 0 0 10%; }
-.mat-column-estado { width: 4%; flex: 0 0 10%; text-align: center; }
-.mat-column-acciones { width: 12%; flex: 0 0 12%; text-align: right; }
+.mat-column-numDocumento { width: 15%; flex: 0 0 15%; } /* Flex para responsividad básica */
+.mat-column-titulo { width: 40%; flex: 0 0 40%; }
+.mat-column-tipoDocumento { width: 10%; flex: 0 0 10%; }
+.mat-column-fechaCreacion { width: 8%; flex: 0 0 8%; }
+.mat-column-estado { width: 8%; flex: 0 0 8%; text-align: center; }
+.mat-column-acciones { width: 9%; flex: 0 0 9%; text-align: right; }
 
 /* Celdas de Acciones */
 .col-acciones {
