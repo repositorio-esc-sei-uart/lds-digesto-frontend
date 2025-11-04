@@ -19,6 +19,8 @@ import { DocumentoListItem } from '../../../interfaces/document-model';
 import { MatDialog } from '@angular/material/dialog';
 import { DocumentDetail } from '../../document-detail/document-detail';
 import { DocumentForm } from '../document-form/document-form';
+import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
+
 @Component({
   selector: 'app-document-management-component',
   standalone: true,
@@ -35,6 +37,7 @@ import { DocumentForm } from '../document-form/document-form';
     MatFormFieldModule,
     MatInputModule,
     DatePipe,
+    MatSnackBarModule,
   ],
   templateUrl: './document-management-component.html',
   styleUrl: './document-management-component.css'
@@ -49,8 +52,9 @@ export class DocumentManagementComponent implements OnInit {
 
   // Inyectar MatDialog usando inject()
   private dialog = inject(MatDialog);
+  
 
-  constructor(private documentService: DocumentService) {}
+  constructor(private documentService: DocumentService,private snackBar: MatSnackBar) {}
 
   ngOnInit(): void {
     this.loadDocumentos();
@@ -81,6 +85,12 @@ export class DocumentManagementComponent implements OnInit {
     dialogRef.afterClosed().subscribe(result => {
       if (result === true) {
         // Si el modal devolvió 'true' (éxito)
+        // 1. MOSTRAMOS LA NOTIFICACIÓN DE ÉXITO AQUÍ
+        this.snackBar.open('¡Documento guardado exitosamente!', '', { // Sin botón
+          duration: 3000,
+          horizontalPosition: 'left', // A la izquierda
+          panelClass: ['success-snackbar']
+        });
         console.log('Documento creado, refrescando la tabla...');
         this.loadDocumentos(); // se recargan los datos!
       }

@@ -48,3 +48,17 @@ html, body {
   /* Se establece la fuente principal para toda la aplicación. */
   font-family: Roboto, "Helvetica Neue", sans-serif;
 }
+/*
+ Estilos para las notificaciones (SnackBar) globales.
+ Usamos !important para forzar que estos estilos ganen
+ la "batalla de especificidad" contra los estilos de Material.
+*/
+.success-snackbar .mdc-snackbar__surface {
+  background-color: #2e7d32 !important; /* Verde oscuro */
+  color: white !important;
+}
+
+.error-snackbar .mdc-snackbar__surface {
+  background-color: #b3261e !important; /* Rojo oscuro */
+  color: white !important;
+}
