@@ -55,16 +55,12 @@ export interface UsuarioUpdateDTO {
 }
 
 
-
-
 /**
  * Define la estructura estándar de la respuesta del endpoint de autenticación.
+ * En este caso, el backend solo devuelve un token JWT.
  */
 export interface AuthResponse {
-  success: boolean;
-  message: string;
-  token?: string;
-  user?: UserProfile;
+  token: string;
 }
 
 /**
