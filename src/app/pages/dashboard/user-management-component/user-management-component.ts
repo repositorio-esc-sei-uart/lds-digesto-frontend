@@ -92,7 +92,7 @@ export class UserManagementComponent implements OnInit {
   }
 
   /**
-   * Tarea: "Confirmar eliminación" (Ahora con un diálogo de Material)
+   *"Confirmar eliminación"
    * 1. Muestra un diálogo de confirmación personalizado.
    * 2. Si se confirma, llama al servicio para eliminar el usuario.
    * 3. Si se elimina con éxito, refresca la tabla.
