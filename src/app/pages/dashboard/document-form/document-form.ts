@@ -31,6 +31,8 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatListModule } from "@angular/material/list";
 import { DocumentPreviewComponent } from '../document-preview/document-preview';
+import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
+import { HttpErrorResponse } from '@angular/common/http';
 
 @Component({
   selector: 'app-document-form',
@@ -49,10 +51,17 @@ import { DocumentPreviewComponent } from '../document-preview/document-preview';
     MatButtonModule,
     MatProgressSpinnerModule,
     MatListModule,
+    MatSnackBarModule
 ],
   templateUrl: './document-form.html',
   styleUrl: './document-form.css'
 })
+/**
+ * @class DocumentForm
+ * Componente modal (dialog) para crear o editar un Documento.
+ * Carga los catálogos (Tipos, Sectores, etc.) y gestiona la validación
+ * y el envío del formulario.
+ */
 export class DocumentForm implements OnInit {
   documentForm: FormGroup;
   isLoading = false;
@@ -62,9 +71,17 @@ export class DocumentForm implements OnInit {
   estados$!: Observable<EstadoDocumento[]>;
   palabrasClave$!: Observable<PalabraClave[]>;
   todosLosDocumentos$!: Observable<DocumentoListItem[]>;
+  
+  /** Almacena la lista de archivos seleccionados por el usuario. */
   archivosParaSubir: File[] = [];
+  
   @ViewChild('submitButton', { read: ElementRef }) submitButton!: ElementRef;
 
+  /**
+   * @constructor
+   * Inyecta los servicios necesarios y construye el formulario reactivo.
+   * @param data Datos inyectados al modal (ej. `isEditMode`).
+   */
   constructor(
     private fb: FormBuilder,
     private dialogRef: MatDialogRef<DocumentForm>,
@@ -74,6 +91,7 @@ export class DocumentForm implements OnInit {
     private keywordDocumentService: KeywordDocumentService,
     private documentService: DocumentService, // <--- Este servicio es clave
     private dialog: MatDialog,
+    private snackBar: MatSnackBar, // <--- barra de notificacion
     
     // 1. REVIERTE la inyección de datos a como estaba
     @Inject(MAT_DIALOG_DATA) public data: { 
@@ -99,7 +117,11 @@ export class DocumentForm implements OnInit {
     });
   }
 
-  // En ngOnInit, cargamos los datos de los servicios
+  /**
+   * @LifecycleHook ngOnInit
+   * Carga todos los catálogos necesarios para los <mat-select>
+   * (Tipos, Sectores, Estados, Palabras Clave y Documentos para referencias).
+   */
   ngOnInit(): void {
     this.tipos$ = this.typeDocumentService.getTiposDocumento();
     this.sectores$ = this.sectorService.getSectores();
@@ -108,7 +130,11 @@ export class DocumentForm implements OnInit {
     this.todosLosDocumentos$ = this.documentService.getDocumentos();
   }
 
-  /** Se ejecuta cuando el usuario selecciona archivos en el input */
+  /**
+   * Se dispara cuando el usuario selecciona archivos desde el input <file>.
+   * Añade los archivos seleccionados a la lista `archivosParaSubir`.
+   * @param event El evento 'change' del input.
+   */
   onFileSelected(event: Event): void {
     const input = event.target as HTMLInputElement;
     if (input.files) {
@@ -119,6 +145,10 @@ export class DocumentForm implements OnInit {
     input.value = '';
   }
 
+  /**
+   * Elimina un archivo de la lista `archivosParaSubir`
+   * @param archivoARemover El objeto File que se debe quitar.
+   */
   removerArchivo(archivoARemover: File): void {
   // Filtramos el arreglo, creando uno nuevo que no incluya el archivo a remover
   this.archivosParaSubir = this.archivosParaSubir.filter(
@@ -126,62 +156,71 @@ export class DocumentForm implements OnInit {
   );
   }
 
-  // Lógica de envío
-onSubmit(): void {
-  console.log('onSubmit iniciado.');
-  
-  if (this.documentForm.invalid) {
-    console.error('Formulario inválido:', this.documentForm.errors);
-    this.documentForm.markAllAsTouched();
-    return;
-  }
-  if (this.archivosParaSubir.length === 0 && !this.isEditMode) {
-    console.error("Debe subir al menos un archivo");
-    return;
-  }
-  console.log('Validaciones pasadas.');
-
-  try {
-    // 1. Mapeo para generar el DTO DE ENTRADA del Backend (con IDs)
-    const nuevoDocumentoDTO = this.crearDocumentoDTO(); // Llama a la nueva función de mapeo
+  /**
+   * Se ejecuta al enviar el formulario (clic en "Vista Documento").
+   * Valida, construye el DTO para el backend y el objeto para la preview,
+   * y abre el modal de previsualización (`DocumentPreviewComponent`).
+   */
+  onSubmit(): void {
+    console.log('onSubmit iniciado.');
     
-    // 2. Prepara el objeto completo (con nombres) para la previsualización en el Frontend
-    const documentoParaPreview = this.crearDocumentoParaPreview(); 
+    if (this.documentForm.invalid) {
+      console.error('Formulario inválido:', this.documentForm.errors);
+      this.documentForm.markAllAsTouched();
+      return;
+    }
+    if (this.archivosParaSubir.length === 0 && !this.isEditMode) {
+      console.error("Debe subir al menos un archivo");
+      return;
+    }
+    console.log('Validaciones pasadas.');
 
-    console.log('Objeto nuevoDocumentoDTO construido (Para Backend):', nuevoDocumentoDTO);
+    try {
+      // 1. Mapeo para generar el DTO DE ENTRADA del Backend (con IDs)
+      const nuevoDocumentoDTO = this.crearDocumentoDTO(); // Llama a la nueva función de mapeo
+      
+      // 2. Prepara el objeto completo (con nombres) para la previsualización en el Frontend
+      const documentoParaPreview = this.crearDocumentoParaPreview(); 
 
-    this.isLoading = true;
+      console.log('Objeto nuevoDocumentoDTO construido (Para Backend):', nuevoDocumentoDTO);
 
-    // --- Abrir el Modal de Preview ---
-    const previewDialogRef = this.dialog.open(DocumentPreviewComponent, {
-      width: '85%', 
-      maxWidth: '1200px',
-      maxHeight: '90vh',
-      data: { documento: documentoParaPreview }
-    });
-    
-    // Escuchamos la respuesta del preview
-    previewDialogRef.afterClosed().subscribe(result => {
-      if (result === true) {
-        // Si confirma, enviamos el DTO correcto al Backend
-        this.guardarDocumento(nuevoDocumentoDTO);
-      } else {
-        this.isLoading = false;
-      }
-    });
+      this.isLoading = true;
 
-  } catch (error) {
-    console.error('Error al construir el objeto o abrir el modal:', error);
-    this.isLoading = false;
+      // --- Abrir el Modal de Preview ---
+      const previewDialogRef = this.dialog.open(DocumentPreviewComponent, {
+        width: '85%', 
+        maxWidth: '1200px',
+        maxHeight: '90vh',
+        data: { documento: documentoParaPreview }
+      });
+      
+      // Escuchamos la respuesta del preview
+      previewDialogRef.afterClosed().subscribe(result => {
+        if (result === true) {
+          // Si confirma, enviamos el DTO correcto al Backend
+          this.guardarDocumento(nuevoDocumentoDTO);
+        } else {
+          this.isLoading = false;
+        }
+      });
+
+    } catch (error) {
+      console.error('Error al construir el objeto o abrir el modal:', error);
+      this.isLoading = false;
+    }
   }
-}
 
+  /**
+   * Cierra el diálogo modal sin guardar, devolviendo 'false'.
+   */
   onCancel(): void {
     this.dialogRef.close(false); // Cierra el modal sin hacer nada
   }
 
   /**
-   * Selecciona o deselecciona todas las palabras clave.
+   * Selecciona o deselecciona todas las opciones del <mat-select>
+   * de Palabras Clave.
+   * @param isSelected El estado del checkbox "Seleccionar Todos".
    */
   toggleAllSelection(isSelected: boolean) {
     if (isSelected) {
@@ -196,110 +235,131 @@ onSubmit(): void {
     }
   }
 
- /**
- * Contiene la lógica para "guardar" el documento llamando al servicio.
- * @param documentoDTO El DTO listo para ser enviado al Backend.
- */
-private guardarDocumento(documentoDTO: any): void {
-  this.isLoading = true;
-  
-  // Llama al servicio, que internamente hace el POST HTTP
-  this.documentService.createDocumento(documentoDTO).subscribe({
-    next: (respuesta) => {
-      this.isLoading = false;
-      console.log("Documento creado exitosamente (Respuesta Backend):", respuesta);
-      this.dialogRef.close(true); // Cierra el modal con señal de éxito
-    },
-    error: (err) => {
-      this.isLoading = false;
-      console.error("Error al crear documento:", err);
-      // Aquí puedes mostrar un mensaje de error al usuario
+  /**
+   * Contiene la lógica para "guardar" el documento llamando al servicio.
+   * Maneja la respuesta de éxito (cierra el modal) o de error (muestra SnackBar).
+   * @param documentoDTO El DTO listo para ser enviado al Backend.
+   */
+  private guardarDocumento(documentoDTO: any): void {
+    this.isLoading = true;
+    
+    // Llama al servicio, que internamente hace el POST HTTP
+    this.documentService.createDocumento(documentoDTO).subscribe({
+      next: (respuesta) => {
+          this.isLoading = false;
+          // Simplemente cerramos el modal y devolvemos 'true'
+          this.dialogRef.close(true); 
+        },
+        
+        // --- ERROR ---
+        error: (err: HttpErrorResponse) => {
+          this.isLoading = false; // Detenemos el spinner
+          
+          let mensajeError = 'Ocurrió un error inesperado al guardar.';
+          
+          // El backend envía 409 (Conflict) para RecursoDuplicadoException 
+          if (err.status === 409 && err.error?.message) {
+            mensajeError = err.error.message; // Ej: "Ya existe un documento con el número: XXX"
+          } else if (err.error?.message) {
+            mensajeError = err.error.message;
+          }
+
+          // Mostramos el SnackBar de ERROR (sin cerrar el modal)
+          this.snackBar.open(mensajeError, 'Cerrar', { 
+            verticalPosition: 'top', // Posición ARRIBA (dentro del modal)
+            horizontalPosition: 'center', // Centrado
+            panelClass: ['error-snackbar'] 
+          });
+          
+          console.error("Error al crear documento:", err);
+        }
+      });
     }
-  });
-}
-/**
- * @private
- * Construye el objeto DTO exactamente como lo espera el Backend.
- */
-private crearDocumentoDTO(): any {
-  const formValue = this.documentForm.value;
 
-  // 1. Extraer IDs de las relaciones ManyToOne (objetos simples)
-  const idTipoDocumento = formValue.tipoDocumento?.idTipoDocumento || null;
-  const idSector = formValue.sector?.idSector || null;
-  const idEstado = formValue.estado?.idEstado || null;
+  /**
+   * @private
+   * Construye el objeto DTO (JSON) exactamente como lo espera el Backend.
+   * Toma los objetos completos del formulario y extrae solo sus IDs.
+   */
+  private crearDocumentoDTO(): any {
+    const formValue = this.documentForm.value;
 
-  // 2. Extraer IDs de las colecciones ManyToMany (Palabras Clave y Referencias)
-  const idsPalabrasClave = formValue.palabrasClave.map((pc: any) => pc.idPalabraClave);
-  const idsReferencias = formValue.referencias.map((ref: any) => ref.idDocumento);
-  
-  // 3. Simular la estructura de Archivos del Backend (solo el nombre y URL)
-  // Nota: El Backend de tu proyecto (Archivo.java) espera una lista de objetos Archivo.
-  // Sin embargo, tu DTO (DocumentoDTO.java) no tiene un campo para `archivos`, 
-  // ya que la lógica de subida y asociación de archivos suele ser un paso separado en Spring Boot.
-  // Por ahora, incluimos un campo simulado para mantener la integridad del objeto en el Frontend.
-  const archivosSimulados: any[] = this.archivosParaSubir.map((file, index) => ({
-    nombre: file.name,
-    url: `/simulado/uploads/${file.name}`
-  }));
+    // 1. Extraer IDs de las relaciones ManyToOne (objetos simples)
+    const idTipoDocumento = formValue.tipoDocumento?.idTipoDocumento || null;
+    const idSector = formValue.sector?.idSector || null;
+    const idEstado = formValue.estado?.idEstado || null;
 
-
-  return {
-    // Campos primitivos
-    titulo: formValue.titulo,
-    resumen: formValue.resumen,
-    numDocumento: formValue.numDocumento,
-    // IDs de las relaciones (¡lo que el Backend necesita!)
-    idTipoDocumento: idTipoDocumento,
-    idSector: idSector,
-    idEstado: idEstado,
-    // Listas de IDs
-    idsPalabrasClave: idsPalabrasClave,
-    idsReferencias: idsReferencias,
-    // Incluir Archivos Simulados si el Backend los espera.
-    // **ADVERTENCIA:** Según DocumentoDTO.java del Backend, este campo NO EXISTE [cite: 2068-2114].
-    // Si tu Backend está usando un DTO diferente para la creación, esto debe ajustarse.
-    // Por ahora, se incluye para no perder la información de archivos en la simulación local del Frontend:
-    archivos: archivosSimulados, // <-- Revisar con el Backend si se necesita realmente
-    // La fecha de creación la pone el Backend, pero la usamos para el preview:
-    fechaCreacion: formValue.fechaCreacion 
-  };
-}
-
-
-/**
- * @private
- * Construye el objeto Documento con todos los objetos completos para la vista de PREVIEW.
- */
-private crearDocumentoParaPreview(): Documento {
-  const formValue = this.documentForm.value;
-  
-  const archivosSimulados: Archivo[] = this.archivosParaSubir.map((file, index) => ({
-    idArchivo: 100 + index, // ID simulado
-    nombre: file.name,
-    url: `/simulado/uploads/${file.name}`
-  }));
-
-  const referenciasFormateadas: ReferenciaDocumento[] =
-    (formValue.referencias || []).map((doc: DocumentoListItem) => ({
-      idDocumento: doc.idDocumento,
-      numDocumento: doc.numDocumento
+    // 2. Extraer IDs de las colecciones ManyToMany (Palabras Clave y Referencias)
+    const idsPalabrasClave = formValue.palabrasClave.map((pc: any) => pc.idPalabraClave);
+    const idsReferencias = formValue.referencias.map((ref: any) => ref.idDocumento);
+    
+    // 3. Simular la estructura de Archivos del Backend (solo el nombre y URL)
+    // Nota: El Backend de tu proyecto (Archivo.java) espera una lista de objetos Archivo.
+    // Sin embargo, tu DTO (DocumentoDTO.java) no tiene un campo para `archivos`, 
+    // ya que la lógica de subida y asociación de archivos suele ser un paso separado en Spring Boot.
+    // Por ahora, incluimos un campo simulado para mantener la integridad del objeto en el Frontend.
+    const archivosSimulados: any[] = this.archivosParaSubir.map((file, index) => ({
+      nombre: file.name,
+      url: `/simulado/uploads/${file.name}`
     }));
-  
-  // La estructura de Documento[] debe incluir campos completos para el preview.
-  return {
-    idDocumento: 0, // ID 0 ya que aún no se guarda
-    titulo: formValue.titulo,
-    numDocumento: formValue.numDocumento,
-    fechaCreacion: formValue.fechaCreacion,
-    resumen: formValue.resumen,
-    tipoDocumento: formValue.tipoDocumento,
-    sector: formValue.sector,
-    estado: formValue.estado,
-    palabrasClave: formValue.palabrasClave || [],
-    archivos: archivosSimulados,
-    referencias: referenciasFormateadas,
-    referenciadoPor: []
-  };
-}
+
+
+    return {
+      // Campos primitivos
+      titulo: formValue.titulo,
+      resumen: formValue.resumen,
+      numDocumento: formValue.numDocumento,
+      // IDs de las relaciones (¡lo que el Backend necesita!)
+      idTipoDocumento: idTipoDocumento,
+      idSector: idSector,
+      idEstado: idEstado,
+      // Listas de IDs
+      idsPalabrasClave: idsPalabrasClave,
+      idsReferencias: idsReferencias,
+      // Incluir Archivos Simulados si el Backend los espera
+      // **ADVERTENCIA:** Según DocumentoDTO.java del Backend, este campo NO EXISTE.
+      // Por ahora, se incluye para no perder la información de archivos en la simulación local del Frontend:
+      archivos: archivosSimulados, // <-- Revisar con el Backend si se necesita realmente
+      // La fecha de creación la pone el Backend, pero la usamos para el preview:
+      fechaCreacion: formValue.fechaCreacion 
+    };
+  }
+
+
+  /**
+   * @private
+   * Construye el objeto `Documento` completo (con objetos anidados)
+   * necesario para alimentar el modal de previsualización.
+   */
+  private crearDocumentoParaPreview(): Documento {
+    const formValue = this.documentForm.value;
+    
+    const archivosSimulados: Archivo[] = this.archivosParaSubir.map((file, index) => ({
+      idArchivo: 100 + index, // ID simulado
+      nombre: file.name,
+      url: `/simulado/uploads/${file.name}`
+    }));
+
+    const referenciasFormateadas: ReferenciaDocumento[] =
+      (formValue.referencias || []).map((doc: DocumentoListItem) => ({
+        idDocumento: doc.idDocumento,
+        numDocumento: doc.numDocumento
+      }));
+    
+    // La estructura de Documento[] debe incluir campos completos para el preview.
+    return {
+      idDocumento: 0, // ID 0 ya que aún no se guarda
+      titulo: formValue.titulo,
+      numDocumento: formValue.numDocumento,
+      fechaCreacion: formValue.fechaCreacion,
+      resumen: formValue.resumen,
+      tipoDocumento: formValue.tipoDocumento,
+      sector: formValue.sector,
+      estado: formValue.estado,
+      palabrasClave: formValue.palabrasClave || [],
+      archivos: archivosSimulados,
+      referencias: referenciasFormateadas,
+      referenciadoPor: []
+    };
+  }
 }
