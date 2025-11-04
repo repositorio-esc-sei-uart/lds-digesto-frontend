@@ -2,6 +2,9 @@
   padding: 24px;
   max-width: 700px;
   margin: auto;
+  overflow-y: auto;          /* ✅ permite desplazarse si hay más contenido */
+  max-height: 90vh;          /* evita que se corte en pantallas pequeñas */
+  box-sizing: border-box;    /* asegura que los padding no rompan el ancho */
 }
 
 .form-row {
@@ -21,8 +24,37 @@ mat-form-field {
   margin-top: 24px;
 }
 
-h2{
-    text-align: center;
-    color: #271ad5; /* Color de texto oscuro */
+h2 {
+  text-align: center;
+  color: #271ad5; /* Color de texto oscuro */
 }
 
+/* ✅ Adaptación RESPONSIVA sin cambiar tu diseño original */
+@media (max-width: 700px) {
+  .form-row {
+    flex-direction: column; /* apila los campos en pantallas pequeñas */
+    gap: 12px;
+  }
+
+  .formulario-edicion {
+    padding: 16px; /* un poco menos de padding para aprovechar el espacio */
+    width: 100%;
+    box-sizing: border-box;
+  }
+
+  mat-form-field {
+    width: 100%; /* los campos ocupan todo el ancho */
+    flex: none;
+  }
+
+  .form-actions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+}
+
+/* ✅ Si el formulario está dentro de un mat-dialog */
+mat-dialog-content {
+  max-height: 90vh !important;
+  overflow-y: auto !important;
+}
