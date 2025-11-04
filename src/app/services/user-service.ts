@@ -1,7 +1,16 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
-// Versión combinada y limpia:
-import { BehaviorSubject, catchError, Observable, of, tap, throwError } from 'rxjs';
+import { 
+  BehaviorSubject, 
+  catchError, 
+  Observable, 
+  of, 
+  tap, 
+  throwError,
+  forkJoin, // ✅ IMPORTADO
+  switchMap, // ✅ IMPORTADO
+  map // ✅ IMPORTADO
+} from 'rxjs';
 import { User, UserProfile, UsuarioUpdateDTO } from '../interfaces/user-model';
 import { EstadoUsuario } from '../interfaces/status-user-model';
 import { Rol } from '../interfaces/role-user-model';
@@ -40,8 +49,10 @@ export class UserService {
 
   /**
    * Carga inicial de usuarios, estados, roles, cargos y sectores desde el backend.
+   * Nota: Se mantienen las suscripciones separadas para no bloquear la carga de usuarios.
    */
   private loadInitialData(): void {
+    // 1. Carga de Usuarios (actualiza el BehaviorSubject)
     this.http.get<UserProfile[]>(this.usersUrl).pipe(
       catchError((error: HttpErrorResponse) => {
         console.error('❌ Error al cargar usuarios desde backend', error);
@@ -55,47 +66,36 @@ export class UserService {
       })
     ).subscribe();
 
+    // 2. Carga de datos de catálogo (necesarios para el mapeo, se cargan en arrays privados)
     this.http.get<EstadoUsuario[]>(this.estadosUrl).pipe(
-      catchError((error: HttpErrorResponse) => {
-        console.error('❌ Error al cargar estados de usuario', error);
-        return of([]);
-      }),
-      tap((estadosData) => {
-        this.estados = estadosData;
-        console.log(`[UserService] 📑 ${this.estados.length} estados cargados.`);
+      catchError((error: HttpErrorResponse) => { console.error('❌ Error al cargar estados de usuario', error); return of([]); }),
+      tap((estadosData) => { 
+        this.estados = estadosData; 
+        console.log(`[UserService] 📑 ${this.estados.length} estados cargados.`); 
       })
     ).subscribe();
 
     this.http.get<Rol[]>(this.rolUrl).pipe(
-      catchError((error: HttpErrorResponse) => {
-        console.error('❌ Error al cargar roles de usuario', error);
-        return of([]);
-      }),
-      tap((rolesData) => {
-        this.roles = rolesData;
-        console.log(`[UserService] 🎭 ${this.roles.length} roles cargados.`);
+      catchError((error: HttpErrorResponse) => { console.error('❌ Error al cargar roles de usuario', error); return of([]); }),
+      tap((rolesData) => { 
+        this.roles = rolesData; 
+        console.log(`[UserService] 🎭 ${this.roles.length} roles cargados.`); 
       })
     ).subscribe();
 
     this.http.get<Cargo[]>(this.cargoUrl).pipe(
-      catchError((error: HttpErrorResponse) => {
-        console.error('❌ Error al cargar cargos de usuario', error);
-        return of([]);
-      }),
-      tap((cargosData) => {
-        this.cargos = cargosData;
-        console.log(`[UserService] 🧱 ${this.cargos.length} cargos cargados.`);
+      catchError((error: HttpErrorResponse) => { console.error('❌ Error al cargar cargos de usuario', error); return of([]); }),
+      tap((cargosData) => { 
+        this.cargos = cargosData; 
+        console.log(`[UserService] 🧱 ${this.cargos.length} cargos cargados.`); 
       })
     ).subscribe();
 
     this.http.get<Sector[]>(this.sectorUrl).pipe(
-      catchError((error: HttpErrorResponse) => {
-        console.error('❌ Error al cargar sectores de usuario', error);
-        return of([]);
-      }),
-      tap((sectoresData) => {
-        this.sectores = sectoresData;
-        console.log(`[UserService] 🏢 ${this.sectores.length} sectores cargados.`);
+      catchError((error: HttpErrorResponse) => { console.error('❌ Error al cargar sectores de usuario', error); return of([]); }),
+      tap((sectoresData) => { 
+        this.sectores = sectoresData; 
+        console.log(`[UserService] 🏢 ${this.sectores.length} sectores cargados.`); 
       })
     ).subscribe();
   }
@@ -115,54 +115,54 @@ export class UserService {
     );
   }
 
+  /** Crea un nuevo usuario en el backend y actualiza la lista local. */
+// En UserService.ts
+
 /** Crea un nuevo usuario en el backend y actualiza la lista local. */
 createUser(newUser: User): Observable<User> {
   return this.http.post<User>(this.usersUrl, newUser).pipe(
-    // 1. Usa 'tap' para interceptar la respuesta exitosa del servidor.
-    tap((createdUser: User) => {
-// 1. Mapear el usuario simple a UserProfile, manejando posibles 'undefined'
-      const newUserProfile: UserProfile = {
-        // Campos directos...
-        idUsuario: createdUser.idUsuario,
-        legajo: createdUser.legajo,
-        nombre: createdUser.nombre,
-        apellido: createdUser.apellido,
-        email: createdUser.email,
-        
-        // 2. Rellenar Rol y Estado buscando por ID:
-        // Usamos '?.' para acceder al ID (previniendo el error 18048)
-        // y usamos '?? undefined' si la búsqueda falla o si la lista estaba vacía.
-        rol: this.roles.find(r => r.idRol === createdUser.rol?.idRol) ?? undefined,
-        estadoU: this.estados.find(e => e.idEstadoU === createdUser.estadoU?.idEstadoU) ?? undefined,
-        
-      };
-      
-      // 2. Agrega el nuevo usuario al array local
-      this.users.push(newUserProfile); // Usamos unshift para que aparezca primero
+    // 1. Usar switchMap para cambiar del POST al GET del nuevo usuario
+    switchMap(createdUser => {
+      const newId = createdUser.idUsuario;
 
-      // 3. Notifica a todos los suscriptores (la tabla) del nuevo array de usuarios.
-      // Creamos una nueva copia para asegurar que Angular detecte el cambio.
-      this.usersSubject.next([...this.users]);
+      // 2. Ejecutar GET para obtener el objeto COMPLETO (con Rol y Estado)
+      return this.http.get<UserProfile>(`${this.usersUrl}/${newId}`).pipe(
+        // Retornar el UserProfile completo
+        map(userProfileCompleto => userProfileCompleto)
+      );
+    }),
+    
+    // 3. Tap recibe el objeto UserProfile COMPLETO
+    tap((newUserProfile: UserProfile) => {
       
-      console.log(`[UserService] ✅ Usuario ${newUserProfile.idUsuario} creado y lista actualizada.`);
-    })
+      // Ya no necesitamos el mapeo manual, el objeto ya es UserProfile
+      
+      // Agregar al final de la lista
+      this.users.push(newUserProfile);
+      
+      // Notificar a todos los suscriptores
+      this.usersSubject.next([...this.users]);
+
+      console.log(`[UserService] ✅ Usuario ${newUserProfile.idUsuario} creado, cargado completo y lista actualizada.`);
+    }),
+    
+    // 4. Mapear de vuelta a 'User' (o simplemente devolver el observable) 
+    // Mantenemos el tipo de retorno si es necesario para el componente.
+    map(userProfile => userProfile as User) 
   );
 }
 
   /** Actualiza un usuario existente en el backend. */
-actualizarUsuario(id: number, datos: UsuarioUpdateDTO): Observable<any> {
-  return this.http.put(`${this.usersUrl}/${id}`, datos);
-}
-
-
-
+  actualizarUsuario(id: number, datos: UsuarioUpdateDTO): Observable<any> {
+    return this.http.put(`${this.usersUrl}/${id}`, datos);
+  }
 
   /** Obtiene un usuario completo (plano) por ID. */
   obtenerTodoPorId(id: number): Observable<UsuarioUpdateDTO> {
     return this.http.get<UsuarioUpdateDTO>(`${this.usersUrl}/all/${id}`);
   }
 
-  /** Accesos a datos precargados */
+  /** Accesos a datos precargados (devuelve copias para evitar mutación) */
   getEstados(): EstadoUsuario[] {
     return [...this.estados];
   }
@@ -170,35 +170,22 @@ actualizarUsuario(id: number, datos: UsuarioUpdateDTO): Observable<any> {
   getRoles(): Rol[] {
     return [...this.roles];
   }
-
-
-  /**
-   * Llama al endpoint DELETE del backend para eliminar un usuario.
-   * Luego, actualiza el BehaviorSubject para notificar a todos los
-   * componentes suscritos (como tu tabla) que los datos cambiaron.
-   * @param id El ID del usuario a eliminar.
-   */
+  
+  // (El resto de métodos de eliminación y obtención de cargos/sectores se mantienen igual)
   eliminarUsuario(id: number): Observable<void> {
     return this.http.delete<void>(`${this.usersUrl}/${id}`).pipe(
       tap(() => {
-        // Éxito:
         console.log(`[UserService] Usuario ${id} eliminado. Actualizando estado local.`);
-        
-        // 1. Filtra el usuario eliminado de la lista local
         this.users = this.users.filter(user => user.idUsuario !== id);
-        
-        // 2. Notifica a todos los suscriptores (tu tabla) con la nueva lista
         this.usersSubject.next([...this.users]);
       }),
       catchError((error: HttpErrorResponse) => {
-        // Error:
         console.error(`❌ Error al eliminar usuario con ID ${id}`, error);
-        
-        // Pasa el error al componente para que lo pueda manejar (ej. mostrar un alert)
         return throwError(() => error); 
       })
     );
   }
+
   getCargos(): Observable<Cargo[]> {
     return this.http.get<Cargo[]>(this.cargoUrl).pipe(
       catchError((error: HttpErrorResponse) => {

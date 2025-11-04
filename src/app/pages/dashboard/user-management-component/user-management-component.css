@@ -171,7 +171,7 @@ td span[class*="status-"] {
 }
 
 /* Estado Inactivo (Rojo sutil) */
-.status-inactivo {
+.status-inactive {
   background-color: #ffebee; /* Fondo rojo muy claro (similar a Material Red 50) */
   color: #f44336; /* Texto rojo oscuro (similar a Material Red 700) */
   border: 0.2px solid #f44336;
@@ -236,7 +236,7 @@ td span[class*="status-"] {
 
 /* Columna 1: ID (3%) */
 .user-table th:nth-child(1),.user-table td:nth-child(1) {
-    width: 3%; 
+    width: 5%; 
 }
 
 /* Columna 2: Legajo (17%) */

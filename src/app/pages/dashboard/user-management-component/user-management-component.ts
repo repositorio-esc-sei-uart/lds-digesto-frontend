@@ -138,9 +138,9 @@ export class UserManagementComponent implements OnInit {
    * Devuelve una clase CSS basada en el estado del usuario.
    */
   getStatusClass(status: number | string): string {
-    if (status === 1 || status === 'activo') {
+    if (status === 1 || status === 'Activo') {
       return 'status-active';
-    } else if (status === 2 || status === 'inactivo') {
+    } else if (status === 2 || status === 'Inactivo') {
       return 'status-inactive';
     }
     return 'status-pending';
