@@ -59,3 +59,15 @@
 .active-link .mat-icon {
   color: var(--color-fondo-footer);
 }
+
+.sidebar-container {
+  width: 237px;
+  transition: all 0.3s ease;
+  overflow: hidden;
+}
+
+.sidebar-container.closed {
+  width: 0;
+  padding: 0;
+  border: none;
+}

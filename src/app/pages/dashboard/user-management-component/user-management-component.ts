@@ -13,6 +13,7 @@ import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { MatTableDataSource } from '@angular/material/table';
 
 
 // Servicios, Interfaces y Componentes
@@ -42,8 +43,9 @@ import { ConfirmDialogComponent } from '../../../components/shared/confirm-dialo
   styleUrl: './user-management-component.css'
 })
 export class UserManagementComponent implements OnInit {
-  displayedColumns: string[] = ['id', 'nombreCompleto', 'email', 'estado', 'acciones'];
-  public users$!: Observable<UserProfile[]>;
+  displayedColumns: string[] = ['id', 'legajo', 'nombre', 'apellido', 'email', 'rol', 'estado', 'acciones'];
+  /* public users$!: Observable<UserProfile[]>;*/
+  public dataSource = new MatTableDataSource<UserProfile>();
   isLoading = true;
 
   constructor(
@@ -60,8 +62,12 @@ export class UserManagementComponent implements OnInit {
    * Carga la lista de usuarios desde el servicio.
    */
   loadUsers(): void {
-  this.users$ = this.userService.getUsers();
-  this.isLoading = false; // ✅ desactivás el spinner directamente
+   /*this.users$ = this.userService.getUsers();*/
+  this.userService.getUsers().subscribe(usuarios => {
+        this.dataSource.data = usuarios; // Asignamos el array al DataSource
+        this.isLoading = false;
+        console.log(`Componente: Tabla actualizada con ${usuarios.length} usuarios.`);
+    });
 }
 
 
@@ -76,8 +82,9 @@ export class UserManagementComponent implements OnInit {
 
     dialogRef.afterClosed().subscribe(newUser => {
       if (newUser) {
-        console.log(`✅ Usuario ID ${newUser.idUsuario} creado. Recargando tabla...`);
-        this.loadUsers(); // 👈 recarga la tabla
+       /* console.log(`✅ Usuario ID ${newUser.idUsuario} creado. Recargando tabla...`);
+        this.loadUsers(); // 👈 recarga la tabla*/
+        console.log(`✅ Usuario creado. La tabla se actualiza automáticamente.`);
       }
     });
   }
@@ -141,16 +148,20 @@ export class UserManagementComponent implements OnInit {
    * Devuelve una clase CSS basada en el estado del usuario.
    */
   getStatusClass(status: number | string): string {
-    if (status === 1 || status === 'activo') {
+    if (status === 1 || status === 'Activo') {
       return 'status-active';
-    } else if (status === 2 || status === 'inactivo') {
+    } else if (status === 2 || status === 'Inactivo') {
       return 'status-inactive';
     }
     return 'status-pending';
   }
 
+// En UserManagementComponent.ts
+
 abrirFormulario(user: UserProfile): void {
   this.userService.obtenerTodoPorId(user.idUsuario).subscribe((data: UsuarioUpdateDTO) => {
+    
+    // ... (Tu lógica de transformación del usuario, se mantiene igual)
     const usuarioTransformado: User = {
       idUsuario: user.idUsuario,
       dni: data.dni,
@@ -164,8 +175,27 @@ abrirFormulario(user: UserProfile): void {
       cargo: { idCargo: data.idCargo, nombre: '' }
     };
 
-    this.dialog.open(UserEditComponent, {
-      data: usuarioTransformado
+    // 1. Abrir el diálogo y guardar la referencia
+    const dialogRef = this.dialog.open(UserEditComponent, {
+      data: usuarioTransformado,
+      width: '600px', // Añadido para consistencia con goToNewUser
+      disableClose: true // Añadido para consistencia con goToNewUser
+    });
+    
+    // 2. Suscribirse al evento de cierre del diálogo
+    dialogRef.afterClosed().subscribe(result => {
+      // Asumimos que el diálogo devuelve 'true' o el objeto actualizado 
+      // si la edición fue exitosa.
+      if (result) {
+        // El servicio ya emitió el cambio a usersSubject, pero esta línea
+        // puede ser útil para forzar la actualización inmediata de la tabla
+        // si se usan características como paginación o filtros.
+        // PERO: Lo más limpio es confiar en el BehaviorSubject.
+        
+        // Simplemente logueamos, la actualización de la tabla la maneja
+        // automáticamente la suscripción en loadUsers() si el UserService funciona bien.
+        console.log('✅ Edición completada. El BehaviorSubject del servicio actualizó la tabla.');
+      }
     });
   });
 }
