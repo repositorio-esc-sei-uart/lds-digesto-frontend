@@ -152,10 +152,44 @@ createUser(newUser: User): Observable<User> {
   );
 }
 
-  /** Actualiza un usuario existente en el backend. */
-  actualizarUsuario(id: number, datos: UsuarioUpdateDTO): Observable<any> {
-    return this.http.put(`${this.usersUrl}/${id}`, datos);
-  }
+// En UserService.ts
+
+/** Actualiza un usuario existente en el backend.
+ * Sigue el patrón de: PUT -> switchMap -> GET (Completo) -> tap (Actualiza lista local) -> Notificar.
+ */
+// En UserService.ts (la versión adaptada)
+
+/** Actualiza un usuario existente en el backend. */
+actualizarUsuario(id: number, datos: UsuarioUpdateDTO): Observable<UserProfile> {
+  // 1. PUT para actualizar
+  return this.http.put<any>(`${this.usersUrl}/${id}`, datos).pipe(
+    // 2. switchMap: Cambia al Observable del GET
+    switchMap(() => {
+      // 3. GET para obtener el UserProfile COMPLETO y actualizado
+      return this.http.get<UserProfile>(`${this.usersUrl}/${id}`);
+    }),
+    
+    // 4. Tap para SINCRONIZAR la lista local y notificar a la tabla
+    tap((updatedUserProfile: UserProfile) => {
+      const index = this.users.findIndex(u => u.idUsuario === updatedUserProfile.idUsuario);
+      
+      if (index !== -1) {
+        // Reemplazar el objeto antiguo por el nuevo UserProfile completo
+        this.users[index] = updatedUserProfile; 
+        
+        // 🔥 ESTO ES LO CRUCIAL: Notificar a la tabla que está suscrita a users$
+        this.usersSubject.next([...this.users]);
+        
+        console.log(`[UserService] ✅ Usuario ${id} actualizado y lista local sincronizada.`);
+      } else {
+        console.warn(`[UserService] ⚠️ Usuario actualizado (ID ${id}) no encontrado en la lista local.`);
+      }
+    }),
+    
+    // 5. El observable final es el UserProfile completo.
+    map(userProfile => userProfile)
+  );
+}
 
   /** Obtiene un usuario completo (plano) por ID. */
   obtenerTodoPorId(id: number): Observable<UsuarioUpdateDTO> {

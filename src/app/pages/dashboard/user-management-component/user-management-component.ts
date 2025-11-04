@@ -146,8 +146,12 @@ export class UserManagementComponent implements OnInit {
     return 'status-pending';
   }
 
+// En UserManagementComponent.ts
+
 abrirFormulario(user: UserProfile): void {
   this.userService.obtenerTodoPorId(user.idUsuario).subscribe((data: UsuarioUpdateDTO) => {
+    
+    // ... (Tu lógica de transformación del usuario, se mantiene igual)
     const usuarioTransformado: User = {
       idUsuario: user.idUsuario,
       dni: data.dni,
@@ -161,8 +165,27 @@ abrirFormulario(user: UserProfile): void {
       cargo: { idCargo: data.idCargo, nombre: '' }
     };
 
-    this.dialog.open(UserEditComponent, {
-      data: usuarioTransformado
+    // 1. Abrir el diálogo y guardar la referencia
+    const dialogRef = this.dialog.open(UserEditComponent, {
+      data: usuarioTransformado,
+      width: '600px', // Añadido para consistencia con goToNewUser
+      disableClose: true // Añadido para consistencia con goToNewUser
+    });
+    
+    // 2. Suscribirse al evento de cierre del diálogo
+    dialogRef.afterClosed().subscribe(result => {
+      // Asumimos que el diálogo devuelve 'true' o el objeto actualizado 
+      // si la edición fue exitosa.
+      if (result) {
+        // El servicio ya emitió el cambio a usersSubject, pero esta línea
+        // puede ser útil para forzar la actualización inmediata de la tabla
+        // si se usan características como paginación o filtros.
+        // PERO: Lo más limpio es confiar en el BehaviorSubject.
+        
+        // Simplemente logueamos, la actualización de la tabla la maneja
+        // automáticamente la suscripción en loadUsers() si el UserService funciona bien.
+        console.log('✅ Edición completada. El BehaviorSubject del servicio actualizó la tabla.');
+      }
     });
   });
 }
