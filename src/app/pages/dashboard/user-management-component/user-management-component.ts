@@ -22,6 +22,7 @@ import { User, UserProfile, UsuarioUpdateDTO } from '../../../interfaces/user-mo
 import { UserCreateComponent } from './user-create-component/user-create-component';
 import { UserEditComponent } from '../user-edit-component/user-edit-component';
 
+import { ConfirmDialogComponent } from '../../../components/shared/confirm-dialog/confirm-dialog';
 @Component({
   selector: 'app-user-management-component',
   standalone: true,
@@ -35,8 +36,9 @@ import { UserEditComponent } from '../user-edit-component/user-edit-component';
     MatProgressSpinnerModule,
     MatDialogModule,
     MatFormFieldModule,
-    MatInputModule
-  ],
+    MatInputModule,
+    ConfirmDialogComponent,
+],  
   templateUrl: './user-management-component.html',
   styleUrl: './user-management-component.css'
 })
@@ -97,41 +99,49 @@ export class UserManagementComponent implements OnInit {
   }
 
   /**
-   * Lógica de eliminación (placeholder).
-   */
-  /**
-   * Tarea: "Confirmar eliminación", "Front de confirmación" y "Actualizar base de datos"
-   * Se llama al hacer clic en el botón de eliminar.
-   * 1. Muestra un diálogo de confirmación.
+   *"Confirmar eliminación"
+   * 1. Muestra un diálogo de confirmación personalizado.
    * 2. Si se confirma, llama al servicio para eliminar el usuario.
    * 3. Si se elimina con éxito, refresca la tabla.
    */
   onDelete(userId: number, userName: string): void {
     
-    // Tarea: "Front de confirmación" (la UI)
-    const confirmacion = confirm(`¿Estás seguro de que deseas eliminar al usuario ${userName}? Esta acción no se puede deshacer.`);
+    // Tarea: "Front de confirmación" (Llamar al nuevo diálogo)
+    const dialogRef = this.dialog.open(ConfirmDialogComponent, {
+      width: '400px',
+      data: { 
+        message: `¿Estás seguro de que deseas eliminar al usuario ${userName}? Esta acción no se puede deshacer.` 
+      }
+    });
 
     // Tarea: "Confirmar eliminación" (la lógica)
-    if (confirmacion) {
+    // Nos suscribimos a la respuesta del diálogo
+    dialogRef.afterClosed().subscribe(result => {
       
-      
-      // Llama al servicio (Frontend)
-      this.userService.eliminarUsuario(userId).subscribe({
-        next: () => {
-          console.log(`Usuario ID ${userId} eliminado.`);
-          // (Opcional: Mostrar un mensaje de éxito "toast")
-          
-          // Tarea: "Actualizar" (Refrescar la lista en pantalla)
-          this.loadUsers(); // Vuelve a cargar los usuarios
-        },
-        error: (err: any) => {
-          console.error('Error al eliminar el usuario:', err);
-          // (Opcional: Mostrar un mensaje de error "toast")
-          alert('No se pudo eliminar el usuario.');
-          this.isLoading = false; // Oculta el spinner en caso de error
-        }
-      });
-    }
+      // El diálogo devuelve 'true' si se hizo clic en "Eliminar"
+      if (result === true) { 
+        this.isLoading = true; // (Opcional) Muestra un spinner
+        
+        // Llama al servicio para borrar
+        this.userService.eliminarUsuario(userId).subscribe({
+          next: () => {
+            console.log(`Usuario ID ${userId} eliminado.`);
+            // (Opcional: Mostrar un mensaje de éxito "toast")
+            
+            // Tarea: "Actualizar" (Refrescar la lista en pantalla)
+            // No necesitas this.loadUsers() si tu servicio actualiza el Subject
+          },
+          error: (err: any) => {
+            console.error('Error al eliminar el usuario:', err);
+            alert('No se pudo eliminar el usuario.');
+            this.isLoading = false; 
+          }
+        });
+      } else {
+        // Si el usuario hizo clic en "Cancelar" (o 'false')
+        console.log('Eliminación cancelada.');
+      }
+    });
   }
 
   /**
