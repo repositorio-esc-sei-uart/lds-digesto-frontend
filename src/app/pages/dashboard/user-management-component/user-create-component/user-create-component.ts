@@ -14,6 +14,7 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
 import { MatIconModule } from '@angular/material/icon';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { MatSnackBar } from '@angular/material/snack-bar';
 
 import { UserService } from '../../../../services/user-service';
 
@@ -65,7 +66,8 @@ export class UserCreateComponent implements OnInit {
     private fb: FormBuilder,
     private userService: UserService,
     public dialogRef: MatDialogRef<UserCreateComponent>,
-    private http: HttpClient
+    private http: HttpClient,
+    private snackBar: MatSnackBar
   ) {}
 
   ngOnInit(): void {
@@ -111,6 +113,11 @@ export class UserCreateComponent implements OnInit {
         next: (response) => {
           this.isLoading = false;
           this.dialogRef.close(response);
+          this.snackBar.open('¡Usuario creado exitosamente!', '', { // Sin botón
+          duration: 3000,
+          horizontalPosition: 'center', // A centro
+          panelClass: ['success-snackbar']
+        });
         },
         error: (err) => {
           this.isLoading = false;

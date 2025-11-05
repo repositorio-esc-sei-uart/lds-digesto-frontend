@@ -14,6 +14,7 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { MatTableDataSource } from '@angular/material/table';
+import { MatSnackBar } from '@angular/material/snack-bar';
 
 
 // Servicios, Interfaces y Componentes
@@ -36,8 +37,7 @@ import { ConfirmDialogComponent } from '../../../components/shared/confirm-dialo
     MatProgressSpinnerModule,
     MatDialogModule,
     MatFormFieldModule,
-    MatInputModule,
-    ConfirmDialogComponent,
+    MatInputModule
 ],  
   templateUrl: './user-management-component.html',
   styleUrl: './user-management-component.css'
@@ -51,7 +51,8 @@ export class UserManagementComponent implements OnInit {
   constructor(
     private userService: UserService,
     private router: Router,
-    public dialog: MatDialog
+    public dialog: MatDialog,
+    private snackBar: MatSnackBar
   ) {}
 
   ngOnInit(): void {
@@ -130,11 +131,23 @@ export class UserManagementComponent implements OnInit {
             
             // Tarea: "Actualizar" (Refrescar la lista en pantalla)
             // No necesitas this.loadUsers() si tu servicio actualiza el Subject
+            this.snackBar.open(`¡Usuario ${userName} eliminado con éxito!`, '', {
+            duration: 3000,
+            horizontalPosition: 'right', // O 'center' según tus preferencias
+            panelClass: ['success-snackbar']  
+           });
           },
           error: (err: any) => {
+          // 👇 La variable 'errorMessage' se declara y usa aquí.
+            const errorMessage = err.error?.message || 'Error al eliminar el usuario. Inténtalo de nuevo.'; 
             console.error('Error al eliminar el usuario:', err);
-            alert('No se pudo eliminar el usuario.');
             this.isLoading = false; 
+
+            this.snackBar.open(errorMessage, 'Cerrar', {
+            duration: 5000,
+            horizontalPosition: 'right',
+            panelClass: ['error-snackbar'] // Usamos la clase de error
+          });
           }
         });
       } else {
@@ -156,7 +169,6 @@ export class UserManagementComponent implements OnInit {
     return 'status-pending';
   }
 
-// En UserManagementComponent.ts
 
 abrirFormulario(user: UserProfile): void {
   this.userService.obtenerTodoPorId(user.idUsuario).subscribe((data: UsuarioUpdateDTO) => {
@@ -195,6 +207,7 @@ abrirFormulario(user: UserProfile): void {
         // Simplemente logueamos, la actualización de la tabla la maneja
         // automáticamente la suscripción en loadUsers() si el UserService funciona bien.
         console.log('✅ Edición completada. El BehaviorSubject del servicio actualizó la tabla.');
+
       }
     });
   });
