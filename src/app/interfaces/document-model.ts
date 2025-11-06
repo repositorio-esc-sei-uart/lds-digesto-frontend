@@ -16,6 +16,7 @@ export interface DocumentoListItem {
   fechaCreacion: Date;
   resumen: string;
   tipoDocumento: TipoDocumento;
+  estado: EstadoDocumento;
 }
 
 /**

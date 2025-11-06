@@ -6,11 +6,58 @@
  */
 
 import { Injectable } from '@angular/core';
-import { Documento, DocumentoListItem } from '../interfaces/document-model';
+import { Documento, DocumentoListItem,ReferenciaDocumento } from '../interfaces/document-model';
 import { HttpClient } from '@angular/common/http';
 import { catchError, map, delay, Observable, of, tap, throwError } from 'rxjs';
 import { environment } from '../../environments/environment.development';
+import { TipoDocumento, } from '../interfaces/type-document-model';
+import { EstadoDocumento } from '../interfaces/status-document-model';
+import { Sector } from '../interfaces/sector-model';
+import { Archivo } from '../interfaces/archive-document-model';
+import { PalabraClave } from '../interfaces/keyword-document-model';
 
+// --- Definiciones de DTOs del Backend (Lo que la API envía) ---
+// (Define cómo se verá el EstadoDTO que viene del backend)
+interface BackendEstadoDTO {
+  idEstado: number;
+  nombre: string;
+  descripcion?: string;
+}
+// DTO anidado que el backend envía
+interface BackendTipoDocumentoDTO {
+  idTipoDocumento: number;
+  nombre: string;
+  descripcion: string;
+}
+
+// DTO para la TABLA (GET /api/v1/documentos) 
+interface BackendDocumentoTablaDTO {
+  idDocumento: number;
+  titulo: string;
+  numDocumento: string;
+  fechaCreacion: string; // El backend la envía como string
+  resumen: string;
+  tipoDocumento: BackendTipoDocumentoDTO; // <-- DTO anidado
+  estado: BackendEstadoDTO;
+}
+
+// DTO para el DETALLE (GET /api/v1/documentos/{id})
+interface BackendDocumentoDTO {
+  idDocumento: number;
+  titulo: string;
+  resumen: string;
+  numDocumento: string;
+  fechaCreacion: string;
+  // Nombres "planos"
+  nombreEstado: string;
+  nombreTipoDocumento: string;
+  nombreSector: string;
+  // Listas de DTOs
+  archivos: Archivo[];
+  palabrasClave: PalabraClave[];
+  referencias: ReferenciaDocumento[];
+  referenciadoPor?: ReferenciaDocumento[];
+}
 /**
  * @Injectable
  * Se declara la clase como un servicio que puede ser inyectado en otros componentes o servicios.
@@ -20,9 +67,8 @@ import { environment } from '../../environments/environment.development';
   providedIn: 'root'
 })
 export class DocumentService {
-  // URL del archivo JSON con datos de documentos (para simulación de lectura)
-  private dataUrl = './assets/data/documents.json';
-
+  // URL base de la API de documentos (obtenida del environment)
+  private apiUrl = `${environment.apiUrl}/api/v1/documentos`; 
   /**
    * @constructor
    * Inyecta el HttpClient de Angular para realizar peticiones.
@@ -33,44 +79,31 @@ export class DocumentService {
 
   /**
    * @method getDocumentos
-   * Obtiene la lista de documentos desde el archivo JSON de simulación (mock).
-   * @returns Un Observable que emite un arreglo de objetos de tipo `DocumentoListItem`.
+   * Obtiene la lista de documentos (DTO de tabla) del backend,
+   * la "rehidrata" al formato que el frontend espera (DocumentoListItem),
+   * y la devuelve como un Observable.
    */
   getDocumentos(): Observable<DocumentoListItem[]> {
-    // Carga los datos desde el archivo local 'documents.json'
-    return this.http.get<Documento[]>(this.dataUrl).pipe(
-      // Convierte todos los strings de fecha a objetos Date
-      map(docs => this.mapDocumentDates(docs)),
-
-      // Transforma el array de Documento[] en DocumentoListItem[]
-      map(documentos =>
-        documentos.map(doc => ({
-          idDocumento: doc.idDocumento,
-          titulo: doc.titulo,
-          numDocumento: doc.numDocumento,
-          fechaCreacion: doc.fechaCreacion, // Esta ya es un objeto Date
-          resumen: doc.resumen,
-          tipoDocumento: doc.tipoDocumento,
-          estado: doc.estado
-        }))
-      )
+    // --- USA EL API REAL ---
+    return this.http.get<BackendDocumentoTablaDTO[]>(this.apiUrl).pipe(
+      map(dtos => dtos.map(dto => this.rehidratarTablaDTO(dto))),
+      catchError(this.handleError<DocumentoListItem[]>('getDocumentos'))
     );
   }
 
   /**
    * @method getDocumentoById
-   * Busca un documento específico por su ID en el archivo JSON de simulación.
+   * Obtiene un documento específico (DTO de detalle) por su ID desde el backend
+   * y lo "rehidrata" al formato completo de la interfaz `Documento`.
    * @param id El identificador numérico del documento a buscar.
    * @returns El objeto `Documento` si se encuentra, o `undefined` si no existe.
    */
   getDocumentoById(id: number): Observable<Documento | undefined> {
-    // Carga el JSON y filtra para encontrar el documento por su ID
-    return this.http.get<Documento[]>(this.dataUrl).pipe(
-      // Convierte todos los strings de fecha a objetos Date
-      map(docs => this.mapDocumentDates(docs)),
-
-      // Encuentra el documento por su ID
-      map(documentos => documentos.find(doc => doc.idDocumento === id))
+    const url = `${this.apiUrl}/${id}`;
+    // --- USA EL API REAL ---
+    return this.http.get<BackendDocumentoDTO>(url).pipe(
+      map(dto => this.rehidratarDocumentoDTO(dto)),
+      catchError(this.handleError<Documento | undefined>(`getDocumentoById id=${id}`))
     );
   }
 
@@ -93,32 +126,147 @@ export class DocumentService {
       catchError(this.handleError<any>('createDocumento'))
     );
   }
-
   /**
-   * Función helper para convertir las fechas de string a Date
-   * ya que JSON no soporta objetos Date.
+   * Sube uno o más archivos físicos al backend y los asocia a un documento.
+   * Llama al endpoint: POST /api/v1/archivos/subir/{idDocumento}
+   * @param idDocumento El ID del documento al que se adjuntarán.
+   * @param archivos La lista de objetos File a subir.
    */
-  private mapDocumentDates(documentos: Documento[]): Documento[] {
-    return documentos.map(doc => ({
-      ...doc,
-      // Convierte el string "YYYY-MM-DD" a un objeto Date
-      fechaCreacion: new Date(doc.fechaCreacion)
-    }));
+  subirArchivos(idDocumento: number, archivos: File[]): Observable<any> {
+    
+    // 1. Construimos la URL del endpoint de subida de archivos 
+    const uploadUrl = `${environment.apiUrl}/api/v1/archivos/subir/${idDocumento}`;
+
+    // 2. Usamos FormData para enviar archivos (multipart/form-data)
+    const formData = new FormData();
+
+    // 3. Adjuntamos cada archivo. La clave "file" debe coincidir
+    // con el @RequestParam("file") del backend 
+    archivos.forEach(archivo => {
+      // El backend recibirá el nombre original del archivo
+      formData.append('file', archivo, archivo.name);
+    });
+
+    console.log(`[DocumentService-REAL] POST a ${uploadUrl} (Subiendo ${archivos.length} archivos)`);
+
+    // 4. Hacemos el POST con FormData.
+    return this.http.post<any>(uploadUrl, formData).pipe(
+      tap(response => console.log('Respuesta de subida de archivos:', response)),
+      catchError(this.handleError<any>('subirArchivos'))
+    );
+  }
+  /**
+   * @private
+   * Helper para "rehidratar" el DTO de Tabla a la interfaz del Frontend.
+   */
+  private rehidratarTablaDTO(dto: BackendDocumentoTablaDTO): DocumentoListItem {
+    return {
+      idDocumento: dto.idDocumento,
+      titulo: dto.titulo,
+      numDocumento: dto.numDocumento,
+      fechaCreacion: new Date(dto.fechaCreacion + 'T00:00:00'), // Corrige la zona horaria
+      resumen: dto.resumen,
+      // Mapeamos el DTO anidado a la interfaz anidada 'TipoDocumento'
+      tipoDocumento: { 
+        idTipoDocumento: dto.tipoDocumento.idTipoDocumento,
+        nombre: dto.tipoDocumento.nombre,
+        descripcion: dto.tipoDocumento.descripcion
+      },
+      // Creamos un objeto 'estado' vacío porque el backend no lo envía en esta vista
+      estado: { 
+        idEstado: dto.estado.idEstado, 
+        nombre: dto.estado.nombre,
+        descripcion: dto.estado.descripcion
+      } as EstadoDocumento 
+   
+    };
   }
 
- /**
-  * @private
-  * Captura y registra un error de HttpClient en la consola.
-  * Lo más importante es que **relanza el error** para que el 
-  * componente que se suscribió (ej. DocumentForm) lo reciba 
-  * en su bloque 'error:' y pueda mostrarlo al usuario.
-  */
+  /**
+   * @private
+   * Helper para "rehidratar" el DTO de Detalle a la interfaz del Frontend.
+   */
+  private rehidratarDocumentoDTO(dto: BackendDocumentoDTO): Documento {
+    return {
+      idDocumento: dto.idDocumento,
+      titulo: dto.titulo,
+      numDocumento: dto.numDocumento,
+      resumen: dto.resumen,
+      fechaCreacion: new Date(dto.fechaCreacion + 'T00:00:00'),
+      
+      // "Inflamos" los strings planos a los objetos que el frontend espera
+      tipoDocumento: { 
+        idTipoDocumento: 0,
+        nombre: dto.nombreTipoDocumento,
+        descripcion: ''
+      },
+      sector: { 
+        idSector: 0, 
+        nombre: dto.nombreSector 
+      } as Sector,
+      estado: { 
+        idEstado: 0, 
+        nombre: dto.nombreEstado 
+      } as EstadoDocumento,
+      
+      archivos: dto.archivos || [],
+      palabrasClave: dto.palabrasClave || [],
+      referencias: dto.referencias || [],
+      referenciadoPor: dto.referenciadoPor || []
+    };
+  }
+  
+  /**
+   * @private
+   * Captura y registra un error de HttpClient en la consola.
+   * Lo más importante es que **relanza el error** para que el 
+   * componente que se suscribió (ej. DocumentForm) lo reciba 
+   * en su bloque 'error:' y pueda mostrarlo al usuario.
+   */
   private handleError<T>(operation = 'operation') {
     return (error: any): Observable<T> => {
       console.error(`Error en ${operation}:`, error);
-      
       // Relanza el error original para que el suscriptor (el componente) lo reciba
       return throwError(() => error); 
     };
   }
+  /**
+   * (MÉTODO FUTURO) Sube archivos al backend.
+   * El backend usará el Título del documento como nombre base.
+   */
+  /*
+  subirArchivosConTitulo(idDocumento: number, archivos: File[], titulo: string): Observable<any> {
+    const uploadUrl = `${environment.apiUrl}/api/v1/archivos/subirPorTitulo/${idDocumento}`;
+    const formData = new FormData();
+    archivos.forEach(archivo => formData.append('file', archivo, archivo.name));
+    
+    // El backend leerá el título para sanitizarlo y usarlo como nombre
+    formData.append('nombreBase', titulo); 
+
+    return this.http.post<any>(uploadUrl, formData).pipe(
+      tap(response => console.log('Respuesta de subida (Titulo):', response)),
+      catchError(this.handleError<any>('subirArchivosConTitulo'))
+    );
+  }
+  */
+
+  /**
+   * (MÉTODO FUTURO) Sube archivos al backend.
+   * El backend usará el N° de Documento como nombre base.
+   */
+  /*
+  subirArchivosConNumDoc(idDocumento: number, archivos: File[], numDocumento: string): Observable<any> {
+    const uploadUrl = `${environment.apiUrl}/api/v1/archivos/subirPorNumDoc/${idDocumento}`;
+    const formData = new FormData();
+    archivos.forEach(archivo => formData.append('file', archivo, archivo.name));
+    
+    // El backend leerá el numDocumento para sanitizarlo y usarlo como nombre
+    formData.append('nombreBase', numDocumento); 
+
+    return this.http.post<any>(uploadUrl, formData).pipe(
+      tap(response => console.log('Respuesta de subida (NumDoc):', response)),
+      catchError(this.handleError<any>('subirArchivosConNumDoc'))
+    );
+  }
+  */
 }

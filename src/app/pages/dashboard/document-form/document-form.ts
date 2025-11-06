@@ -1,9 +1,8 @@
 import { Component, ElementRef, Inject, OnInit, ViewChild } from '@angular/core';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { MAT_DIALOG_DATA, MatDialogRef, MatDialogModule, MatDialog } from '@angular/material/dialog';
-import { Observable, take } from 'rxjs';
+import { Observable, of, switchMap, take } from 'rxjs';
 
-// Interfaces (¡ya las tienes!)
 import { TipoDocumento } from '../../../interfaces/type-document-model';
 import { Sector } from '../../../interfaces/sector-model';
 import { EstadoDocumento } from '../../../interfaces/status-document-model';
@@ -56,6 +55,7 @@ import { HttpErrorResponse } from '@angular/common/http';
   templateUrl: './document-form.html',
   styleUrl: './document-form.css'
 })
+
 /**
  * @class DocumentForm
  * Componente modal (dialog) para crear o editar un Documento.
@@ -71,6 +71,13 @@ export class DocumentForm implements OnInit {
   estados$!: Observable<EstadoDocumento[]>;
   palabrasClave$!: Observable<PalabraClave[]>;
   todosLosDocumentos$!: Observable<DocumentoListItem[]>;
+  /**
+   * Define la política de nombrado de archivos que usará el backend.
+   * 'original': El backend usará el nombre original del archivo. (Default actual)
+   * 'titulo': (Futuro) El frontend llamará al endpoint /subirPorTitulo
+   * 'numDocumento': (Futuro) El frontend llamará al endpoint /subirPorNumDoc
+   */
+  private politicaDeNombreado: 'original' | 'titulo' | 'numDocumento' = 'original'; // <-- PARÁMETRO
   
   /** Almacena la lista de archivos seleccionados por el usuario. */
   archivosParaSubir: File[] = [];
@@ -116,7 +123,7 @@ export class DocumentForm implements OnInit {
       referencias: [[]],
     });
   }
-
+  
   /**
    * @LifecycleHook ngOnInit
    * Carga todos los catálogos necesarios para los <mat-select>
@@ -138,12 +145,42 @@ export class DocumentForm implements OnInit {
   onFileSelected(event: Event): void {
     const input = event.target as HTMLInputElement;
     if (input.files) {
-      // Usamos 'concat' para añadir a la lista en vez de reemplazarla
-      this.archivosParaSubir = this.archivosParaSubir.concat(Array.from(input.files));
+      const archivos = Array.from(input.files);
+      
+      const archivosPDF: File[] = [];
+      const archivosRechazados: string[] = [];
+
+      // 1. Separar los PDFs de los no-PDFs
+      for (const archivo of archivos) {
+        // Validamos por la extensión del nombre (más seguro que el MIME type)
+        if (archivo.name.toLowerCase().endsWith('.pdf')) {
+          archivosPDF.push(archivo);
+        } else {
+          archivosRechazados.push(archivo.name);
+        }
+      }
+
+      // 2. Añadir solo los PDFs válidos a la lista
+      this.archivosParaSubir = this.archivosParaSubir.concat(archivosPDF);
+
+      // 3. Notificar al usuario si se rechazaron archivos
+      if (archivosRechazados.length > 0) {
+        const mensaje = `Se ignoraron ${archivosRechazados.length} archivos. Solo se permiten PDFs.`;
+        
+        this.snackBar.open(mensaje, 'Cerrar', { 
+          duration: 5000,
+          verticalPosition: 'top', // Posición ARRIBA (dentro del modal)
+          horizontalPosition: 'center',
+          panelClass: ['error-snackbar'] // Reutilizamos el estilo de error
+        });
+        
+        console.warn('Archivos rechazados (no PDF):', archivosRechazados);
+      }
     }
-    // Reseteamos el input para permitir seleccionar el mismo archivo de nuevo si se borra
+    // Reseteamos el input
     input.value = '';
   }
+  
 
   /**
    * Elimina un archivo de la lista `archivosParaSubir`
@@ -161,28 +198,41 @@ export class DocumentForm implements OnInit {
    * Valida, construye el DTO para el backend y el objeto para la preview,
    * y abre el modal de previsualización (`DocumentPreviewComponent`).
    */
+  /**
+   * Se ejecuta al enviar el formulario (clic en "Vista Documento").
+   * Valida, construye el DTO para el backend y el objeto para la preview,
+   * y abre el modal de previsualización (`DocumentPreviewComponent`).
+   */
   onSubmit(): void {
     console.log('onSubmit iniciado.');
     
+    // --- Validaciones (ya las tienes) ---
     if (this.documentForm.invalid) {
       console.error('Formulario inválido:', this.documentForm.errors);
       this.documentForm.markAllAsTouched();
       return;
     }
+    // (Validación de PDF)
     if (this.archivosParaSubir.length === 0 && !this.isEditMode) {
-      console.error("Debe subir al menos un archivo");
+      console.error("Debe subir al menos un archivo (solo PDF)");
+      this.snackBar.open('Debe adjuntar al menos un archivo PDF.', 'Cerrar', { 
+        verticalPosition: 'top',
+        horizontalPosition: 'center', 
+        panelClass: ['error-snackbar'] 
+      });
       return;
     }
     console.log('Validaciones pasadas.');
 
     try {
-      // 1. Mapeo para generar el DTO DE ENTRADA del Backend (con IDs)
-      const nuevoDocumentoDTO = this.crearDocumentoDTO(); // Llama a la nueva función de mapeo
-      
-      // 2. Prepara el objeto completo (con nombres) para la previsualización en el Frontend
-      const documentoParaPreview = this.crearDocumentoParaPreview(); 
+      // 1. Obtiene los archivos a subir (ya filtrados por PDF)
+      const archivosFinales = this.archivosParaSubir; 
 
-      console.log('Objeto nuevoDocumentoDTO construido (Para Backend):', nuevoDocumentoDTO);
+      // 2. Mapeo para generar el DTO (usa this.archivosParaSubir internamente)
+      const nuevoDocumentoDTO = this.crearDocumentoDTO();
+      
+      // 3. Prepara el objeto para la PREVISUALIZACIÓN (usa this.archivosParaSubir internamente)
+      const documentoParaPreview = this.crearDocumentoParaPreview(); 
 
       this.isLoading = true;
 
@@ -194,22 +244,23 @@ export class DocumentForm implements OnInit {
         data: { documento: documentoParaPreview }
       });
       
+      // --- ¡AQUÍ LA CORRECCIÓN! ---
       // Escuchamos la respuesta del preview
       previewDialogRef.afterClosed().subscribe(result => {
         if (result === true) {
-          // Si confirma, enviamos el DTO correcto al Backend
-          this.guardarDocumento(nuevoDocumentoDTO);
+          // Si confirma, enviamos el DTO y los ARCHIVOS FINALES
+          this.guardarDocumento(nuevoDocumentoDTO, archivosFinales); 
         } else {
           this.isLoading = false;
         }
       });
+      // --- FIN DE LA CORRECCIÓN ---
 
     } catch (error) {
       console.error('Error al construir el objeto o abrir el modal:', error);
       this.isLoading = false;
     }
   }
-
   /**
    * Cierra el diálogo modal sin guardar, devolviendo 'false'.
    */
@@ -235,46 +286,100 @@ export class DocumentForm implements OnInit {
     }
   }
 
-  /**
+/**
    * Contiene la lógica para "guardar" el documento llamando al servicio.
-   * Maneja la respuesta de éxito (cierra el modal) o de error (muestra SnackBar).
+   * Encadena las llamadas y selecciona el endpoint de subida de archivos
+   * basado en el parámetro 'politicaDeNombreado'.
    * @param documentoDTO El DTO listo para ser enviado al Backend.
+   * @param archivosParaSubir La lista de archivos (originales) a subir.
    */
-  private guardarDocumento(documentoDTO: any): void {
+/**
+   * Contiene la lógica para "guardar" el documento llamando al servicio.
+   * Encadena las llamadas y selecciona el endpoint de subida de archivos
+   * basado en el parámetro 'politicaDeNombreado'.
+   * @param documentoDTO El DTO listo para ser enviado al Backend.
+   * @param archivosParaSubir La lista de archivos (ya filtrados por PDF) a subir.
+   */
+  private guardarDocumento(documentoDTO: any, archivosParaSubir: File[]): void {
     this.isLoading = true;
     
-    // Llama al servicio, que internamente hace el POST HTTP
-    this.documentService.createDocumento(documentoDTO).subscribe({
-      next: (respuesta) => {
-          this.isLoading = false;
-          // Simplemente cerramos el modal y devolvemos 'true'
-          this.dialogRef.close(true); 
-        },
+    // PASO 1: Guardar los metadatos
+    this.documentService.createDocumento(documentoDTO).pipe(
+      
+      // PASO 2: Encadenar la subida de archivos según la política
+      switchMap((respuestaDTO: any) => {
         
-        // --- ERROR ---
-        error: (err: HttpErrorResponse) => {
-          this.isLoading = false; // Detenemos el spinner
-          
-          let mensajeError = 'Ocurrió un error inesperado al guardar.';
-          
-          // El backend envía 409 (Conflict) para RecursoDuplicadoException 
-          if (err.status === 409 && err.error?.message) {
-            mensajeError = err.error.message; // Ej: "Ya existe un documento con el número: XXX"
-          } else if (err.error?.message) {
-            mensajeError = err.error.message;
-          }
+      // Obtenemos el ID del documento recién creado
+        const idDocumentoCreado = respuestaDTO.idDocumento; 
+        const formValue = this.documentForm.value;
 
-          // Mostramos el SnackBar de ERROR (sin cerrar el modal)
-          this.snackBar.open(mensajeError, 'Cerrar', { 
-            verticalPosition: 'top', // Posición ARRIBA (dentro del modal)
-            horizontalPosition: 'center', // Centrado
-            panelClass: ['error-snackbar'] 
-          });
-          
-          console.error("Error al crear documento:", err);
+        if (archivosParaSubir.length === 0) {
+          // Si no hay archivos, no subimos nada
+          return of({ success: true, message: 'Documento creado sin archivos.' });
         }
-      });
-    }
+
+        // --- LÓGICA DE PARAMETRIZACIÓN (SWITCH) ---
+        switch (this.politicaDeNombreado) {
+          
+          // --- Caso Futuro 1 ---
+          case 'titulo':
+            console.log("Política de nombrado: Título. (Endpoint futuro)");
+            // Descomentar cuando el backend esté listo:
+            // return this.documentService.subirArchivosConTitulo(
+            //   idDocumentoCreado, 
+            //   archivosParaSubir, 
+            //   formValue.titulo
+            // );
+            
+            // Temporal: Usar el original mientras no exista el endpoint
+            return this.documentService.subirArchivos(idDocumentoCreado, archivosParaSubir);
+
+          // --- Caso Futuro 2 ---
+          case 'numDocumento':
+            console.log("Política de nombrado: N° Documento. (Endpoint futuro)");
+            // Descomentar cuando el backend esté listo:
+            // return this.documentService.subirArchivosConNumDoc(
+            //   idDocumentoCreado, 
+            //   archivosParaSubir, 
+            //   formValue.numDocumento
+            // );
+
+            // Temporal: Usar el original mientras no exista el endpoint
+            return this.documentService.subirArchivos(idDocumentoCreado, archivosParaSubir);
+
+          // --- Caso Actual ---
+          case 'original':
+          default:
+            console.log("Política de nombrado: Original.");
+            // Usamos el método 'subirArchivos' que SÍ existe en el servicio
+            return this.documentService.subirArchivos(idDocumentoCreado, archivosParaSubir);
+        }
+      })
+
+    ).subscribe({
+      // --- ÉXITO ---
+      next: (respuestaSubida) => {
+        this.isLoading = false;
+        this.dialogRef.close(true); // Cierra el modal
+      },
+      
+      // --- ERROR ---
+      error: (err: HttpErrorResponse) => {
+        // (La lógica de SnackBar de error se mantiene exactamente igual)
+        this.isLoading = false; 
+        let mensajeError = 'Ocurrió un error inesperado al guardar.';
+        if (err.status === 409 && err.error?.message) {
+          mensajeError = err.error.message;
+        }
+        this.snackBar.open(mensajeError, 'Cerrar', { 
+          verticalPosition: 'top',
+          horizontalPosition: 'center', 
+          panelClass: ['error-snackbar'] 
+        });
+        console.error("Error al crear documento o subir archivos:", err);
+      }
+    });
+  }
 
   /**
    * @private

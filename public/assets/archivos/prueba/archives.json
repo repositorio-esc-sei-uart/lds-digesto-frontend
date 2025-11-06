@@ -1,0 +1,14 @@
+[
+  { "idArchivo": 1, "nombre": "RES-2024-101-UART.pdf", "url": "/archivos/RES-2024-101-UART.pdf", "documento_idDocumento": 1 },
+  { "idArchivo": 2, "nombre": "DIS-2024-052-UART.pdf", "url": "/archivos/DIS-2024-052-UART.pdf", "documento_idDocumento": 2 },
+  { "idArchivo": 3, "nombre": "DIS-2024-052-UART anexo A.pdf", "url": "/archivos/DIS-2024-052-UART-anexo-A.pdf", "documento_idDocumento": 2 },
+  { "idArchivo": 4, "nombre": "RES-2024-102-UART.pdf", "url": "/archivos/RES-2024-102-UART.pdf", "documento_idDocumento": 3 },
+  { "idArchivo": 5, "nombre": "ORD-2024-003-CS.pdf", "url": "/archivos/ORD-2024-003-CS.pdf", "documento_idDocumento": 4 },
+  { "idArchivo": 6, "nombre": "CIR-2024-015-UART.pdf", "url": "/archivos/CIR-2024-015-UART.pdf", "documento_idDocumento": 5 },
+  { "idArchivo": 7, "nombre": "ORD-2024-004-CS.pdf", "url": "/archivos/ORD-2024-004-CS.pdf", "documento_idDocumento": 6 },
+  { "idArchivo": 8, "nombre": "RES-2025-001-CS.pdf", "url": "/archivos/RES-2025-001-CS.pdf", "documento_idDocumento": 7 },
+  { "idArchivo": 9, "nombre": "DIS-2024-080-UART.pdf", "url": "/archivos/DIS-2024-080-UART.pdf", "documento_idDocumento": 8 },
+  { "idArchivo": 10, "nombre": "ORD-2025-001-CS.pdf", "url": "/archivos/ORD-2025-001-CS.pdf", "documento_idDocumento": 9 },
+  { "idArchivo": 11, "nombre": "CIR-2024-020-UART.pdf", "url": "/archivos/CIR-2024-020-UART.pdf", "documento_idDocumento": 10 },
+  { "idArchivo": 12, "nombre": "CIR-2024-020-UART - anexo B.pdf", "url": "/archivos/CIR-2024-020-UART-anexo-B.pdf", "documento_idDocumento": 10 }
+]
