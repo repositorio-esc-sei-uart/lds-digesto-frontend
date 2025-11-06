@@ -170,50 +170,67 @@ export class UserManagementComponent implements OnInit {
   }
 
 
-abrirFormulario(user: UserProfile): void {
-  this.userService.obtenerTodoPorId(user.idUsuario).subscribe((data: UsuarioUpdateDTO) => {
-    
-    // ... (Tu lógica de transformación del usuario, se mantiene igual)
-    const usuarioTransformado: User = {
-      idUsuario: user.idUsuario,
-      dni: data.dni,
-      email: data.email,
-      nombre: data.nombre,
-      apellido: data.apellido,
-      legajo: data.legajo,
-      rol: { idRol: data.idRol, nombre: '' },
-      estadoU: { idEstadoU: data.idEstadoU, nombre: '' },
-      sector: { idSector: data.idSector, nombre: '' },
-      cargo: { idCargo: data.idCargo, nombre: '' }
-    };
+/**
+   * Abre el diálogo para editar un usuario y muestra la notificación.
+   */
+  abrirFormulario(user: UserProfile): void {
+    this.userService.obtenerTodoPorId(user.idUsuario).subscribe({
+      next: (data: UsuarioUpdateDTO) => {
 
-    // 1. Abrir el diálogo y guardar la referencia
-    const dialogRef = this.dialog.open(UserEditComponent, {
-      data: usuarioTransformado,
-      width: '600px', // Añadido para consistencia con goToNewUser
-      disableClose: true // Añadido para consistencia con goToNewUser
-    });
-    
-    // 2. Suscribirse al evento de cierre del diálogo
-    dialogRef.afterClosed().subscribe(result => {
-      // Asumimos que el diálogo devuelve 'true' o el objeto actualizado 
-      // si la edición fue exitosa.
-      if (result) {
-        // El servicio ya emitió el cambio a usersSubject, pero esta línea
-        // puede ser útil para forzar la actualización inmediata de la tabla
-        // si se usan características como paginación o filtros.
-        // PERO: Lo más limpio es confiar en el BehaviorSubject.
-        
-        // Simplemente logueamos, la actualización de la tabla la maneja
-        // automáticamente la suscripción en loadUsers() si el UserService funciona bien.
-        console.log('✅ Edición completada. El BehaviorSubject del servicio actualizó la tabla.');
+      // 1. Declarar y asignar 'usuarioTransformado'
+        const usuarioTransformado: User = {
+          idUsuario: user.idUsuario,
+          dni: data.dni,
+          email: data.email,
+          nombre: data.nombre, 
+          apellido: data.apellido,
+          legajo: data.legajo,
+          rol: { idRol: data.idRol, nombre: '' },
+          estadoU: { idEstadoU: data.idEstadoU, nombre: '' },
+          sector: { idSector: data.idSector, nombre: '' },
+          cargo: { idCargo: data.idCargo, nombre: '' }
+      };
 
+      // 2. Abrir el diálogo y guardar la referencia
+        const dialogRef = this.dialog.open(UserEditComponent, {
+          data: usuarioTransformado, 
+           width: '600px', 
+           disableClose: true
+          });
+      // 3. Suscribirse al evento de cierre del diálogo
+         dialogRef.afterClosed().subscribe(result => {
+       // Usamos el nombre del usuario cargado inicialmente
+        const nombreCompleto = `${usuarioTransformado.nombre} ${usuarioTransformado.apellido}`;
+
+        if (result) {
+           // ✅ Edición exitosa (result === true o el objeto modificado)
+             this.snackBar.open(`El usuario "${nombreCompleto}" modificado con éxito`, 'Cerrar', {
+            duration: 3000, 
+             horizontalPosition: 'center', 
+              panelClass: ['success-snackbar']
+          });
+        } else if (result === false) { 
+         // ❌ Edición fallida (si el diálogo devolvió 'false' ante un error de guardado)
+          this.snackBar.open(`Operacion de editar CANCELADA `, 'Cerrar', {
+            duration: 5000, 
+            horizontalPosition: 'center', 
+            panelClass: ['error-snackbar']
+            });
+          }
+        });
+
+      },
+    error: (err) => {
+       // ❌ Manejo de error si falla la *obtención* inicial de los datos
+         console.error('❌ Error al obtener los datos del usuario para edición:', err);
+          this.snackBar.open('❌ Error al cargar la información del usuario para editar.', 'Cerrar', {
+            duration: 5000, 
+            horizontalPosition: 'center', 
+            panelClass: ['snackbar-error']
+          });
       }
     });
-  });
-}
-
-
+  }
 }
 
 
