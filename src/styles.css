@@ -56,9 +56,11 @@ html, body {
 .success-snackbar .mdc-snackbar__surface {
   background-color: #2e7d32 !important; /* Verde oscuro */
   color: white !important;
+  opacity: 0.7;
 }
 
 .error-snackbar .mdc-snackbar__surface {
   background-color: #b3261e !important; /* Rojo oscuro */
   color: white !important;
+  opacity: 0.7;
 }

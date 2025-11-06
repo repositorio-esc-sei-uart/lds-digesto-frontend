@@ -14,7 +14,7 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { MatTableDataSource } from '@angular/material/table';
-
+import { MatSnackBar } from '@angular/material/snack-bar';
 
 // Servicios, Interfaces y Componentes
 import { UserService } from '../../../services/user-service';
@@ -37,7 +37,7 @@ import { ConfirmDialogComponent } from '../../../components/shared/confirm-dialo
     MatDialogModule,
     MatFormFieldModule,
     MatInputModule
-],  
+  ],
   templateUrl: './user-management-component.html',
   styleUrl: './user-management-component.css'
 })
@@ -49,7 +49,8 @@ export class UserManagementComponent implements OnInit {
   constructor(
     private userService: UserService,
     private router: Router,
-    public dialog: MatDialog
+    public dialog: MatDialog,
+    private snackBar: MatSnackBar
   ) {}
 
   ngOnInit(): void {
@@ -61,9 +62,9 @@ export class UserManagementComponent implements OnInit {
    */
   loadUsers(): void {
     this.userService.getUsers().subscribe(usuarios => {
-        this.dataSource.data = usuarios; // Asignamos el array al DataSource
-        this.isLoading = false;
-        console.log(`Componente: Tabla actualizada con ${usuarios.length} usuarios.`);
+      this.dataSource.data = usuarios;
+      this.isLoading = false;
+      console.log(`Componente: Tabla actualizada con ${usuarios.length} usuarios.`);
     });
   }
 
@@ -79,8 +80,6 @@ export class UserManagementComponent implements OnInit {
     dialogRef.afterClosed().subscribe(newUser => {
       if (newUser) {
         console.log(`✅ Usuario creado. La tabla se actualiza automáticamente.`);
-        // No es necesario llamar a this.loadUsers()
-        // si el servicio de crear actualiza el BehaviorSubject.
       }
     });
   }
@@ -97,35 +96,39 @@ export class UserManagementComponent implements OnInit {
    * Muestra un diálogo de confirmación y elimina al usuario si se confirma.
    */
   onDelete(userId: number, userName: string): void {
-    
-    // 1. Llama al nuevo diálogo
     const dialogRef = this.dialog.open(ConfirmDialogComponent, {
       width: '400px',
-      data: { 
-        message: `¿Estás seguro de que deseas eliminar al usuario ${userName}? Esta acción no se puede deshacer.` 
+      data: {
+        message: `¿Estás seguro de que deseas eliminar al usuario ${userName}? Esta acción no se puede deshacer.`
       }
     });
 
-    // 2. Escucha la respuesta del diálogo
     dialogRef.afterClosed().subscribe(result => {
-      
-      // Si el usuario hizo clic en "Eliminar" (true)
-      if (result === true) { 
-        
-        // 3. Llama al servicio para borrar
+      if (result === true) {
         this.userService.eliminarUsuario(userId).subscribe({
           next: () => {
             console.log(`Usuario ID ${userId} eliminado.`);
-            // No llamamos a this.loadUsers()
-            // El servicio actualiza el BehaviorSubject y la tabla se refresca sola.
+
+            // Muestra mensaje de éxito
+            this.snackBar.open(`¡Usuario ${userName} eliminado con éxito!`, '', {
+              duration: 3000,
+              horizontalPosition: 'right',
+              panelClass: ['success-snackbar']
+            });
           },
           error: (err: any) => {
+            const errorMessage = err.error?.message || 'Error al eliminar el usuario. Inténtalo de nuevo.';
             console.error('Error al eliminar el usuario:', err);
-            alert('No se pudo eliminar el usuario.');
+            this.isLoading = false;
+
+            this.snackBar.open(errorMessage, 'Cerrar', {
+              duration: 5000,
+              horizontalPosition: 'right',
+              panelClass: ['error-snackbar']
+            });
           }
         });
       } else {
-        // Si el usuario hizo clic en "Cancelar"
         console.log('Eliminación cancelada.');
       }
     });
@@ -144,44 +147,58 @@ export class UserManagementComponent implements OnInit {
   }
 
   /**
-   * Abre el formulario de edición en un diálogo.
+   * Abre el diálogo para editar un usuario y muestra la notificación.
    */
   abrirFormulario(user: UserProfile): void {
-    this.userService.obtenerTodoPorId(user.idUsuario).subscribe((data: UsuarioUpdateDTO) => {
-      
-      // Transforma el DTO de datos planos en el objeto User que espera el formulario
-      const usuarioTransformado: User = {
-        idUsuario: user.idUsuario,
-        dni: data.dni,
-        email: data.email,
-        nombre: data.nombre,
-        apellido: data.apellido,
-        legajo: data.legajo,
-        rol: { idRol: data.idRol, nombre: '' },
-        estadoU: { idEstadoU: data.idEstadoU, nombre: '' },
-        sector: { idSector: data.idSector, nombre: '' },
-        cargo: { idCargo: data.idCargo, nombre: '' }
-      };
+    this.userService.obtenerTodoPorId(user.idUsuario).subscribe({
+      next: (data: UsuarioUpdateDTO) => {
+        const usuarioTransformado: User = {
+          idUsuario: user.idUsuario,
+          dni: data.dni,
+          email: data.email,
+          nombre: data.nombre,
+          apellido: data.apellido,
+          legajo: data.legajo,
+          rol: { idRol: data.idRol, nombre: '' },
+          estadoU: { idEstadoU: data.idEstadoU, nombre: '' },
+          sector: { idSector: data.idSector, nombre: '' },
+          cargo: { idCargo: data.idCargo, nombre: '' }
+        };
 
-      // 1. Abrir el diálogo de edición
-      const dialogRef = this.dialog.open(UserEditComponent, {
-        data: usuarioTransformado,
-        width: '600px',
-        disableClose: true
-      });
-      
-      // 2. Suscribirse al cierre del diálogo
-      dialogRef.afterClosed().subscribe(result => {
-        if (result) {
-          // El servicio (idealmente) ya actualizó el BehaviorSubject.
-          // La tabla se refresca sola.
-          console.log('✅ Edición completada. El BehaviorSubject del servicio actualizó la tabla.');
-        }
-      });
+        const dialogRef = this.dialog.open(UserEditComponent, {
+          data: usuarioTransformado,
+          width: '600px',
+          disableClose: true
+        });
+
+        dialogRef.afterClosed().subscribe(result => {
+          const nombreCompleto = `${usuarioTransformado.nombre} ${usuarioTransformado.apellido}`;
+
+          if (result) {
+            this.snackBar.open(`El usuario "${nombreCompleto}" fue modificado con éxito`, 'Cerrar', {
+              duration: 3000,
+              horizontalPosition: 'center',
+              panelClass: ['success-snackbar']
+            });
+          } else if (result === false) {
+            this.snackBar.open(`Operación de edición cancelada`, '', {
+              duration: 5000,
+              horizontalPosition: 'center',
+              panelClass: ['error-snackbar']
+            });
+          }
+        });
+      },
+      error: (err) => {
+        console.error(' Error al obtener los datos del usuario para edición:', err);
+        this.snackBar.open(' Error al cargar la información del usuario para editar.', '', {
+          duration: 5000,
+          horizontalPosition: 'center',
+          panelClass: ['error-snackbar']
+        });
+      }
     });
   }
-
-} // <-- Fin de la clase UserManagementComponent
-
+}
 
 
