@@ -14,6 +14,7 @@ import { MatSelectModule } from '@angular/material/select';
 import { Sector } from '../../../interfaces/sector-model';
 import { Cargo } from '../../../interfaces/job-title-user-model';
 import { MatIconModule } from '@angular/material/icon';
+import { MatSnackBar } from '@angular/material/snack-bar';
 
 
 @Component({
@@ -45,13 +46,22 @@ export class UserEditComponent implements OnInit {
   constructor(
     private fb: FormBuilder,
     private userService: UserService,
+    private snackBar: MatSnackBar, // 👈 agregado
     private dialogRef: MatDialogRef<UserEditComponent>,
     @Inject(MAT_DIALOG_DATA) public data: User
   ) {
     this.passwordOriginal = this.data.password ?? '';
 
     this.usuarioForm = this.fb.group({
-      dni: [data.dni, Validators.required],
+      dni: [
+    data.dni,
+    [
+      Validators.required,
+      Validators.minLength(7),
+      Validators.maxLength(8),
+      Validators.pattern(/^\d+$/) // opcional: asegura que sean solo números
+    ]
+  ],
       nombre: [data.nombre, Validators.required],
       apellido: [data.apellido, Validators.required],
       email: [data.email, [Validators.required, Validators.email]],
@@ -60,7 +70,7 @@ export class UserEditComponent implements OnInit {
       estadoU: [data.estadoU?.idEstadoU, Validators.required],
       sector: [data.sector?.idSector, Validators.required],
       cargo: [data.cargo?.idCargo, Validators.required],
-      password: [''] // campo editable, vacío por defecto
+      password: ['']
     });
   }
 
@@ -78,31 +88,71 @@ export class UserEditComponent implements OnInit {
   }
 
   confirmar(): void {
-    if (this.usuarioForm.valid) {
-      const formValue = this.usuarioForm.value;
+    if (!this.usuarioForm.valid) {
+      this.usuarioForm.markAllAsTouched();
 
-      const dtoPlano: UsuarioUpdateDTO = {
-        dni: formValue.dni,
-        email: formValue.email,
-        password: formValue.password?.trim()
-          ? formValue.password
-          : this.passwordOriginal, // ✅ fallback seguro
-        nombre: formValue.nombre,
-        apellido: formValue.apellido,
-        legajo: formValue.legajo,
-        idRol: formValue.rol,
-        idSector: formValue.sector,
-        idEstadoU: formValue.estadoU,
-        idCargo: formValue.cargo
-      };
-
-      console.log('DTO enviado:', dtoPlano);
-
-      this.userService.actualizarUsuario(this.data.idUsuario, dtoPlano).subscribe({
-        next: () => this.dialogRef.close(true),
-        error: (err) => console.error('Error al actualizar usuario:', err)
+      // ⚠️ Mensaje flotante para formulario inválido
+      this.snackBar.open('Por favor, complete correctamente todos los campos requeridos.', 'Cerrar', {
+        duration: 4000,
+        horizontalPosition: 'center',
+        panelClass: ['error-snackbar']
       });
+      return;
     }
+
+    const formValue = this.usuarioForm.value;
+
+    const dtoPlano: UsuarioUpdateDTO = {
+      dni: formValue.dni,
+      email: formValue.email,
+      password: formValue.password?.trim()
+        ? formValue.password
+        : this.passwordOriginal,
+      nombre: formValue.nombre,
+      apellido: formValue.apellido,
+      legajo: formValue.legajo,
+      idRol: formValue.rol,
+      idSector: formValue.sector,
+      idEstadoU: formValue.estadoU,
+      idCargo: formValue.cargo
+    };
+
+    this.userService.actualizarUsuario(this.data.idUsuario, dtoPlano).subscribe({
+      next: () => {
+        // ✅ Mensaje flotante de éxito
+        this.snackBar.open(`Usuario "${formValue.nombre} ${formValue.apellido}" actualizado correctamente.`, '', {
+          duration: 3000,
+          horizontalPosition: 'center',
+          panelClass: ['snackbar-success']
+        });
+        this.dialogRef.close(true);
+      },
+      error: (err) => {
+        console.error('Error al actualizar usuario:', err);
+
+        let errorMessage = 'Error inesperado al actualizar el usuario. Inténtelo más tarde.';
+
+        // Si el backend envía campos duplicados
+        if (err.status === 409 && err.error?.duplicatedFields) {
+          const duplicatedFields: string[] = err.error.duplicatedFields;
+          const fieldNames = duplicatedFields.map(field => field.toUpperCase());
+          const lastField = fieldNames.pop();
+          let formattedFields = fieldNames.join(', ');
+          if (formattedFields.length > 0) formattedFields += ' y ' + lastField;
+          else formattedFields = lastField!;
+          errorMessage = `ERROR: Los campos ${formattedFields} ya existen. Por favor, verifique.`;
+        } else if (err.error?.message) {
+          errorMessage = `Error: ${err.error.message}`;
+        }
+
+        // ❌ Mensaje flotante de error
+        this.snackBar.open(errorMessage, '', {
+          duration: 7000,
+          horizontalPosition: 'center',
+          panelClass: ['error-snackbar']
+        });
+      }
+    });
   }
 
   cancelar(): void {
