@@ -88,7 +88,8 @@ export class DocumentManagementComponent implements OnInit {
         // 1. MOSTRAMOS LA NOTIFICACIÓN DE ÉXITO AQUÍ
         this.snackBar.open('¡Documento guardado exitosamente!', '', { // Sin botón
           duration: 3000,
-          horizontalPosition: 'left', // A la izquierda
+          verticalPosition: 'bottom',
+          horizontalPosition: 'center', 
           panelClass: ['success-snackbar']
         });
         console.log('Documento creado, refrescando la tabla...');

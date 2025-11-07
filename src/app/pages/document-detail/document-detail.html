@@ -122,18 +122,18 @@
       </mat-card>
 
       <!-- Card de Palabras Clave -->
-      @if (documento.palabrasClave && documento.palabrasClave.length > 0) {
-        <mat-card class="section-card">
-          <mat-card-content>
-            <h3><mat-icon>sell</mat-icon> Palabras Clave</h3>
-            <div class="keywords-container">
-              @for (keyword of documento.palabrasClave; track keyword) {
-                <span class="keyword-chip">{{ keyword }}</span>
-              }
-            </div>
-          </mat-card-content>
-        </mat-card>
-      }
+@if (documento.palabrasClave && documento.palabrasClave.length > 0) {
+    <mat-card class="section-card">
+      <mat-card-content>
+        <h3><mat-icon>sell</mat-icon> Palabras Clave</h3>
+        <div class="keywords-container">
+          @for (keyword of documento.palabrasClave; track keyword.idPalabraClave) {
+            <span class="keyword-chip">{{ keyword.nombre }}</span>
+          }
+        </div>
+      </mat-card-content>
+    </mat-card>
+  }
     </div>
   </div>
 } @else {
