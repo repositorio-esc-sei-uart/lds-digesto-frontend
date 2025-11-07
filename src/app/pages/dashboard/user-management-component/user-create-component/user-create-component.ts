@@ -81,7 +81,7 @@ export class UserCreateComponent implements OnInit {
       apellido: ['', [Validators.required, Validators.maxLength(50)]],
       email: ['', [Validators.required, Validators.email]],
       password: ['', [Validators.required, Validators.minLength(6)]],
-      dni: [null, [Validators.required, Validators.pattern(/^\d{7,10}$/)]],
+      dni: [null, [Validators.required, Validators.pattern(/^\d{7,8}$/)]],
       legajo: ['', [Validators.required, Validators.pattern(/^[0-9\/-]+$/)]],
       idRol: [null, Validators.required],
       idSector: [null, Validators.required],

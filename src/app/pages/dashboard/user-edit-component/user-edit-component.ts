@@ -53,7 +53,15 @@ export class UserEditComponent implements OnInit {
     this.passwordOriginal = this.data.password ?? '';
 
     this.usuarioForm = this.fb.group({
-      dni: [data.dni, Validators.required],
+      dni: [
+    data.dni,
+    [
+      Validators.required,
+      Validators.minLength(7),
+      Validators.maxLength(8),
+      Validators.pattern(/^\d+$/) // opcional: asegura que sean solo números
+    ]
+  ],
       nombre: [data.nombre, Validators.required],
       apellido: [data.apellido, Validators.required],
       email: [data.email, [Validators.required, Validators.email]],
