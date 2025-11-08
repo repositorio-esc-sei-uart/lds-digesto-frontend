@@ -1,7 +1,7 @@
 import { Component, inject, OnInit } from '@angular/core';
 import { CommonModule, DatePipe } from '@angular/common';
 import { RouterModule } from '@angular/router';
-
+import { ConfirmDialogComponent } from '../../../components/shared/confirm-dialog/confirm-dialog';
 // Módulos de Angular Material
 import { MatTableModule } from '@angular/material/table';
 import { MatIconModule } from '@angular/material/icon';
@@ -97,7 +97,56 @@ export class DocumentManagementComponent implements OnInit {
       }
     });
   }
+  /**
+   * Abre el modal de edición.
+   * Primero, busca el documento completo por su ID para pasarlo al formulario.
+   */
+  openEditDocumentDialog(documento: DocumentoListItem): void {
+    // 1. Mostrar spinner mientras se buscan los datos
+    this.isLoading = true; 
+    
+    // 2. Buscar el documento completo por ID
+    this.documentService.getDocumentoById(documento.idDocumento).subscribe({
+      next: (documentoCompleto) => {
+        this.isLoading = false; // Ocultar spinner
 
+        if (!documentoCompleto) {
+          this.snackBar.open('Error: No se pudieron cargar los datos para editar.', 'Cerrar', { panelClass: ['error-snackbar'] });
+          return;
+        }
+
+        // 3. Abrir el modal CON los datos completos
+        const dialogRef = this.dialog.open(DocumentForm, {
+          width: '700px',
+          maxWidth: '90vw',
+          disableClose: true,
+          data: { 
+            isEditMode: true, 
+            documento: documentoCompleto // Pasamos el objeto 'Documento' completo
+          }
+        });
+
+        // 4. Escuchar el resultado
+        dialogRef.afterClosed().subscribe(result => {
+          if (result === true) {
+            this.snackBar.open('¡Documento actualizado exitosamente!', '', {
+              duration: 3000,
+              verticalPosition: 'bottom',
+              horizontalPosition: 'center',
+              panelClass: ['success-snackbar']
+            });
+            this.loadDocumentos(); // Recargar la tabla
+          }
+        });
+
+      },
+      error: (err) => {
+        this.isLoading = false;
+        console.error("Error al cargar documento para editar:", err);
+        this.snackBar.open('Error al cargar los datos del documento.', 'Cerrar', { panelClass: ['error-snackbar'] });
+      }
+    });
+  }
   /**
    * Devuelve una clase CSS basada en el nombre del estado para estilizar el chip.
    * @param statusName El nombre del estado (ej. "vigente", "derogado total")
@@ -117,7 +166,7 @@ export class DocumentManagementComponent implements OnInit {
   /**
    * Abre un diálogo modal para previsualizar el detalle de un documento.
    * @param documentoId El ID del documento a previsualizar.
-   */
+  
   openPreviewModal(documentoId: number): void {
     const dialogRef = this.dialog.open(DocumentDetail, { // Abre el componente DocumentDetail
       width: '85%',              // Ancho del modal
@@ -131,7 +180,7 @@ export class DocumentManagementComponent implements OnInit {
       console.log('El diálogo de previsualización se cerró:', result);
     });
   }
-
+  */
   // Lógica para el filtro de la tabla
   applyFilter(event: Event) {
     // const filterValue = (event.target as HTMLInputElement).value;
@@ -141,7 +190,43 @@ export class DocumentManagementComponent implements OnInit {
   }
 
   onDelete(docId: number, docNum: string): void {
-    // Lógica para el modal de confirmación
-    console.warn(`(WIP) Se solicitó eliminar el documento ID: ${docId} (${docNum})`);
+    // 1. Abre el modal de confirmación
+    const dialogRef = this.dialog.open(ConfirmDialogComponent, {
+      width: '400px',
+      data: {
+        message: `¿Estás seguro de que deseas eliminar el documento "${docNum}"? Esta acción no se puede deshacer.`
+      }
+    });
+
+    // 2. Escucha el resultado
+    dialogRef.afterClosed().subscribe(result => {
+      // 3. Si el usuario confirmó (result === true)
+      if (result === true) {
+        this.isLoading = true;
+        this.documentService.deleteDocumento(docId).subscribe({
+          next: () => {
+            this.isLoading = false;
+            // Notificación de éxito
+            this.snackBar.open('Documento eliminado exitosamente.', '', {
+              duration: 3000,
+              verticalPosition: 'bottom',
+              horizontalPosition: 'center',
+              panelClass: ['success-snackbar']
+            });
+            // Recarga la tabla para reflejar el cambio
+            this.loadDocumentos();
+          },
+          error: (err) => {
+            this.isLoading = false;
+            console.error('Error al eliminar el documento:', err);
+            this.snackBar.open('Error al eliminar el documento.', 'Cerrar', {
+              duration: 5000,
+              horizontalPosition: 'center',
+              panelClass: ['error-snackbar']
+            });
+          }
+        });
+      }
+    });
   }
 }

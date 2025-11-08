@@ -1,6 +1,8 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, Inject, Optional } from '@angular/core';
 import { ActivatedRoute, RouterModule } from '@angular/router';
+import { MAT_DIALOG_DATA } from '@angular/material/dialog';
+import { environment } from '../../../environments/environment.development';
 // Módulos de Angular Material
 import { MatCardModule } from '@angular/material/card';
 import { MatIconModule } from '@angular/material/icon';
@@ -29,12 +31,14 @@ import { filter, map, switchMap, tap } from 'rxjs';
 })
 export class DocumentDetail implements OnInit {
 
+  public apiUrl: string = environment.apiUrl;
   /** Almacena los datos completos del documento a mostrar. */
   documento?: Documento;
-
+  
   constructor (
     private route: ActivatedRoute,
-    private documentService: DocumentService
+    private documentService: DocumentService,
+    @Optional() @Inject(MAT_DIALOG_DATA) private data: { id: number }
   ) {}
 
   ngOnInit(): void {
@@ -63,6 +67,7 @@ export class DocumentDetail implements OnInit {
       // Asigna el resultado.
       this.documento = documentoEncontrado;
     });
+    }
   }
-}
+
 
