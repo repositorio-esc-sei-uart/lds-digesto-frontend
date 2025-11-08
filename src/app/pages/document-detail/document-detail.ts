@@ -9,6 +9,7 @@ import { MatButtonModule } from '@angular/material/button';
 import { DocumentService } from '../../services/document-service';
 import { Documento } from '../../interfaces/document-model';
 import { filter, map, switchMap, tap } from 'rxjs';
+import { environment } from '../../../environments/environment.development';
 
 /**
  * @Component
@@ -49,14 +50,15 @@ export class DocumentDetail implements OnInit {
       switchMap(id => this.documentService.getDocumentoById(id)),
 
       tap(documento => {
-        console.log("--- DEBUG: Documento Recibido del Servicio ---");
-        console.log(documento);
-        if (documento) {
-          console.log("Propiedad 'referenciadoPor':", documento.referenciadoPor);
-        } else {
-          console.log("El documento es undefined.");
-        }
-        console.log("-------------------------------------------");
+        console.log("URL original del archivo:", documento?.archivos?.[0]?.url);
+        if (documento?.archivos) {
+        documento.archivos = documento.archivos.map(archivo => ({
+          ...archivo,
+          url: `${environment.apiUrl}/api/v1/archivos/${archivo.idArchivo}/${archivo.nombre}`
+        }));
+      }
+
+      console.log("URL corregida:", documento?.archivos?.[0]?.url);
       })
 
     ).subscribe(documentoEncontrado => {
@@ -65,4 +67,3 @@ export class DocumentDetail implements OnInit {
     });
   }
 }
-
