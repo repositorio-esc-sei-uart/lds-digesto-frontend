@@ -156,6 +156,19 @@ export class DocumentService {
     );
   }
   /**
+   * Elimina un documento por su ID.
+   * Llama al endpoint: DELETE /api/v1/documentos/{id}
+   */
+  deleteDocumento(id: number): Observable<void> {
+    const url = `${this.apiUrl}/${id}`;
+    console.log(`[DocumentService-REAL] DELETE a ${url}`);
+    
+    return this.http.delete<void>(url).pipe(
+      tap(() => console.log(`Documento ${id} eliminado con éxito.`)),
+      catchError(this.handleError<void>('deleteDocumento'))
+    );
+  }
+  /**
    * @private
    * Helper para "rehidratar" el DTO de Tabla a la interfaz del Frontend.
    */

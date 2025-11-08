@@ -1,7 +1,7 @@
 import { Component, ElementRef, Inject, OnInit, ViewChild } from '@angular/core';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { MAT_DIALOG_DATA, MatDialogRef, MatDialogModule, MatDialog } from '@angular/material/dialog';
-import { Observable, of, switchMap, take } from 'rxjs';
+import { forkJoin, Observable, of, switchMap, take } from 'rxjs';
 
 import { TipoDocumento } from '../../../interfaces/type-document-model';
 import { Sector } from '../../../interfaces/sector-model';
@@ -135,8 +135,20 @@ export class DocumentForm implements OnInit {
     this.estados$ = this.statusDocumentService.getEstados();
     this.palabrasClave$ = this.keywordDocumentService.getKeywords();
     this.todosLosDocumentos$ = this.documentService.getDocumentos();
+    if (this.isEditMode && this.data.documento) {
+      // Usamos forkJoin para asegurarnos de que los catálogos (tipos, sectores, etc.)
+      // se hayan cargado ANTES de intentar rellenar los <mat-select>
+      forkJoin({
+        tipos: this.tipos$.pipe(take(1)),
+        sectores: this.sectores$.pipe(take(1)),
+        estados: this.estados$.pipe(take(1)),
+        palabras: this.palabrasClave$.pipe(take(1)),
+        documentos: this.todosLosDocumentos$.pipe(take(1))
+      }).subscribe(catalogos => {
+        this.fillFormForEdit(this.data.documento!, catalogos);
+      });
+    }
   }
-
   /**
    * Se dispara cuando el usuario selecciona archivos desde el input <file>.
    * Añade los archivos seleccionados a la lista `archivosParaSubir`.
@@ -466,5 +478,42 @@ export class DocumentForm implements OnInit {
       referencias: referenciasFormateadas,
       referenciadoPor: []
     };
+  }
+  /**
+   * @private
+   * Rellena el formulario con los datos de un documento existente.
+   */
+  /**
+   * @private
+   * Rellena el formulario con los datos de un documento existente.
+   * Esta versión busca los objetos correctos en los catálogos.
+   */
+  private fillFormForEdit(documento: Documento, catalogos: any): void {
+    
+    // Función helper para encontrar el objeto por ID
+    const findById = (array: any[], id: number, key: string) => 
+      array.find(item => item[key] === id);
+
+    this.documentForm.patchValue({
+      titulo: documento.titulo,
+      numDocumento: documento.numDocumento,
+      fechaCreacion: documento.fechaCreacion,
+      resumen: documento.resumen,
+      
+      // Mapeo correcto para los <mat-select>
+      tipoDocumento: findById(catalogos.tipos, documento.tipoDocumento.idTipoDocumento, 'idTipoDocumento'),
+      sector: findById(catalogos.sectores, documento.sector.idSector, 'idSector'),
+      estado: findById(catalogos.estados, documento.estado.idEstado, 'idEstado'),
+      
+      // Mapeo para <mat-select multiple> (Palabras Clave)
+      palabrasClave: (documento.palabrasClave || []).map(pc => 
+        findById(catalogos.palabras, pc.idPalabraClave, 'idPalabraClave')
+      ).filter(Boolean), // .filter(Boolean) elimina 'undefined' si algo no se encontró
+
+      // Mapeo para <mat-select multiple> (Referencias)
+      referencias: (documento.referencias || []).map(ref =>
+        findById(catalogos.documentos, ref.idDocumento, 'idDocumento')
+      ).filter(Boolean)
+    });
   }
 }

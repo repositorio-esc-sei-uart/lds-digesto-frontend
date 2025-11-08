@@ -1,6 +1,8 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, Inject, Optional } from '@angular/core';
 import { ActivatedRoute, RouterModule } from '@angular/router';
+import { MAT_DIALOG_DATA } from '@angular/material/dialog';
+import { environment } from '../../../environments/environment.development';
 // Módulos de Angular Material
 import { MatCardModule } from '@angular/material/card';
 import { MatIconModule } from '@angular/material/icon';
@@ -9,7 +11,6 @@ import { MatButtonModule } from '@angular/material/button';
 import { DocumentService } from '../../services/document-service';
 import { Documento } from '../../interfaces/document-model';
 import { filter, map, switchMap, tap } from 'rxjs';
-import { environment } from '../../../environments/environment.development';
 
 /**
  * @Component
@@ -30,40 +31,39 @@ import { environment } from '../../../environments/environment.development';
 })
 export class DocumentDetail implements OnInit {
 
+  public apiUrl: string = environment.apiUrl;
   /** Almacena los datos completos del documento a mostrar. */
   documento?: Documento;
 
-  constructor (
+  constructor(
     private route: ActivatedRoute,
-    private documentService: DocumentService
-  ) {}
+    private documentService: DocumentService,
+    @Optional() @Inject(MAT_DIALOG_DATA) private data: { id: number }
+  ) { }
 
   ngOnInit(): void {
     this.route.paramMap.pipe(
       // Obtiene el ID como string y lo convierte a número
       map(params => parseInt(params.get('id')!, 10)),
-
       // Filtro de protección para IDs inválidos (NaN)
       filter(id => !isNaN(id)),
-
       // Usa switchMap para obtener el documento principal
       switchMap(id => this.documentService.getDocumentoById(id)),
-
       tap(documento => {
         console.log("URL original del archivo:", documento?.archivos?.[0]?.url);
         if (documento?.archivos) {
-        documento.archivos = documento.archivos.map(archivo => ({
-          ...archivo,
-          url: `${environment.apiUrl}/api/v1/archivos/${archivo.idArchivo}/${archivo.nombre}`
-        }));
-      }
-
-      console.log("URL corregida:", documento?.archivos?.[0]?.url);
+          documento.archivos = documento.archivos.map(archivo => ({
+            ...archivo,
+            url: `${environment.apiUrl}/api/v1/archivos/${archivo.idArchivo}/${archivo.nombre}`
+          }));
+        }
+        console.log("URL corregida:", documento?.archivos?.[0]?.url);
       })
-
     ).subscribe(documentoEncontrado => {
       // Asigna el resultado.
       this.documento = documentoEncontrado;
     });
   }
 }
+
+
