@@ -34,40 +34,36 @@ export class DocumentDetail implements OnInit {
   public apiUrl: string = environment.apiUrl;
   /** Almacena los datos completos del documento a mostrar. */
   documento?: Documento;
-  
-  constructor (
+
+  constructor(
     private route: ActivatedRoute,
     private documentService: DocumentService,
     @Optional() @Inject(MAT_DIALOG_DATA) private data: { id: number }
-  ) {}
+  ) { }
 
   ngOnInit(): void {
     this.route.paramMap.pipe(
       // Obtiene el ID como string y lo convierte a número
       map(params => parseInt(params.get('id')!, 10)),
-
       // Filtro de protección para IDs inválidos (NaN)
       filter(id => !isNaN(id)),
-
       // Usa switchMap para obtener el documento principal
       switchMap(id => this.documentService.getDocumentoById(id)),
-
       tap(documento => {
-        console.log("--- DEBUG: Documento Recibido del Servicio ---");
-        console.log(documento);
-        if (documento) {
-          console.log("Propiedad 'referenciadoPor':", documento.referenciadoPor);
-        } else {
-          console.log("El documento es undefined.");
+        console.log("URL original del archivo:", documento?.archivos?.[0]?.url);
+        if (documento?.archivos) {
+          documento.archivos = documento.archivos.map(archivo => ({
+            ...archivo,
+            url: `${environment.apiUrl}/api/v1/archivos/${archivo.idArchivo}/${archivo.nombre}`
+          }));
         }
-        console.log("-------------------------------------------");
+        console.log("URL corregida:", documento?.archivos?.[0]?.url);
       })
-
     ).subscribe(documentoEncontrado => {
       // Asigna el resultado.
       this.documento = documentoEncontrado;
     });
-    }
   }
+}
 
 
