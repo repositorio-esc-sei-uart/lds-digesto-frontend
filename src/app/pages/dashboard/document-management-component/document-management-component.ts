@@ -52,9 +52,9 @@ export class DocumentManagementComponent implements OnInit {
 
   // Inyectar MatDialog usando inject()
   private dialog = inject(MatDialog);
-  
 
-  constructor(private documentService: DocumentService,private snackBar: MatSnackBar) {}
+
+  constructor(private documentService: DocumentService, private snackBar: MatSnackBar) { }
 
   ngOnInit(): void {
     this.loadDocumentos();
@@ -89,7 +89,7 @@ export class DocumentManagementComponent implements OnInit {
         this.snackBar.open('¡Documento guardado exitosamente!', '', { // Sin botón
           duration: 3000,
           verticalPosition: 'bottom',
-          horizontalPosition: 'center', 
+          horizontalPosition: 'center',
           panelClass: ['success-snackbar']
         });
         console.log('Documento creado, refrescando la tabla...');
@@ -103,11 +103,11 @@ export class DocumentManagementComponent implements OnInit {
    */
   openEditDocumentDialog(documento: DocumentoListItem): void {
     // 1. Mostrar spinner mientras se buscan los datos
-    this.isLoading = true; 
-    
+    this.isLoading = true;
+
     // 2. Buscar el documento completo por ID
-    this.documentService.getDocumentoById(documento.idDocumento).subscribe({
-      next: (documentoCompleto) => {
+    this.documentService.getDocumentoParaEdicion(documento.idDocumento).subscribe({
+    next: (documentoCompleto) => {
         this.isLoading = false; // Ocultar spinner
 
         if (!documentoCompleto) {
@@ -120,8 +120,8 @@ export class DocumentManagementComponent implements OnInit {
           width: '700px',
           maxWidth: '90vw',
           disableClose: true,
-          data: { 
-            isEditMode: true, 
+          data: {
+            isEditMode: true,
             documento: documentoCompleto // Pasamos el objeto 'Documento' completo
           }
         });
@@ -155,7 +155,7 @@ export class DocumentManagementComponent implements OnInit {
     const status = statusName.toLowerCase();
     if (status.includes('vigente')) {
       return 'status-vigente';
-    } else if (status=== 'derogado parcial') {
+    } else if (status === 'derogado parcial') {
       return 'status-derogado-parcial';
     } else if (status === 'derogado total') {
       return 'status-derogado-total';

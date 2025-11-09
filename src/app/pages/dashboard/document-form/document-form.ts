@@ -51,7 +51,7 @@ import { HttpErrorResponse } from '@angular/common/http';
     MatProgressSpinnerModule,
     MatListModule,
     MatSnackBarModule
-],
+  ],
   templateUrl: './document-form.html',
   styleUrl: './document-form.css'
 })
@@ -78,10 +78,10 @@ export class DocumentForm implements OnInit {
    * 'numDocumento': (Futuro) El frontend llamará al endpoint /subirPorNumDoc
    */
   private politicaDeNombreado: 'original' | 'titulo' | 'numDocumento' = 'original'; // <-- PARÁMETRO
-  
+
   /** Almacena la lista de archivos seleccionados por el usuario. */
   archivosParaSubir: File[] = [];
-  
+
   @ViewChild('submitButton', { read: ElementRef }) submitButton!: ElementRef;
 
   /**
@@ -99,13 +99,13 @@ export class DocumentForm implements OnInit {
     private documentService: DocumentService, // <--- Este servicio es clave
     private dialog: MatDialog,
     private snackBar: MatSnackBar, // <--- barra de notificacion
-    
+
     // 1. REVIERTE la inyección de datos a como estaba
-    @Inject(MAT_DIALOG_DATA) public data: { 
-      isEditMode: boolean; 
-      documento?: Documento 
+    @Inject(MAT_DIALOG_DATA) public data: {
+      isEditMode: boolean;
+      documento?: Documento
     }
-  ){
+  ) {
     this.isEditMode = data.isEditMode;
     // Definición del Formulario Reactivo
     this.documentForm = this.fb.group({
@@ -123,30 +123,68 @@ export class DocumentForm implements OnInit {
       referencias: [[]],
     });
   }
-  
+  /**
+  * Convierte un objeto Date de JS a un string YYYY-MM-DD local.
+  * @param date El objeto Date del formulario.
+  * @returns Un string en formato YYYY-MM-DD.
+  */
+ /**
+  * Convierte un valor (Date, string, o null) a un string YYYY-MM-DD local.
+  * @param date El valor del formulario.
+  * @returns Un string en formato YYYY-MM-DD.
+  */
+  private toISODateString(date: any): string {
+    if (!date) {
+      // Si la fecha es nula, devuelve la fecha de hoy como string
+      const today = new Date();
+      const adjustedToday = new Date(today.getTime() - (today.getTimezoneOffset() * 60000));
+      return adjustedToday.toISOString().split('T')[0];
+    }
+    
+    // 1. Crear un objeto Date válido sin importar la entrada (si es string o Date)
+    const validDate = new Date(date);
+
+    // 2. Extraer el año, mes y día LOCALES (como los ve el usuario)
+    const year = validDate.getFullYear();
+    const month = validDate.getMonth() + 1; // getMonth() es base 0 (0 = Enero)
+    const day = validDate.getDate();
+    
+    // 3. Formatear a YYYY-MM-DD
+    const monthFormatted = month < 10 ? '0' + month : month;
+    const dayFormatted = day < 10 ? '0' + day : day;
+
+    return `${year}-${monthFormatted}-${dayFormatted}`;
+  }
   /**
    * @LifecycleHook ngOnInit
    * Carga todos los catálogos necesarios para los <mat-select>
    * (Tipos, Sectores, Estados, Palabras Clave y Documentos para referencias).
    */
   ngOnInit(): void {
+    // Definimos los observables de los catálogos
     this.tipos$ = this.typeDocumentService.getTiposDocumento();
     this.sectores$ = this.sectorService.getSectores();
     this.estados$ = this.statusDocumentService.getEstados();
     this.palabrasClave$ = this.keywordDocumentService.getKeywords();
     this.todosLosDocumentos$ = this.documentService.getDocumentos();
+
+    // Si estamos en modo EDICIÓN, tenemos que esperar a que los catálogos
+    // principales existan ANTES de rellenar el formulario.
     if (this.isEditMode && this.data.documento) {
-      // Usamos forkJoin para asegurarnos de que los catálogos (tipos, sectores, etc.)
-      // se hayan cargado ANTES de intentar rellenar los <mat-select>
+      
+      // Esperamos a que los 3 catálogos clave (y los otros 2) se resuelvan
       forkJoin({
         tipos: this.tipos$.pipe(take(1)),
         sectores: this.sectores$.pipe(take(1)),
         estados: this.estados$.pipe(take(1)),
-        palabras: this.palabrasClave$.pipe(take(1)),
-        documentos: this.todosLosDocumentos$.pipe(take(1))
-      }).subscribe(catalogos => {
-        this.fillFormForEdit(this.data.documento!, catalogos);
-      });
+        palabras: this.palabrasClave$.pipe(take(1)), // Esperamos también por si acaso
+        documentos: this.todosLosDocumentos$.pipe(take(1)) // Esperamos también por si acaso
+      }).subscribe((catalogos) => { // <-- Añade 'catalogos' aquí
+        // Solo AHORA, que los <mat-option> existen,
+        // llamamos a fillFormForEdit.
+        this.fillFormForEdit(this.data.documento!, catalogos); // <-- Pasa 'catalogos' aquí
+      });
+
     }
   }
   /**
@@ -158,7 +196,7 @@ export class DocumentForm implements OnInit {
     const input = event.target as HTMLInputElement;
     if (input.files) {
       const archivos = Array.from(input.files);
-      
+
       const archivosPDF: File[] = [];
       const archivosRechazados: string[] = [];
 
@@ -178,31 +216,31 @@ export class DocumentForm implements OnInit {
       // 3. Notificar al usuario si se rechazaron archivos
       if (archivosRechazados.length > 0) {
         const mensaje = `Se ignoraron ${archivosRechazados.length} archivos. Solo se permiten PDFs.`;
-        
-        this.snackBar.open(mensaje, 'Cerrar', { 
+
+        this.snackBar.open(mensaje, 'Cerrar', {
           duration: 5000,
           verticalPosition: 'top', // Posición ARRIBA (dentro del modal)
           horizontalPosition: 'center',
           panelClass: ['error-snackbar'] // Reutilizamos el estilo de error
         });
-        
+
         console.warn('Archivos rechazados (no PDF):', archivosRechazados);
       }
     }
     // Reseteamos el input
     input.value = '';
   }
-  
+
 
   /**
    * Elimina un archivo de la lista `archivosParaSubir`
    * @param archivoARemover El objeto File que se debe quitar.
    */
   removerArchivo(archivoARemover: File): void {
-  // Filtramos el arreglo, creando uno nuevo que no incluya el archivo a remover
-  this.archivosParaSubir = this.archivosParaSubir.filter(
-    (file) => file !== archivoARemover
-  );
+    // Filtramos el arreglo, creando uno nuevo que no incluya el archivo a remover
+    this.archivosParaSubir = this.archivosParaSubir.filter(
+      (file) => file !== archivoARemover
+    );
   }
 
   /**
@@ -217,8 +255,8 @@ export class DocumentForm implements OnInit {
    */
   onSubmit(): void {
     console.log('onSubmit iniciado.');
-    
-    // --- Validaciones (ya las tienes) ---
+
+    // --- Validaciones documento ---
     if (this.documentForm.invalid) {
       console.error('Formulario inválido:', this.documentForm.errors);
       this.documentForm.markAllAsTouched();
@@ -227,10 +265,10 @@ export class DocumentForm implements OnInit {
     // (Validación de PDF)
     if (this.archivosParaSubir.length === 0 && !this.isEditMode) {
       console.error("Debe subir al menos un archivo (solo PDF)");
-      this.snackBar.open('Debe adjuntar al menos un archivo PDF.', 'Cerrar', { 
+      this.snackBar.open('Debe adjuntar al menos un archivo PDF.', 'Cerrar', {
         verticalPosition: 'top',
-        horizontalPosition: 'center', 
-        panelClass: ['error-snackbar'] 
+        horizontalPosition: 'center',
+        panelClass: ['error-snackbar']
       });
       return;
     }
@@ -238,35 +276,37 @@ export class DocumentForm implements OnInit {
 
     try {
       // 1. Obtiene los archivos a subir (ya filtrados por PDF)
-      const archivosFinales = this.archivosParaSubir; 
+      const archivosFinales = this.archivosParaSubir;
 
       // 2. Mapeo para generar el DTO (usa this.archivosParaSubir internamente)
       const nuevoDocumentoDTO = this.crearDocumentoDTO();
-      
+
       // 3. Prepara el objeto para la PREVISUALIZACIÓN (usa this.archivosParaSubir internamente)
-      const documentoParaPreview = this.crearDocumentoParaPreview(); 
+      const documentoParaPreview = this.crearDocumentoParaPreview();
 
       this.isLoading = true;
+      // --- INICIO DE LA MODIFICACIÓN ---
+      // Añadimos este log para depurar el objeto exacto que se envía
+      console.log('--- PAYLOAD FINAL ENVIADO AL BACKEND ---');
+      console.log(JSON.stringify(nuevoDocumentoDTO, null, 2));
+      // --- FIN DE LA MODIFICACIÓN ---
 
       // --- Abrir el Modal de Preview ---
       const previewDialogRef = this.dialog.open(DocumentPreviewComponent, {
-        width: '85%', 
+        width: '85%',
         maxWidth: '1200px',
         maxHeight: '90vh',
         data: { documento: documentoParaPreview }
       });
-      
-      // --- ¡AQUÍ LA CORRECCIÓN! ---
       // Escuchamos la respuesta del preview
       previewDialogRef.afterClosed().subscribe(result => {
         if (result === true) {
           // Si confirma, enviamos el DTO y los ARCHIVOS FINALES
-          this.guardarDocumento(nuevoDocumentoDTO, archivosFinales); 
+          this.guardarDocumento(nuevoDocumentoDTO, archivosFinales);
         } else {
           this.isLoading = false;
         }
       });
-      // --- FIN DE LA CORRECCIÓN ---
 
     } catch (error) {
       console.error('Error al construir el objeto o abrir el modal:', error);
@@ -297,42 +337,41 @@ export class DocumentForm implements OnInit {
       this.documentForm.get('palabrasClave')?.setValue([]);
     }
   }
-
-/**
-   * Contiene la lógica para "guardar" el documento llamando al servicio.
-   * Encadena las llamadas y selecciona el endpoint de subida de archivos
-   * basado en el parámetro 'politicaDeNombreado'.
-   * @param documentoDTO El DTO listo para ser enviado al Backend.
-   * @param archivosParaSubir La lista de archivos (originales) a subir.
-   */
-/**
-   * Contiene la lógica para "guardar" el documento llamando al servicio.
-   * Encadena las llamadas y selecciona el endpoint de subida de archivos
-   * basado en el parámetro 'politicaDeNombreado'.
-   * @param documentoDTO El DTO listo para ser enviado al Backend.
-   * @param archivosParaSubir La lista de archivos (ya filtrados por PDF) a subir.
-   */
+  /**
+     * Contiene la lógica para "guardar" el documento llamando al servicio.
+     * Encadena las llamadas y selecciona el endpoint de subida de archivos
+     * basado en el parámetro 'politicaDeNombreado'.
+     * @param documentoDTO El DTO listo para ser enviado al Backend.
+     * @param archivosParaSubir La lista de archivos (ya filtrados por PDF) a subir.
+     */
   private guardarDocumento(documentoDTO: any, archivosParaSubir: File[]): void {
     this.isLoading = true;
-    
-    // PASO 1: Guardar los metadatos
-    this.documentService.createDocumento(documentoDTO).pipe(
-      
-      // PASO 2: Encadenar la subida de archivos según la política
+
+    // Determinar si estamos CREANDO o ACTUALIZANDO
+    const saveOperation$ = this.isEditMode
+      ? this.documentService.updateDocumento(this.data.documento!.idDocumento, documentoDTO)
+      : this.documentService.createDocumento(documentoDTO);
+
+    // Guardar los metadatos (POST o PUT)
+    saveOperation$.pipe(
+
+      // Encadenar la subida de archivos según la política
+      // Nota: La subida de archivos es independiente de si es POST o PUT,
+      // y se asocia al ID del documento devuelto (si es POST) o al ID existente (si es PUT).
       switchMap((respuestaDTO: any) => {
-        
-      // Obtenemos el ID del documento recién creado
-        const idDocumentoCreado = respuestaDTO.idDocumento; 
+
+        // Obtenemos el ID del documento: ID existente si es edición, o ID recién creado si es nuevo
+        const idDocumentoProcesado = this.isEditMode
+          ? this.data.documento!.idDocumento
+          : respuestaDTO.idDocumento;
         const formValue = this.documentForm.value;
-
         if (archivosParaSubir.length === 0) {
-          // Si no hay archivos, no subimos nada
-          return of({ success: true, message: 'Documento creado sin archivos.' });
+          // Si no hay archivos nuevos para subir, terminamos aquí
+          return of({ success: true, message: 'Documento guardado sin archivos nuevos.' });
         }
-
         // --- LÓGICA DE PARAMETRIZACIÓN (SWITCH) ---
         switch (this.politicaDeNombreado) {
-          
+
           // --- Caso Futuro 1 ---
           case 'titulo':
             console.log("Política de nombrado: Título. (Endpoint futuro)");
@@ -342,9 +381,9 @@ export class DocumentForm implements OnInit {
             //   archivosParaSubir, 
             //   formValue.titulo
             // );
-            
+
             // Temporal: Usar el original mientras no exista el endpoint
-            return this.documentService.subirArchivos(idDocumentoCreado, archivosParaSubir);
+            return this.documentService.subirArchivos(idDocumentoProcesado, archivosParaSubir);
 
           // --- Caso Futuro 2 ---
           case 'numDocumento':
@@ -357,36 +396,36 @@ export class DocumentForm implements OnInit {
             // );
 
             // Temporal: Usar el original mientras no exista el endpoint
-            return this.documentService.subirArchivos(idDocumentoCreado, archivosParaSubir);
+            return this.documentService.subirArchivos(idDocumentoProcesado, archivosParaSubir);
 
           // --- Caso Actual ---
           case 'original':
           default:
             console.log("Política de nombrado: Original.");
             // Usamos el método 'subirArchivos' que SÍ existe en el servicio
-            return this.documentService.subirArchivos(idDocumentoCreado, archivosParaSubir);
+            return this.documentService.subirArchivos(idDocumentoProcesado, archivosParaSubir);
         }
       })
 
     ).subscribe({
       // --- ÉXITO ---
-      next: (respuestaSubida) => {
-        this.isLoading = false;
-        this.dialogRef.close(true); // Cierra el modal
-      },
-      
+    next: (respuestaSubida) => {
+    this.isLoading = false;
+    this.dialogRef.close(true); // Cierra el modal
+    },
+
       // --- ERROR ---
       error: (err: HttpErrorResponse) => {
-        // (La lógica de SnackBar de error se mantiene exactamente igual)
-        this.isLoading = false; 
+        // La lógica de SnackBar de error 
+        this.isLoading = false;
         let mensajeError = 'Ocurrió un error inesperado al guardar.';
         if (err.status === 409 && err.error?.message) {
           mensajeError = err.error.message;
         }
-        this.snackBar.open(mensajeError, 'Cerrar', { 
+        this.snackBar.open(mensajeError, 'Cerrar', {
           verticalPosition: 'top',
-          horizontalPosition: 'center', 
-          panelClass: ['error-snackbar'] 
+          horizontalPosition: 'center',
+          panelClass: ['error-snackbar']
         });
         console.error("Error al crear documento o subir archivos:", err);
       }
@@ -409,17 +448,17 @@ export class DocumentForm implements OnInit {
     // 2. Extraer IDs de las colecciones ManyToMany (Palabras Clave y Referencias)
     const idsPalabrasClave = formValue.palabrasClave.map((pc: any) => pc.idPalabraClave);
     const idsReferencias = formValue.referencias.map((ref: any) => ref.idDocumento);
-    
+
     // 3. Simular la estructura de Archivos del Backend (solo el nombre y URL)
     // Nota: El Backend de tu proyecto (Archivo.java) espera una lista de objetos Archivo.
     // Sin embargo, tu DTO (DocumentoDTO.java) no tiene un campo para `archivos`, 
     // ya que la lógica de subida y asociación de archivos suele ser un paso separado en Spring Boot.
     // Por ahora, incluimos un campo simulado para mantener la integridad del objeto en el Frontend.
-    const archivosSimulados: any[] = this.archivosParaSubir.map((file, index) => ({
+    /*const archivosSimulados: any[] = this.archivosParaSubir.map((file, index) => ({
       nombre: file.name,
       url: `/simulado/uploads/${file.name}`
     }));
-
+    */
 
     return {
       // Campos primitivos
@@ -434,15 +473,12 @@ export class DocumentForm implements OnInit {
       idsPalabrasClave: idsPalabrasClave,
       idsReferencias: idsReferencias,
       // Incluir Archivos Simulados si el Backend los espera
-      // **ADVERTENCIA:** Según DocumentoDTO.java del Backend, este campo NO EXISTE.
       // Por ahora, se incluye para no perder la información de archivos en la simulación local del Frontend:
-      archivos: archivosSimulados, // <-- Revisar con el Backend si se necesita realmente
+      // archivos: archivosSimulados, // <-- Revisar con el Backend si se necesita realmente
       // La fecha de creación la pone el Backend, pero la usamos para el preview:
-      fechaCreacion: formValue.fechaCreacion 
+      fechaCreacion: this.toISODateString(formValue.fechaCreacion)
+  };
     };
-  }
-
-
   /**
    * @private
    * Construye el objeto `Documento` completo (con objetos anidados)
@@ -450,7 +486,7 @@ export class DocumentForm implements OnInit {
    */
   private crearDocumentoParaPreview(): Documento {
     const formValue = this.documentForm.value;
-    
+
     const archivosSimulados: Archivo[] = this.archivosParaSubir.map((file, index) => ({
       idArchivo: 100 + index, // ID simulado
       nombre: file.name,
@@ -462,7 +498,7 @@ export class DocumentForm implements OnInit {
         idDocumento: doc.idDocumento,
         numDocumento: doc.numDocumento
       }));
-    
+
     // La estructura de Documento[] debe incluir campos completos para el preview.
     return {
       idDocumento: 0, // ID 0 ya que aún no se guarda
@@ -488,11 +524,24 @@ export class DocumentForm implements OnInit {
    * Rellena el formulario con los datos de un documento existente.
    * Esta versión busca los objetos correctos en los catálogos.
    */
+  /**
+  * @private
+  * Rellena el formulario con los datos de un documento existente.
+  * Esta versión funciona porque el 'documento' recibido ya fue
+  * hidratado por 'document-service' y contiene los OBJETOS completos.
+  */
   private fillFormForEdit(documento: Documento, catalogos: any): void {
-    
-    // Función helper para encontrar el objeto por ID
-    const findById = (array: any[], id: number, key: string) => 
-      array.find(item => item[key] === id);
+   // Buscamos la *instancia correcta* del objeto en los catálogos cargados
+    const tipoDocCorrecto = catalogos.tipos.find(
+      (t: TipoDocumento) => t.idTipoDocumento === documento.tipoDocumento.idTipoDocumento
+    );
+    const sectorCorrecto = catalogos.sectores.find(
+      (s: Sector) => s.idSector === documento.sector.idSector
+    );
+    const estadoCorrecto = catalogos.estados.find(
+      (e: EstadoDocumento) => e.idEstado === documento.estado.idEstado
+    );
+    // --- FIN DE CORRECCIÓN ---
 
     this.documentForm.patchValue({
       titulo: documento.titulo,
@@ -500,20 +549,15 @@ export class DocumentForm implements OnInit {
       fechaCreacion: documento.fechaCreacion,
       resumen: documento.resumen,
       
-      // Mapeo correcto para los <mat-select>
-      tipoDocumento: findById(catalogos.tipos, documento.tipoDocumento.idTipoDocumento, 'idTipoDocumento'),
-      sector: findById(catalogos.sectores, documento.sector.idSector, 'idSector'),
-      estado: findById(catalogos.estados, documento.estado.idEstado, 'idEstado'),
+      // Asignamos las instancias correctas que encontramos
+      tipoDocumento: tipoDocCorrecto,
+      sector: sectorCorrecto,
+      estado: estadoCorrecto,
       
-      // Mapeo para <mat-select multiple> (Palabras Clave)
-      palabrasClave: (documento.palabrasClave || []).map(pc => 
-        findById(catalogos.palabras, pc.idPalabraClave, 'idPalabraClave')
-      ).filter(Boolean), // .filter(Boolean) elimina 'undefined' si algo no se encontró
-
-      // Mapeo para <mat-select multiple> (Referencias)
-      referencias: (documento.referencias || []).map(ref =>
-        findById(catalogos.documentos, ref.idDocumento, 'idDocumento')
-      ).filter(Boolean)
+      // Asignación de arreglos
+      // (Estos también necesitan el mismo tratamiento si fallan)
+      palabrasClave: documento.palabrasClave,
+      referencias: documento.referencias 
     });
   }
 }
