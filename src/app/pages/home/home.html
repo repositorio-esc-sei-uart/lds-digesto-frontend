@@ -12,7 +12,7 @@
     <div class="filter-buttons">
       <!-- Botón para mostrar todos los documentos -->
       <button mat-stroked-button
-              (click)="selectCategory('todos')"
+              (click)="selectCategory('todos', undefined)"
               [class.active-filter]="categoriaSeleccionada === 'todos'">
         Todos
       </button>
@@ -20,7 +20,7 @@
       <!-- Se utiliza el bloque @for para iterar y crear un botón por cada tipo de documento. -->
       @for (tipo of tiposDeDocumento; track tipo.idTipoDocumento) {
         <button mat-stroked-button
-                (click)="selectCategory(tipo.nombre)"
+                (click)="selectCategory(tipo.nombre, tipo.idTipoDocumento)"
                 [class.active-filter]="categoriaSeleccionada === tipo.nombre">
           <!-- <mat-icon>{{ tipo.icono }}</mat-icon> futura personalización -->
           <span>{{ tipo.nombre }}</span>
@@ -60,6 +60,18 @@
         <mat-icon>search_off</mat-icon>
         <p>No se encontraron documentos para los filtros aplicados.</p>
       </div>
+    }
+
+    <!-- Paginador -->
+    @if (totalElements > 0) {
+      <mat-paginator
+        [length]="totalElements"
+        [pageSize]="pageSize"
+        [pageIndex]="currentPage"
+        [pageSizeOptions]="[6, 12, 18]"
+        (page)="onPageChange($event)"
+        showFirstLastButtons>
+      </mat-paginator>
     }
   </section>
 </div>

@@ -6,7 +6,7 @@
  */
 import { Injectable } from '@angular/core';
 import { Documento, DocumentoListItem, ReferenciaDocumento } from '../interfaces/document-model';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpParams } from '@angular/common/http';
 import { catchError, map, delay, Observable, of, tap, throwError } from 'rxjs';
 import { environment } from '../../environments/environment.development';
 import { TipoDocumento, } from '../interfaces/type-document-model';
@@ -18,6 +18,8 @@ import { forkJoin } from 'rxjs';
 import { TypeDocumentService } from './type-document-service';
 import { SectorService } from './sector-service';
 import { StatusDocumentService } from './status-document-service';
+import { PageResponse } from '../interfaces/page-model';
+
 // --- Definiciones de DTOs del Backend (Lo que la API envía) ---
 // (Define cómo se verá el EstadoDTO que viene del backend)
 interface BackendEstadoDTO {
@@ -32,7 +34,7 @@ interface BackendTipoDocumentoDTO {
   descripcion: string;
 }
 
-// DTO para la TABLA (GET /api/v1/documentos) 
+// DTO para la TABLA (GET /api/v1/documentos)
 interface BackendDocumentoTablaDTO {
   idDocumento: number;
   titulo: string;
@@ -88,10 +90,31 @@ export class DocumentService {
    * la "rehidrata" al formato que el frontend espera (DocumentoListItem),
    * y la devuelve como un Observable.
    */
-  getDocumentos(): Observable<DocumentoListItem[]> {
-    return this.http.get<BackendDocumentoTablaDTO[]>(this.apiUrl).pipe(
-      map(dtos => dtos.map(dto => this.rehidratarTablaDTO(dto))),
-      catchError(this.handleError<DocumentoListItem[]>('getDocumentos'))
+  getDocumentos(
+      page: number = 0,
+      size: number = 6,
+      idTipoDocumento?: number
+    ): Observable<PageResponse<DocumentoListItem>> {
+    // Construye los parámetros base de paginación
+    let params = new HttpParams()
+      .set('page', page.toString())
+      .set('size', size.toString());
+
+    // Solo agrega el filtro si existe
+    if (idTipoDocumento !== undefined) {
+      params = params.set('idTipoDocumento', idTipoDocumento.toString());
+    }
+    return this.http.get<PageResponse<BackendDocumentoTablaDTO>>(this.apiUrl, { params }).pipe(
+      map(response => ({
+      content: response.content.map(dto => this.rehidratarTablaDTO(dto)),
+      totalElements: response.totalElements,
+      totalPages: response.totalPages,
+      size: response.size,
+      number: response.number,
+      first: response.first,
+      last: response.last
+    })),
+      catchError(this.handleError<PageResponse<DocumentoListItem>>('getDocumentos'))
     );
   }
 
@@ -134,14 +157,14 @@ export class DocumentService {
    */
   subirArchivos(idDocumento: number, archivos: File[]): Observable<any> {
 
-    // 1. Construimos la URL del endpoint de subida de archivos 
+    // 1. Construimos la URL del endpoint de subida de archivos
     const uploadUrl = `${environment.apiUrl}/api/v1/archivos/subir/${idDocumento}`;
 
     // 2. Usamos FormData para enviar archivos (multipart/form-data)
     const formData = new FormData();
 
     // 3. Adjuntamos cada archivo. La clave "file" debe coincidir
-    // con el @RequestParam("file") del backend 
+    // con el @RequestParam("file") del backend
     archivos.forEach(archivo => {
       // El backend recibirá el nombre original del archivo
       formData.append('file', archivo, archivo.name);
@@ -232,8 +255,8 @@ export class DocumentService {
   /**
    * @private
    * Captura y registra un error de HttpClient en la consola.
-   * Lo más importante es que **relanza el error** para que el 
-   * componente que se suscribió (ej. DocumentForm) lo reciba 
+   * Lo más importante es que **relanza el error** para que el
+   * componente que se suscribió (ej. DocumentForm) lo reciba
    * en su bloque 'error:' y pueda mostrarlo al usuario.
    */
   private handleError<T>(operation = 'operation') {
@@ -292,7 +315,7 @@ export class DocumentService {
     catalogoSectores: Sector[],
     catalogoEstados: EstadoDocumento[]
   ): Documento {
-    
+
     // Buscamos los objetos completos en los catálogos usando el nombre que SÍ nos da el DTO
     const tipoDocEncontrado = catalogoTipos.find(t => t.nombre === dto.nombreTipoDocumento);
     const sectorEncontrado = catalogoSectores.find(s => s.nombre === dto.nombreSector);
@@ -304,12 +327,12 @@ export class DocumentService {
       numDocumento: dto.numDocumento,
       resumen: dto.resumen,
       fechaCreacion: new Date(dto.fechaCreacion + 'T00:00:00'),
-      
+
       // Asignamos los objetos completos
       tipoDocumento: tipoDocEncontrado || { idTipoDocumento: 0, nombre: dto.nombreTipoDocumento, descripcion: '' },
       sector: sectorEncontrado || { idSector: 0, nombre: dto.nombreSector } as Sector,
       estado: estadoEncontrado || { idEstado: 0, nombre: dto.nombreEstado } as EstadoDocumento,
-      
+
       archivos: dto.archivos || [],
       palabrasClave: dto.palabrasClave || [],
       referencias: dto.referencias || [],
@@ -325,9 +348,9 @@ export class DocumentService {
     const uploadUrl = `${environment.apiUrl}/api/v1/archivos/subirPorTitulo/${idDocumento}`;
     const formData = new FormData();
     archivos.forEach(archivo => formData.append('file', archivo, archivo.name));
-    
+
     // El backend leerá el título para sanitizarlo y usarlo como nombre
-    formData.append('nombreBase', titulo); 
+    formData.append('nombreBase', titulo);
 
     return this.http.post<any>(uploadUrl, formData).pipe(
       tap(response => console.log('Respuesta de subida (Titulo):', response)),
@@ -345,9 +368,9 @@ export class DocumentService {
     const uploadUrl = `${environment.apiUrl}/api/v1/archivos/subirPorNumDoc/${idDocumento}`;
     const formData = new FormData();
     archivos.forEach(archivo => formData.append('file', archivo, archivo.name));
-    
+
     // El backend leerá el numDocumento para sanitizarlo y usarlo como nombre
-    formData.append('nombreBase', numDocumento); 
+    formData.append('nombreBase', numDocumento);
 
     return this.http.post<any>(uploadUrl, formData).pipe(
       tap(response => console.log('Respuesta de subida (NumDoc):', response)),

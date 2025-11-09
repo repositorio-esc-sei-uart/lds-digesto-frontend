@@ -53,7 +53,6 @@ export class DocumentManagementComponent implements OnInit {
   // Inyectar MatDialog usando inject()
   private dialog = inject(MatDialog);
 
-
   constructor(private documentService: DocumentService, private snackBar: MatSnackBar) { }
 
   ngOnInit(): void {
@@ -62,9 +61,9 @@ export class DocumentManagementComponent implements OnInit {
 
   loadDocumentos(): void {
     this.isLoading = true;
-    this.documentService.getDocumentos().subscribe({
-      next: (data) => {
-        this.dataSource = data;
+    this.documentService.getDocumentos(0, 100).subscribe({
+      next: (response) => {
+        this.dataSource = response.content;;
         this.isLoading = false;
       },
       error: (err) => {
@@ -166,7 +165,7 @@ export class DocumentManagementComponent implements OnInit {
   /**
    * Abre un diálogo modal para previsualizar el detalle de un documento.
    * @param documentoId El ID del documento a previsualizar.
-  
+
   openPreviewModal(documentoId: number): void {
     const dialogRef = this.dialog.open(DocumentDetail, { // Abre el componente DocumentDetail
       width: '85%',              // Ancho del modal
