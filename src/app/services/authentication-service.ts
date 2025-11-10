@@ -1,6 +1,6 @@
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import { BehaviorSubject, catchError, delay, Observable, of, tap, throwError } from 'rxjs';
+import { BehaviorSubject, catchError, delay, map, Observable, of, tap, throwError } from 'rxjs';
 import { UserProfile, MockUser, AuthResponse } from '../interfaces/user-model';
 
 @Injectable({ providedIn: 'root' })
@@ -133,5 +133,14 @@ export class AuthenticationService {
   private handleError(error: any): Observable<never> {
     console.error('Error completo:', error);
     return throwError(() => new Error('Error de comunicación con el servidor. Intente más tarde.'));
+  }
+
+  /**
+   * Observable que emite true/false según el estado de autenticación
+   */
+  get isAuthenticated$(): Observable<boolean> {
+    return this.currentUser$.pipe(
+      map(user => user !== null)
+    );
   }
 }

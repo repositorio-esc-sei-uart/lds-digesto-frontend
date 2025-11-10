@@ -52,6 +52,9 @@ export class HeaderComponent implements OnInit {
   /** Observable que emite el perfil del usuario actualmente autenticado. */
   currentUser$: Observable<UserProfile | null>;
 
+  /** Observable para controlar visibilidad de búsqueda */
+  isAuthenticated$: Observable<boolean>;
+
   /**
    * Se inyectan los servicios necesarios para el funcionamiento del componente.
    * @param configService Servicio para obtener la configuración global (logo, títulos).
@@ -68,6 +71,8 @@ export class HeaderComponent implements OnInit {
     // Se inicializa la propiedad 'currentUser$' en el constructor,
     // asignándole el observable del servicio de autenticación.
     this.currentUser$ = this.authService.currentUser$;
+    // Inicializa el observable de autenticación
+    this.isAuthenticated$ = this.authService.isAuthenticated$;
   }
 
   /**

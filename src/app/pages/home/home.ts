@@ -13,6 +13,8 @@ import { TypeDocumentService } from '../../services/type-document-service';
 import { SearchService } from '../../services/search-service';
 import { DocumentoListItem } from '../../interfaces/document-model';
 import { TipoDocumento } from '../../interfaces/type-document-model';
+import { MatPaginatorModule } from '@angular/material/paginator';
+import { ConteoTipos } from '../../interfaces/conteo-model';
 
 /**
  * @Component
@@ -28,7 +30,8 @@ import { TipoDocumento } from '../../interfaces/type-document-model';
     MatButtonModule,
     MatCardModule,
     MatIconModule,
-    MatTooltipModule
+    MatTooltipModule,
+    MatPaginatorModule
   ],
   templateUrl: './home.html',
   styleUrl: './home.css'
@@ -41,10 +44,20 @@ export class HomeComponent implements OnInit {
   documentosFiltrados: DocumentoListItem[] = [];
   /** Almacena la lista de tipos de documento para generar los botones de filtro. */
   tiposDeDocumento: TipoDocumento[] = [];
+  conteoPorTipo: ConteoTipos = {}; // Guarda el conteo de documentos por tipo
+  totalDocumentos = 0; // Guarda el conteo total de documentos
   /** Guarda la categoría actualmente seleccionada por el usuario. */
   categoriaSeleccionada: string = 'todos';
+  /** Guarda el ID del tipo de documento seleccionado (si aplica). */
+  idTipoSeleccionado?: number;
   /** Guarda el término de búsqueda actual proveniente del header. */
   terminoDeBusqueda: string = '';
+
+  // Variables de paginación
+  currentPage = 0;
+  pageSize = 6;
+  totalElements = 0;
+  totalPages = 0;
 
   /**
    * Se inyectan todos los servicios necesarios para el funcionamiento del componente.
@@ -67,20 +80,49 @@ export class HomeComponent implements OnInit {
    * Se ejecuta al iniciar el componente. Carga los datos iniciales y se suscribe al servicio de búsqueda.
    */
   ngOnInit(): void {
-    // Se obtienen los datos de los servicios.
-    this.documentService.getDocumentos().subscribe(documentos => {
-      this.todosLosDocumentos = documentos;
-      this.aplicarFiltros();
-    });
+    // Carga documentos con paginación
+    this.cargarDocumentos();
+    // Carga conteos por tipo
+    this.cargarTiposYConteos();
 
+    // Recarga documentos cuando cambia la búsqueda
+    this.searchService.searchTerm$.subscribe(term => {
+      this.terminoDeBusqueda = term;
+      this.currentPage = 0;  // Resetea a página 1
+      this.cargarDocumentos();  // Recarga con el término de búsqueda
+    });
+  }
+
+  /**
+   * Carga documentos desde el backend con paginación y filtro opcional
+   */
+  cargarDocumentos(): void {
+    this.documentService.getDocumentos(
+      this.currentPage,
+      this.pageSize,
+      this.idTipoSeleccionado,  // undefined = todos, number = filtrado
+      this.terminoDeBusqueda
+    ).subscribe(response => {
+      this.documentosFiltrados = response.content;  // ✅ Extrae el array
+      this.totalElements = response.totalElements;
+      this.totalPages = response.totalPages;
+    });
+  }
+
+  /**
+   * Carga tipos de documento y sus conteos
+   */
+  cargarTiposYConteos(): void {
+    // Carga tipos
     this.typeDocumentService.getTiposDocumento().subscribe(tipos => {
       this.tiposDeDocumento = tipos;
     });
 
-    // Se suscribe a los cambios en el término de búsqueda.
-    this.searchService.searchTerm$.subscribe(term => {
-      this.terminoDeBusqueda = term;
-      this.aplicarFiltros();
+    // Carga conteos
+    this.documentService.getCountByType().subscribe(conteos => {
+      this.conteoPorTipo = conteos;
+      // Calcula total
+      this.totalDocumentos = Object.values(conteos).reduce((sum, count) => sum + count, 0);
     });
   }
 
@@ -88,9 +130,20 @@ export class HomeComponent implements OnInit {
    * Se ejecuta cuando el usuario hace clic en un botón de categoría.
    * @param category La categoría seleccionada (ej. 'Resoluciones', 'Disposiciones' o 'todos').
    */
-  selectCategory(category: string): void {
+  selectCategory(category: string, idTipo?: number): void {
     this.categoriaSeleccionada = category;
-    this.aplicarFiltros(); // Se vuelven a aplicar los filtros con la nueva categoría.
+    this.idTipoSeleccionado = idTipo;  // undefined si es "todos"
+    this.currentPage = 0;  // Resetea a la primera página
+    this.cargarDocumentos();  // Recarga con el filtro
+  }
+
+  /**
+   * Se ejecuta cuando el usuario cambia de página
+   */
+  onPageChange(event: any): void {
+    this.currentPage = event.pageIndex;
+    this.pageSize = event.pageSize;
+    this.cargarDocumentos();  // Mantiene el filtro actual
   }
 
   /**
@@ -105,7 +158,7 @@ export class HomeComponent implements OnInit {
    * Se centraliza la lógica de filtrado. Se aplica el filtro por categoría y luego por término de búsqueda.
    * Esta función es llamada cada vez que cambia la categoría o el término de búsqueda.
    */
-  private aplicarFiltros(): void {
+  /** private aplicarFiltros(): void {
     let documentos = this.todosLosDocumentos;
 
     // Primero, se filtra por la categoría seleccionada.
@@ -125,5 +178,5 @@ export class HomeComponent implements OnInit {
 
     // Finalmente, se actualiza la lista de documentos a mostrar.
     this.documentosFiltrados = documentos;
-  }
+  }*/
 }

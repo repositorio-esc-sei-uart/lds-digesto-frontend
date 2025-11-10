@@ -62,6 +62,7 @@
   align-items: center;
   justify-content: center;
   padding: 0 1.5rem;        /* Se añade espaciado para evitar que se pegue a otros elementos. */
+  animation: fadeIn 0.3s ease-in; /* Animación de aparición suave. */
 }
 
 /* Se estiliza el componente mat-form-field. */
@@ -162,6 +163,10 @@
   }
 
   /** @subsection Estilo de Búsqueda Expandida en Móvil */
+  /* Cuando está logueado, centra mejor el contenido */
+  .custom-toolbar:has(.user-menu) .toolbar-left {
+    margin-right: auto;
+  }
 
   /* Cuando la búsqueda está activa, se ocultan el logo y ciertos botones con una animación. */
   .custom-toolbar.search-active .toolbar-left,

@@ -1,7 +1,7 @@
 import { Component, ElementRef, Inject, OnInit, ViewChild } from '@angular/core';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { MAT_DIALOG_DATA, MatDialogRef, MatDialogModule, MatDialog } from '@angular/material/dialog';
-import { forkJoin, Observable, of, switchMap, take } from 'rxjs';
+import { forkJoin, Observable, of, switchMap, take, map } from 'rxjs';
 
 import { TipoDocumento } from '../../../interfaces/type-document-model';
 import { Sector } from '../../../interfaces/sector-model';
@@ -123,6 +123,7 @@ export class DocumentForm implements OnInit {
       referencias: [[]],
     });
   }
+
   /**
   * Convierte un objeto Date de JS a un string YYYY-MM-DD local.
   * @param date El objeto Date del formulario.
@@ -140,7 +141,7 @@ export class DocumentForm implements OnInit {
       const adjustedToday = new Date(today.getTime() - (today.getTimezoneOffset() * 60000));
       return adjustedToday.toISOString().split('T')[0];
     }
-    
+
     // 1. Crear un objeto Date válido sin importar la entrada (si es string o Date)
     const validDate = new Date(date);
 
@@ -148,13 +149,14 @@ export class DocumentForm implements OnInit {
     const year = validDate.getFullYear();
     const month = validDate.getMonth() + 1; // getMonth() es base 0 (0 = Enero)
     const day = validDate.getDate();
-    
+
     // 3. Formatear a YYYY-MM-DD
     const monthFormatted = month < 10 ? '0' + month : month;
     const dayFormatted = day < 10 ? '0' + day : day;
 
     return `${year}-${monthFormatted}-${dayFormatted}`;
   }
+
   /**
    * @LifecycleHook ngOnInit
    * Carga todos los catálogos necesarios para los <mat-select>
@@ -166,12 +168,13 @@ export class DocumentForm implements OnInit {
     this.sectores$ = this.sectorService.getSectores();
     this.estados$ = this.statusDocumentService.getEstados();
     this.palabrasClave$ = this.keywordDocumentService.getKeywords();
-    this.todosLosDocumentos$ = this.documentService.getDocumentos();
 
-    // Si estamos en modo EDICIÓN, tenemos que esperar a que los catálogos
-    // principales existan ANTES de rellenar el formulario.
+    this.todosLosDocumentos$ = this.documentService.getDocumentos().pipe(
+      map(response => response.content)
+    );
+
     if (this.isEditMode && this.data.documento) {
-      
+
       // Esperamos a que los 3 catálogos clave (y los otros 2) se resuelvan
       forkJoin({
         tipos: this.tipos$.pipe(take(1)),
@@ -187,6 +190,7 @@ export class DocumentForm implements OnInit {
 
     }
   }
+
   /**
    * Se dispara cuando el usuario selecciona archivos desde el input <file>.
    * Añade los archivos seleccionados a la lista `archivosParaSubir`.
@@ -298,6 +302,7 @@ export class DocumentForm implements OnInit {
         maxHeight: '90vh',
         data: { documento: documentoParaPreview }
       });
+
       // Escuchamos la respuesta del preview
       previewDialogRef.afterClosed().subscribe(result => {
         if (result === true) {
@@ -377,8 +382,8 @@ export class DocumentForm implements OnInit {
             console.log("Política de nombrado: Título. (Endpoint futuro)");
             // Descomentar cuando el backend esté listo:
             // return this.documentService.subirArchivosConTitulo(
-            //   idDocumentoCreado, 
-            //   archivosParaSubir, 
+            //   idDocumentoCreado,
+            //   archivosParaSubir,
             //   formValue.titulo
             // );
 
@@ -390,8 +395,8 @@ export class DocumentForm implements OnInit {
             console.log("Política de nombrado: N° Documento. (Endpoint futuro)");
             // Descomentar cuando el backend esté listo:
             // return this.documentService.subirArchivosConNumDoc(
-            //   idDocumentoCreado, 
-            //   archivosParaSubir, 
+            //   idDocumentoCreado,
+            //   archivosParaSubir,
             //   formValue.numDocumento
             // );
 
@@ -416,7 +421,7 @@ export class DocumentForm implements OnInit {
 
       // --- ERROR ---
       error: (err: HttpErrorResponse) => {
-        // La lógica de SnackBar de error 
+        // La lógica de SnackBar de error
         this.isLoading = false;
         let mensajeError = 'Ocurrió un error inesperado al guardar.';
         if (err.status === 409 && err.error?.message) {
@@ -451,7 +456,7 @@ export class DocumentForm implements OnInit {
 
     // 3. Simular la estructura de Archivos del Backend (solo el nombre y URL)
     // Nota: El Backend de tu proyecto (Archivo.java) espera una lista de objetos Archivo.
-    // Sin embargo, tu DTO (DocumentoDTO.java) no tiene un campo para `archivos`, 
+    // Sin embargo, tu DTO (DocumentoDTO.java) no tiene un campo para `archivos`,
     // ya que la lógica de subida y asociación de archivos suele ser un paso separado en Spring Boot.
     // Por ahora, incluimos un campo simulado para mantener la integridad del objeto en el Frontend.
     /*const archivosSimulados: any[] = this.archivosParaSubir.map((file, index) => ({
@@ -478,6 +483,7 @@ export class DocumentForm implements OnInit {
       // La fecha de creación la pone el Backend, pero la usamos para el preview:
       fechaCreacion: this.toISODateString(formValue.fechaCreacion)
   };
+
     };
   /**
    * @private
@@ -548,16 +554,16 @@ export class DocumentForm implements OnInit {
       numDocumento: documento.numDocumento,
       fechaCreacion: documento.fechaCreacion,
       resumen: documento.resumen,
-      
+
       // Asignamos las instancias correctas que encontramos
       tipoDocumento: tipoDocCorrecto,
       sector: sectorCorrecto,
       estado: estadoCorrecto,
-      
+
       // Asignación de arreglos
       // (Estos también necesitan el mismo tratamiento si fallan)
       palabrasClave: documento.palabrasClave,
-      referencias: documento.referencias 
+      referencias: documento.referencias
     });
   }
 }
