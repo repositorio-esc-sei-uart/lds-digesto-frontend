@@ -14,6 +14,7 @@ import { SearchService } from '../../services/search-service';
 import { DocumentoListItem } from '../../interfaces/document-model';
 import { TipoDocumento } from '../../interfaces/type-document-model';
 import { MatPaginatorModule } from '@angular/material/paginator';
+import { ConteoTipos } from '../../interfaces/conteo-model';
 
 /**
  * @Component
@@ -43,6 +44,8 @@ export class HomeComponent implements OnInit {
   documentosFiltrados: DocumentoListItem[] = [];
   /** Almacena la lista de tipos de documento para generar los botones de filtro. */
   tiposDeDocumento: TipoDocumento[] = [];
+  conteoPorTipo: ConteoTipos = {}; // Guarda el conteo de documentos por tipo
+  totalDocumentos = 0; // Guarda el conteo total de documentos
   /** Guarda la categoría actualmente seleccionada por el usuario. */
   categoriaSeleccionada: string = 'todos';
   /** Guarda el ID del tipo de documento seleccionado (si aplica). */
@@ -79,11 +82,8 @@ export class HomeComponent implements OnInit {
   ngOnInit(): void {
     // Carga documentos con paginación
     this.cargarDocumentos();
-
-    // Carga tipos de documento
-    this.typeDocumentService.getTiposDocumento().subscribe(tipos => {
-      this.tiposDeDocumento = tipos;
-    });
+    // Carga conteos por tipo
+    this.cargarTiposYConteos();
 
     // Recarga documentos cuando cambia la búsqueda
     this.searchService.searchTerm$.subscribe(term => {
@@ -106,6 +106,23 @@ export class HomeComponent implements OnInit {
       this.documentosFiltrados = response.content;  // ✅ Extrae el array
       this.totalElements = response.totalElements;
       this.totalPages = response.totalPages;
+    });
+  }
+
+  /**
+   * Carga tipos de documento y sus conteos
+   */
+  cargarTiposYConteos(): void {
+    // Carga tipos
+    this.typeDocumentService.getTiposDocumento().subscribe(tipos => {
+      this.tiposDeDocumento = tipos;
+    });
+
+    // Carga conteos
+    this.documentService.getCountByType().subscribe(conteos => {
+      this.conteoPorTipo = conteos;
+      // Calcula total
+      this.totalDocumentos = Object.values(conteos).reduce((sum, count) => sum + count, 0);
     });
   }
 

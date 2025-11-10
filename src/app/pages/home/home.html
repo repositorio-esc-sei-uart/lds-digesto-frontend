@@ -15,6 +15,7 @@
               (click)="selectCategory('todos', undefined)"
               [class.active-filter]="categoriaSeleccionada === 'todos'">
         Todos
+        <span class="badge">{{ totalDocumentos }}</span>
       </button>
 
       <!-- Se utiliza el bloque @for para iterar y crear un botón por cada tipo de documento. -->
@@ -24,6 +25,7 @@
                 [class.active-filter]="categoriaSeleccionada === tipo.nombre">
           <!-- <mat-icon>{{ tipo.icono }}</mat-icon> futura personalización -->
           <span>{{ tipo.nombre }}</span>
+          <span class="badge">{{ conteoPorTipo[tipo.idTipoDocumento] || 0 }}</span>
         </button>
       }
     </div>

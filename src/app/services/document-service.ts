@@ -19,6 +19,7 @@ import { TypeDocumentService } from './type-document-service';
 import { SectorService } from './sector-service';
 import { StatusDocumentService } from './status-document-service';
 import { PageResponse } from '../interfaces/page-model';
+import { ConteoTipos } from '../interfaces/conteo-model';
 
 // --- Definiciones de DTOs del Backend (Lo que la API envía) ---
 // (Define cómo se verá el EstadoDTO que viene del backend)
@@ -273,6 +274,17 @@ export class DocumentService {
       return throwError(() => error);
     };
   }
+
+  /**
+   * Obtiene el conteo de documentos por tipo
+   */
+  getCountByType(): Observable<{ [key: number]: number }> {
+    const url = `${this.apiUrl}/count-by-type`;
+    return this.http.get<{ [key: number]: number }>(url).pipe(  // ✅ Y aquí
+    catchError(this.handleError<{ [key: number]: number }>('getCountByType'))
+    );
+  }
+
   /**
   * Actualiza un documento existente por su ID.
   * Llama al endpoint: PUT /api/v1/documentos/{id}
