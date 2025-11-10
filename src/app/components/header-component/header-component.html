@@ -14,22 +14,26 @@
     </div>
   </div>
 
-  <!-- Sección Central: Contiene la barra de búsqueda principal, visible en escritorio. -->
-  <div class="search-container">
-    <mat-form-field class="search-bar">
-      <mat-icon matPrefix>search</mat-icon>
-      <!-- Se utiliza un formControl para gestionar el estado del input de forma reactiva. -->
-      <input matInput placeholder="Buscar en el digesto..." [formControl]="searchControl">
-    </mat-form-field>
-  </div>
+  <!-- Sección Central: Contiene la barra de búsqueda principal. Solo visible si NO está autenticado. -->
+  @if (!(isAuthenticated$ | async)) {
+    <div class="search-container">
+      <mat-form-field class="search-bar">
+        <mat-icon matPrefix>search</mat-icon>
+        <!-- Se utiliza un formControl para gestionar el estado del input de forma reactiva. -->
+        <input matInput placeholder="Buscar en el digesto..." [formControl]="searchControl">
+      </mat-form-field>
+    </div>
+  }
 
   <!-- Sección Derecha: Contiene los botones de acción (búsqueda móvil, ayuda, acceso). -->
   <div class="toolbar-right">
     <!-- Botón para mostrar/ocultar la búsqueda, visible solo en móviles. -->
-    <button mat-icon-button class="search-toggle-button" (click)="toggleSearch()" aria-label="Abrir búsqueda">
-      <!-- El ícono cambia entre 'search' y 'close' según el estado de la búsqueda. -->
-      <mat-icon>{{ isSearchActive ? 'close' : 'search' }}</mat-icon>
-    </button>
+    @if (!(isAuthenticated$ | async)) {
+      <button mat-icon-button class="search-toggle-button" (click)="toggleSearch()" aria-label="Abrir búsqueda">
+        <!-- El ícono cambia entre 'search' y 'close' según el estado de la búsqueda. -->
+        <mat-icon>{{ isSearchActive ? 'close' : 'search' }}</mat-icon>
+      </button>
+    }
 
     <!-- Botón de Ayuda. -->
     <button mat-icon-button class="help-icon" aria-label="Ayuda">

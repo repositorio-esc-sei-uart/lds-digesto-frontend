@@ -85,14 +85,11 @@ export class HomeComponent implements OnInit {
       this.tiposDeDocumento = tipos;
     });
 
-    this.typeDocumentService.getTiposDocumento().subscribe(tipos => {
-      this.tiposDeDocumento = tipos;
-    });
-
-    // Búsqueda por texto
+    // Recarga documentos cuando cambia la búsqueda
     this.searchService.searchTerm$.subscribe(term => {
       this.terminoDeBusqueda = term;
-      // TODO: Implementar búsqueda en backend
+      this.currentPage = 0;  // Resetea a página 1
+      this.cargarDocumentos();  // Recarga con el término de búsqueda
     });
   }
 
@@ -103,7 +100,8 @@ export class HomeComponent implements OnInit {
     this.documentService.getDocumentos(
       this.currentPage,
       this.pageSize,
-      this.idTipoSeleccionado  // undefined = todos, number = filtrado
+      this.idTipoSeleccionado,  // undefined = todos, number = filtrado
+      this.terminoDeBusqueda
     ).subscribe(response => {
       this.documentosFiltrados = response.content;  // ✅ Extrae el array
       this.totalElements = response.totalElements;
@@ -143,7 +141,7 @@ export class HomeComponent implements OnInit {
    * Se centraliza la lógica de filtrado. Se aplica el filtro por categoría y luego por término de búsqueda.
    * Esta función es llamada cada vez que cambia la categoría o el término de búsqueda.
    */
-  private aplicarFiltros(): void {
+  /** private aplicarFiltros(): void {
     let documentos = this.todosLosDocumentos;
 
     // Primero, se filtra por la categoría seleccionada.
@@ -163,5 +161,5 @@ export class HomeComponent implements OnInit {
 
     // Finalmente, se actualiza la lista de documentos a mostrar.
     this.documentosFiltrados = documentos;
-  }
+  }*/
 }

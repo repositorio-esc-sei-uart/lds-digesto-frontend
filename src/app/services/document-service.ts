@@ -93,17 +93,24 @@ export class DocumentService {
   getDocumentos(
       page: number = 0,
       size: number = 6,
-      idTipoDocumento?: number
+      idTipoDocumento?: number,
+      search?: string
     ): Observable<PageResponse<DocumentoListItem>> {
     // Construye los parámetros base de paginación
     let params = new HttpParams()
       .set('page', page.toString())
       .set('size', size.toString());
 
-    // Solo agrega el filtro si existe
+    // Agrega el filtro si existe
     if (idTipoDocumento !== undefined) {
       params = params.set('idTipoDocumento', idTipoDocumento.toString());
     }
+
+    // Agrega búsqueda si existe
+    if (search && search.trim() !== '') {
+      params = params.set('search', search.trim());
+    }
+
     return this.http.get<PageResponse<BackendDocumentoTablaDTO>>(this.apiUrl, { params }).pipe(
       map(response => ({
       content: response.content.map(dto => this.rehidratarTablaDTO(dto)),
