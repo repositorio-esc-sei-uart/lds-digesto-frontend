@@ -70,11 +70,11 @@ mat-paginator {
   background-color: #f8f9fa;
   border-radius: 8px;
   margin-top: 2rem;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);;
 }
 
 .mat-mdc-paginator-icon {
-  fill: #6200ea;
+  fill: #9750fa;
 }
 
 mat-paginator button:hover:not([disabled]) {

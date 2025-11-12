@@ -57,6 +57,7 @@
 /* Contenedor de la tabla */
 .table-container {
   border-radius: 8px;
+  white-space: normal;
   /*overflow: scroll; /* Permite scroll horizontal si es necesario */
   overflow: hidden;
   position: relative;
