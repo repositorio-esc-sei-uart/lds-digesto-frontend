@@ -118,25 +118,25 @@ onSubmit(): void {
             next: (response) => {
                 this.isLoading = false;
                 this.dialogRef.close(response);
-                
+
                 const nombreCompleto = `${newUserPayload.nombre} ${newUserPayload.apellido}`;
-                
+
                 this.snackBar.open(`El usuario "${nombreCompleto}" creado con éxito`, '', {
                     duration: 3000,
                     horizontalPosition: 'center',
-                    panelClass: ['snackbar-success']
+                    panelClass: ['success-snackbar']
                 });
             },
             error: (err) => {
                 this.isLoading = false;
-                
+
                 let errorMessage: string = ' Error inesperado al crear el usuario. Inténtelo más tarde.';
 
                 // Paso clave: Detectar error 409 y leer la lista de campos duplicados
                 if (err.status === 409 && err.error?.duplicatedFields && err.error.duplicatedFields.length > 0) {
-                    
+
                     const duplicatedFields: string[] = err.error.duplicatedFields;
-                    
+
                     // 1. Mapear y Formatear los nombres de los campos (EMAIL -> GMAIL)
                     const fieldNames = duplicatedFields.map(field => {
                         return field.toUpperCase() === 'EMAIL' ? 'GMAIL' : field.toUpperCase();
@@ -145,7 +145,7 @@ onSubmit(): void {
                     // 2. Construir el mensaje combinado (ej: "DNI y LEGAJO", o "DNI, GMAIL y LEGAJO")
                     const lastField = fieldNames.pop();
                     let formattedFields = fieldNames.join(', ');
-                    
+
                     if (formattedFields.length > 0) {
                         formattedFields += ' y ' + lastField;
                     } else {
@@ -154,14 +154,14 @@ onSubmit(): void {
 
                     // 🎯 Mensaje Específico
                     errorMessage = `ERROR: Los campos ${formattedFields} ya existen. Por favor, verifique.`;
-                    
+
                 } else if (err.error?.message) {
                      // Fallback para otros errores de validación con mensaje
                      errorMessage = `Error: ${err.error.message}`;
                 }
 
                 console.error('Error al crear usuario:', err);
-                
+
                 // 3. Mostrar la notificación de error
                 this.snackBar.open(errorMessage, '', {
                     duration: 7000, // Tiempo extendido para leer el error
