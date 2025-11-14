@@ -139,4 +139,12 @@ export class HeaderComponent implements OnInit {
   navigateToLogin(): void {
     this.router.navigate(['/login']);
   }
+
+  /**
+   * Llama al servicio mediador para avisarle al HomeComponent
+   * que debe abrir el modal de búsqueda avanzada.
+   */
+  openAdvanced(): void {
+    this.searchService.triggerAdvancedSearch();
+  }
 }

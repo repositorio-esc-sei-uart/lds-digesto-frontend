@@ -21,6 +21,12 @@
         <mat-icon matPrefix>search</mat-icon>
         <!-- Se utiliza un formControl para gestionar el estado del input de forma reactiva. -->
         <input matInput placeholder="Buscar en el digesto..." [formControl]="searchControl">
+
+        <button mat-icon-button matSuffix
+            (click)="openAdvanced()"
+            matTooltip="Búsqueda avanzada">
+        <mat-icon>tune</mat-icon> </button>
+
       </mat-form-field>
     </div>
   }

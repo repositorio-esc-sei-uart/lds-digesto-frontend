@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnDestroy, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterModule } from '@angular/router';
 // Módulos de Angular Material
@@ -15,6 +15,10 @@ import { DocumentoListItem } from '../../interfaces/document-model';
 import { TipoDocumento } from '../../interfaces/type-document-model';
 import { MatPaginatorModule } from '@angular/material/paginator';
 import { ConteoTipos } from '../../interfaces/conteo-model';
+import { MatDialog, MatDialogModule } from '@angular/material/dialog';
+import { AdvancedSearch } from '../advanced-search/advanced-search';
+import { Subject, takeUntil } from 'rxjs';
+import { AdvancedFilter } from '../../interfaces/advanced-filter-model';
 
 /**
  * @Component
@@ -31,12 +35,13 @@ import { ConteoTipos } from '../../interfaces/conteo-model';
     MatCardModule,
     MatIconModule,
     MatTooltipModule,
-    MatPaginatorModule
-  ],
+    MatPaginatorModule,
+    MatDialogModule
+],
   templateUrl: './home.html',
   styleUrl: './home.css'
 })
-export class HomeComponent implements OnInit {
+export class HomeComponent implements OnInit, OnDestroy {
 
   /** Almacena la lista completa de documentos obtenida del servicio. */
   todosLosDocumentos: DocumentoListItem[] = [];
@@ -52,6 +57,8 @@ export class HomeComponent implements OnInit {
   idTipoSeleccionado?: number;
   /** Guarda el término de búsqueda actual proveniente del header. */
   terminoDeBusqueda: string = '';
+  filtrosAvanzados: AdvancedFilter = {};
+  private destroy$ = new Subject<void>();
 
   // Variables de paginación
   currentPage = 0;
@@ -72,8 +79,14 @@ export class HomeComponent implements OnInit {
     private documentService: DocumentService,
     private typeDocumentService: TypeDocumentService,
     private searchService: SearchService,
-    private router: Router
+    private router: Router,
+    private dialog: MatDialog
   ) {}
+
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
+  }
 
   /**
    * @LifecycleHook ngOnInit
@@ -85,25 +98,58 @@ export class HomeComponent implements OnInit {
     // Carga conteos por tipo
     this.cargarTiposYConteos();
 
-    // Recarga documentos cuando cambia la búsqueda
-    this.searchService.searchTerm$.subscribe(term => {
-      this.terminoDeBusqueda = term;
-      this.currentPage = 0;  // Resetea a página 1
-      this.cargarDocumentos();  // Recarga con el término de búsqueda
-    });
+    this.searchService.searchTerm$
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(term => {
+        this.terminoDeBusqueda = term;
+
+        // Si el usuario escribe en la barra simple, borramos los filtros avanzados
+        if (term.trim() !== '') {
+          this.filtrosAvanzados = {};
+        }
+        this.currentPage = 0;
+        this.cargarDocumentos();
+      });
+
+    // 3. SUSCRIPCIÓN A BÚSQUEDA AVANZADA (¡LA PIEZA FALTANTE!)
+    this.searchService.openAdvancedSearch$
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(() => {
+        this.abrirModalAvanzado();
+      });
   }
 
   /**
    * Carga documentos desde el backend con paginación y filtro opcional
    */
   cargarDocumentos(): void {
+    // 1. Detecta si se está usando la búsqueda avanzada
+    const esAvanzada = this.filtrosAvanzados && Object.keys(this.filtrosAvanzados).length > 0;
+
+    // 2. Llama al servicio con los 5 ARGUMENTOS en el orden correcto
     this.documentService.getDocumentos(
+
+      // Arg 1: page (number)
       this.currentPage,
+
+      // Arg 2: size (number)
       this.pageSize,
-      this.idTipoSeleccionado,  // undefined = todos, number = filtrado
-      this.terminoDeBusqueda
+
+      // Arg 3: search (string | undefined)
+      // Si es avanzada, pasa undefined. Si no, pasa el término de la barra simple.
+      esAvanzada ? undefined : (this.terminoDeBusqueda.trim() || undefined),
+
+      // Arg 4: idTipoDocumento (number | undefined)
+      // Si es avanzada, pasa undefined (porque el tipo va DENTRO del objeto avanzado).
+      // Si no, pasa el idTipoSeleccionado de los botones del home.
+      esAvanzada ? undefined : this.idTipoSeleccionado,
+
+      // Arg 5: filtrosAvanzados (AdvancedFilter | undefined)
+      // Si es avanzada, pasa el objeto de filtros. Si no, pasa undefined.
+      esAvanzada ? this.filtrosAvanzados : undefined
+
     ).subscribe(response => {
-      this.documentosFiltrados = response.content;  // ✅ Extrae el array
+      this.documentosFiltrados = response.content;
       this.totalElements = response.totalElements;
       this.totalPages = response.totalPages;
     });
@@ -179,4 +225,56 @@ export class HomeComponent implements OnInit {
     // Finalmente, se actualiza la lista de documentos a mostrar.
     this.documentosFiltrados = documentos;
   }*/
+ /**
+   * MÉTODO NUEVO: Abre el modal de búsqueda avanzada
+   */
+  abrirModalAvanzado(): void {
+    const dialogRef = this.dialog.open(AdvancedSearch, {
+      width: '700px', // Ancho del modal
+      data: this.filtrosAvanzados // Pasa los filtros actuales para rellenar el formulario
+    });
+
+    dialogRef.afterClosed().subscribe(result => {
+      // 'result' contendrá los valores del formulario si el usuario dio "Buscar"
+      if (result) {
+        this.filtrosAvanzados = this.limpiarFiltrosNulos(result);
+
+        // BORRAMOS el término simple, porque la búsqueda avanzada tiene prioridad
+        this.terminoDeBusqueda = '';
+
+        // (Opcional: Limpiar la barra de búsqueda del header también)
+        // this.searchService.actualizarBusqueda('');
+
+        this.currentPage = 0;
+        this.cargarDocumentos();
+      }
+      // Si 'result' es undefined (hizo clic en Cancelar), no hacemos nada
+    });
+  }
+
+  /**
+   * MÉTODO NUEVO: Limpia el objeto del formulario para no enviar {titulo: null} al backend
+   */
+  private limpiarFiltrosNulos(filtros: any): AdvancedFilter {
+    const filtrosLimpios: any = {};
+
+    // Itera sobre las claves del objeto formulario
+    Object.keys(filtros).forEach(key => {
+      const value = filtros[key];
+      // Añade la clave solo si tiene un valor real
+      if (value !== null && value !== undefined && value !== '') {
+        filtrosLimpios[key] = value;
+      }
+    });
+
+    // Formateo especial para las fechas (las convierte a YYYY-MM-DD)
+    if (filtrosLimpios.fechaDesde) {
+      filtrosLimpios.fechaDesde = new Date(filtrosLimpios.fechaDesde).toISOString().split('T')[0];
+    }
+    if (filtrosLimpios.fechaHasta) {
+      filtrosLimpios.fechaHasta = new Date(filtrosLimpios.fechaHasta).toISOString().split('T')[0];
+    }
+
+    return filtrosLimpios as AdvancedFilter;
+  }
 }

@@ -6,7 +6,7 @@
  */
 
 import { Injectable } from '@angular/core';
-import { BehaviorSubject } from 'rxjs';
+import { BehaviorSubject, Subject } from 'rxjs';
 
 /**
  * @Injectable
@@ -32,6 +32,9 @@ export class SearchService {
    */
   public searchTerm$ = this.searchTermSource.asObservable();
 
+  private openAdvancedSearchSource = new Subject<void>();
+  public openAdvancedSearch$ = this.openAdvancedSearchSource.asObservable();
+
   /**
    * @constructor
    * El constructor del servicio. Actualmente no realiza ninguna acción.
@@ -46,5 +49,14 @@ export class SearchService {
    */
   actualizarBusqueda(term: string): void {
     this.searchTermSource.next(term);
+  }
+
+  /**
+   * @method triggerAdvancedSearch
+   * Es llamado por el HeaderComponent para notificar al HomeComponent
+   * que debe abrir el modal de búsqueda avanzada.
+   */
+  triggerAdvancedSearch(): void {
+    this.openAdvancedSearchSource.next();
   }
 }

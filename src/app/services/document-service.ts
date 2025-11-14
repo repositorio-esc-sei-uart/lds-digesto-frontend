@@ -20,6 +20,7 @@ import { SectorService } from './sector-service';
 import { StatusDocumentService } from './status-document-service';
 import { PageResponse } from '../interfaces/page-model';
 import { ConteoTipos } from '../interfaces/conteo-model';
+import { AdvancedFilter } from '../interfaces/advanced-filter-model';
 
 // --- Definiciones de DTOs del Backend (Lo que la API envía) ---
 // (Define cómo se verá el EstadoDTO que viene del backend)
@@ -92,26 +93,47 @@ export class DocumentService {
    * y la devuelve como un Observable.
    */
   getDocumentos(
-      page: number = 0,
-      size: number = 6,
-      idTipoDocumento?: number,
-      search?: string
-    ): Observable<PageResponse<DocumentoListItem>> {
-    // Construye los parámetros base de paginación
+    page: number = 0,
+    size: number = 6,
+    search?: string, // <-- Búsqueda Simple (barra principal)
+    idTipoDocumento?: number, // <-- Filtro de botones (Home)
+    filtrosAvanzados?: AdvancedFilter // <-- Búsqueda Avanzada (Modal)
+  ): Observable<PageResponse<DocumentoListItem>> {
+
+    // 1. Construye los parámetros base de paginación
     let params = new HttpParams()
-      .set('page', page.toString())
-      .set('size', size.toString());
+        .set('page', page.toString())
+        .set('size', size.toString());
 
-    // Agrega el filtro si existe
-    if (idTipoDocumento !== undefined) {
-      params = params.set('idTipoDocumento', idTipoDocumento.toString());
+    // 2. Detecta si se está usando la búsqueda avanzada (del modal)
+    const esBusquedaAvanzada = filtrosAvanzados && Object.keys(filtrosAvanzados).length > 0;
+
+    if (esBusquedaAvanzada) {
+        // --- MODO 2: BÚSQUEDA AVANZADA ---
+        // (Ignora el 'search' simple)
+
+        // Itera sobre el objeto de filtros y añade solo los que tienen valor
+        for (const [key, value] of Object.entries(filtrosAvanzados)) {
+            if (value) {
+                params = params.set(key, value.toString());
+            }
+        }
+        // NOTA: El idTipoDocumento del modal ya viene dentro de filtrosAvanzados.idTipoDocumento
+
+    } else {
+        // --- MODO 1: BÚSQUEDA SIMPLE ---
+        // (Usa el 'search' de la barra principal)
+        if (search && search.trim() !== '') {
+            params = params.set('search', search.trim());
+        }
+
+        // Y aplica el filtro de botones (idTipoDocumento)
+        if (idTipoDocumento !== undefined) {
+          params = params.set('idTipoDocumento', idTipoDocumento.toString());
+        }
     }
 
-    // Agrega búsqueda si existe
-    if (search && search.trim() !== '') {
-      params = params.set('search', search.trim());
-    }
-
+    // 3. Llama a la API con los parámetros construidos
     return this.http.get<PageResponse<BackendDocumentoTablaDTO>>(this.apiUrl, { params }).pipe(
       map(response => ({
       content: response.content.map(dto => this.rehidratarTablaDTO(dto)),
