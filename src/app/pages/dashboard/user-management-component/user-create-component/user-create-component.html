@@ -3,7 +3,7 @@
   Registrar Nuevo Usuario
 </h2>
 
-<form [formGroup]="userForm" (ngSubmit)="onSubmit()">
+<form [formGroup]="userForm" (ngSubmit)="onSubmit()" autocomplete="off">
   <mat-dialog-content class="mat-typography">
     
     <div class="row-fields">
@@ -21,14 +21,14 @@
     <div class="row-fields full-width">
       <mat-form-field appearance="outline">
         <mat-label>Email*</mat-label>
-        <input matInput formControlName="email" type="email" required />
+        <input matInput formControlName="email" type="email" required autocomplete="new-username"/>
       </mat-form-field>
     </div>
 
     <div class="row-fields full-width">
       <mat-form-field appearance="outline">
         <mat-label>Contraseña*</mat-label>
-        <input matInput formControlName="password" type="password" required />
+        <input matInput formControlName="password" type="password" required autocomplete="new-password" />
       </mat-form-field>
     </div>
 
