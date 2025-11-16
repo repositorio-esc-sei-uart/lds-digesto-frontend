@@ -32,8 +32,13 @@ export class SearchService {
    */
   public searchTerm$ = this.searchTermSource.asObservable();
 
-  private openAdvancedSearchSource = new Subject<void>();
-  public openAdvancedSearch$ = this.openAdvancedSearchSource.asObservable();
+  // Observable para abrir búsqueda avanzada (modal legacy)
+  private openAdvancedSearchSubject = new Subject<void>();
+  public openAdvancedSearch$ = this.openAdvancedSearchSubject.asObservable();
+
+  // Observable para filtros avanzados (dropdown)
+  private filtrosAvanzadosSubject = new Subject<any>();
+  public filtrosAvanzados$ = this.filtrosAvanzadosSubject.asObservable();
 
   /**
    * @constructor
@@ -57,6 +62,14 @@ export class SearchService {
    * que debe abrir el modal de búsqueda avanzada.
    */
   triggerAdvancedSearch(): void {
-    this.openAdvancedSearchSource.next();
+    this.openAdvancedSearchSubject.next();
+  }
+
+  /**
+   * Aplica filtros avanzados desde el dropdown
+   */
+  aplicarFiltrosAvanzados(filtros: any): void {
+    console.log('SearchService: Enviando filtros avanzados', filtros);
+    this.filtrosAvanzadosSubject.next(filtros);
   }
 }

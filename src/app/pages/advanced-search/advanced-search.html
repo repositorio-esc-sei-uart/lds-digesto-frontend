@@ -1,73 +1,96 @@
-<form [formGroup]="advancedForm" (ngSubmit)="onSearch()">
+<div class="advanced-search-form">
+  <form [formGroup]="advancedForm" (ngSubmit)="onSearch()">
 
-  <h2 mat-dialog-title>Búsqueda Avanzada</h2>
+    <h2 class="form-title">
+      <mat-icon>tune</mat-icon>
+      Búsqueda Avanzada
+    </h2>
 
-  <mat-dialog-content class="form-container">
+    <div class="form-container">
 
-    <mat-form-field appearance="outline" class="full-width">
-      <mat-label>Título contiene</mat-label>
-      <input matInput formControlName="titulo" placeholder="Ej: presupuesto anual">
-    </mat-form-field>
-
-    <div class="form-row">
-      <mat-form-field appearance="outline" class="flex-field">
-        <mat-label>Número de Documento</mat-label>
-        <input matInput formControlName="numDocumento" placeholder="Ej: RES-101">
+      <mat-form-field appearance="outline" class="full-width">
+        <mat-label>Título contiene</mat-label>
+        <input matInput formControlName="titulo">
       </mat-form-field>
 
-      <mat-form-field appearance="outline" class="flex-field">
-        <mat-label>Excluir palabras</mat-label>
-        <input matInput formControlName="excluirPalabras" placeholder="Ej: obsoleto 2025">
-      </mat-form-field>
-    </div>
+      <div class="form-row">
+        <mat-form-field appearance="outline" class="flex-field">
+          <mat-label>Número de Documento</mat-label>
+          <input matInput formControlName="numDocumento">
+        </mat-form-field>
 
-    <div class="form-row">
-      <mat-form-field appearance="outline" class="flex-field">
-        <mat-label>Tipo de Documento</mat-label>
-        <mat-select formControlName="idTipoDocumento">
-          @for (tipo of (tipos$ | async); track tipo.idTipoDocumento) {
-            <mat-option [value]="tipo.idTipoDocumento">{{ tipo.nombre }}</mat-option>
+        <mat-form-field appearance="outline" class="flex-field">
+          <mat-label>Excluir palabras</mat-label>
+          <input matInput formControlName="excluirPalabras">
+        </mat-form-field>
+      </div>
+
+      <div class="form-row">
+        <mat-form-field appearance="outline" class="flex-field">
+          <mat-label>Tipo de Documento</mat-label>
+          <mat-select formControlName="idTipoDocumento">
+            @for (tipo of (tipos$ | async); track tipo.idTipoDocumento) {
+              <mat-option [value]="tipo.idTipoDocumento">{{ tipo.nombre }}</mat-option>
+            }
+          </mat-select>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="flex-field">
+          <mat-label>Estado</mat-label>
+          <mat-select formControlName="idEstado">
+            @for (estado of (estados$ | async); track estado.idEstado) {
+              <mat-option [value]="estado.idEstado">{{ estado.nombre }}</mat-option>
+            }
+          </mat-select>
+        </mat-form-field>
+      </div>
+
+      <mat-form-field appearance="outline" class="full-width">
+        <mat-label>Sector Emisor</mat-label>
+        <mat-select formControlName="idSector">
+          @for (sector of (sectores$ | async); track sector.idSector) {
+            <mat-option [value]="sector.idSector">{{ sector.nombre }}</mat-option>
           }
         </mat-select>
       </mat-form-field>
 
-      <mat-form-field appearance="outline" class="flex-field">
-        <mat-label>Estado</mat-label>
-        <mat-select formControlName="idEstado">
-          @for (estado of (estados$ | async); track estado.idEstado) {
-            <mat-option [value]="estado.idEstado">{{ estado.nombre }}</mat-option>
-          }
-        </mat-select>
-      </mat-form-field>
+      <!-- REEMPLAZAR el mat-date-range-input por esto: -->
+
+      <div class="form-row">
+        <mat-form-field appearance="outline" class="flex-field">
+          <mat-label>Fecha Desde</mat-label>
+          <input matInput
+                [matDatepicker]="pickerDesde"
+                formControlName="fechaDesde"
+                placeholder="Seleccionar fecha inicial">
+          <mat-datepicker-toggle matIconSuffix [for]="pickerDesde"></mat-datepicker-toggle>
+          <mat-datepicker #pickerDesde></mat-datepicker>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="flex-field">
+          <mat-label>Fecha Hasta</mat-label>
+          <input matInput
+                [matDatepicker]="pickerHasta"
+                formControlName="fechaHasta"
+                [disabled]="!advancedForm.get('fechaDesde')?.value"
+                placeholder="Seleccionar fecha final">
+          <mat-datepicker-toggle matIconSuffix [for]="pickerHasta"></mat-datepicker-toggle>
+          <mat-datepicker #pickerHasta></mat-datepicker>
+          <mat-hint *ngIf="!advancedForm.get('fechaDesde')?.value">
+            Primero seleccione fecha inicial
+          </mat-hint>
+        </mat-form-field>
+      </div>
+
     </div>
 
-    <mat-form-field appearance="outline" class="full-width">
-      <mat-label>Sector Emisor</mat-label>
-      <mat-select formControlName="idSector">
-        @for (sector of (sectores$ | async); track sector.idSector) {
-          <mat-option [value]="sector.idSector">{{ sector.nombre }}</mat-option>
-        }
-      </mat-select>
-    </mat-form-field>
-
-    <mat-form-field appearance="outline" class="full-width">
-        <mat-label>Rango de Fecha de Creación</mat-label>
-        <mat-date-range-input [formGroup]="advancedForm">
-          <input matStartDate formControlName="fechaDesde" placeholder="Fecha Desde (dd/mm/aaaa)">
-          <input matEndDate formControlName="fechaHasta" placeholder="Fecha Hasta (dd/mm/aaaa)">
-        </mat-date-range-input>
-        <mat-datepicker-toggle matIconSuffix [for]="picker"></mat-datepicker-toggle>
-        <mat-date-range-picker #picker></mat-date-range-picker>
-    </mat-form-field>
-
-  </mat-dialog-content>
-
-  <mat-dialog-actions align="end">
-    <button mat-button type="button" (click)="onClear()">Limpiar Filtros</button>
-    <button mat-button type="button" (click)="onCancel()">Cancelar</button>
-    <button mat-flat-button color="primary" type="submit">
-      <mat-icon>search</mat-icon>
-      Buscar
-    </button>
-  </mat-dialog-actions>
-</form>
+    <div class="form-actions">
+      <button mat-button type="button" (click)="onClear()">Limpiar Filtros</button>
+      <button mat-button type="button" (click)="onCancel()">Cancelar</button>
+      <button mat-flat-button color="primary" type="submit">
+        <mat-icon>search</mat-icon>
+        Buscar
+      </button>
+    </div>
+  </form>
+</div>

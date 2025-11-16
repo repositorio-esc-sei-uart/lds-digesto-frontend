@@ -1,4 +1,5 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, ElementRef, HostListener, OnDestroy, OnInit, ViewChild } from '@angular/core';
+import { trigger, state, style, transition, animate } from '@angular/animations';
 import { CommonModule } from '@angular/common';
 import { Router, RouterModule } from '@angular/router';
 // Módulos de Angular Material
@@ -18,6 +19,7 @@ import { GlobalConfigurationService } from '../../services/global-configuration-
 import { SearchService } from '../../services/search-service';
 import { AuthenticationService } from '../../services/authentication-service';
 import { UserProfile } from '../../interfaces/user-model';
+import { AdvancedSearch } from "../../pages/advanced-search/advanced-search";
 
 /**
  * @Component
@@ -36,12 +38,30 @@ import { UserProfile } from '../../interfaces/user-model';
     MatFormFieldModule,
     MatInputModule,
     MatDialogModule,
-    ReactiveFormsModule
-  ],
+    ReactiveFormsModule,
+    AdvancedSearch
+],
   templateUrl: './header-component.html',
-  styleUrl: './header-component.css'
+  styleUrl: './header-component.css',
+  animations: [
+    trigger('slideDown', [
+      transition(':enter', [
+        style({ height: '0', opacity: '0' }),
+        animate('500ms cubic-bezier(0.25, 0.8, 0.25, 1)', style({
+          height: '*',
+          opacity: '1'
+        }))
+      ]),
+      transition(':leave', [
+        animate('250ms cubic-bezier(0.25, 0.8, 0.25, 1)', style({
+          height: '0',
+          opacity: '0'
+        }))
+      ])
+    ])
+  ]
 })
-export class HeaderComponent implements OnInit {
+export class HeaderComponent implements OnInit, OnDestroy {
 
   /** Se utiliza como bandera para controlar la visibilidad de la barra de búsqueda en móviles. */
   isSearchActive = false;
@@ -54,6 +74,9 @@ export class HeaderComponent implements OnInit {
 
   /** Observable para controlar visibilidad de búsqueda */
   isAuthenticated$: Observable<boolean>;
+
+  isAdvancedSearchOpen = false;
+  @ViewChild('searchContainer') searchContainer?: ElementRef;
 
   /**
    * Se inyectan los servicios necesarios para el funcionamiento del componente.
@@ -73,6 +96,9 @@ export class HeaderComponent implements OnInit {
     this.currentUser$ = this.authService.currentUser$;
     // Inicializa el observable de autenticación
     this.isAuthenticated$ = this.authService.isAuthenticated$;
+  }
+  ngOnDestroy(): void {
+    throw new Error('Method not implemented.');
   }
 
   /**
@@ -146,5 +172,45 @@ export class HeaderComponent implements OnInit {
    */
   openAdvanced(): void {
     this.searchService.triggerAdvancedSearch();
+  }
+
+  toggleAdvancedSearch(): void {
+    this.isAdvancedSearchOpen = !this.isAdvancedSearchOpen;
+  }
+
+  closeAdvancedSearch(): void {
+    this.isAdvancedSearchOpen = false;
+  }
+
+  onAdvancedSearchApplied(filtros: any): void {
+    console.log('Header recibió filtros:', filtros); // ⬅️ DEBUG temporal
+
+    // Cierra el dropdown
+    this.isAdvancedSearchOpen = false;
+
+    // ⬇️ AGREGAR: Enviar al servicio para que Home lo reciba
+    this.searchService.aplicarFiltrosAvanzados(filtros);
+
+    // El componente advanced-search ya maneja el envío al servicio,
+    // solo cerramos el dropdown
+  }
+
+  // Cerrar dropdown si se hace click fuera
+  @HostListener('document:click', ['$event'])
+  onDocumentClick(event: MouseEvent): void {
+    if (this.isAdvancedSearchOpen && this.searchContainer) {
+      const target = event.target as HTMLElement;
+      const clickedInside = this.searchContainer.nativeElement.contains(target);
+
+      // Verifica si el click fue en algún overlay de Material
+      const clickedOnOverlay = target.closest('.cdk-overlay-container') !== null ||
+                              target.closest('.mat-datepicker-popup') !== null ||
+                              target.closest('.mat-select-panel') !== null;
+
+      // Solo cierra si NO fue dentro del container Y NO fue en un overlay
+      if (!clickedInside && !clickedOnOverlay) {
+        this.closeAdvancedSearch();
+      }
+    }
   }
 }

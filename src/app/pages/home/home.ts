@@ -112,10 +112,18 @@ export class HomeComponent implements OnInit, OnDestroy {
       });
 
     // 3. SUSCRIPCIÓN A BÚSQUEDA AVANZADA (¡LA PIEZA FALTANTE!)
-    this.searchService.openAdvancedSearch$
+    this.searchService.filtrosAvanzados$
       .pipe(takeUntil(this.destroy$))
-      .subscribe(() => {
-        this.abrirModalAvanzado();
+      .subscribe((filtros: any) => {
+        console.log('Home recibió filtros:', filtros); // ⬅️ DEBUG
+        this.filtrosAvanzados = this.limpiarFiltrosNulos(filtros);
+
+        // Limpia búsqueda simple
+        this.terminoDeBusqueda = '';
+        this.searchService.actualizarBusqueda('');
+
+        this.currentPage = 0;
+        this.cargarDocumentos();
       });
   }
 
@@ -267,14 +275,27 @@ export class HomeComponent implements OnInit, OnDestroy {
       }
     });
 
-    // Formateo especial para las fechas (las convierte a YYYY-MM-DD)
     if (filtrosLimpios.fechaDesde) {
-      filtrosLimpios.fechaDesde = new Date(filtrosLimpios.fechaDesde).toISOString().split('T')[0];
-    }
-    if (filtrosLimpios.fechaHasta) {
-      filtrosLimpios.fechaHasta = new Date(filtrosLimpios.fechaHasta).toISOString().split('T')[0];
+      const fecha = new Date(filtrosLimpios.fechaDesde);
+      console.log('📅 Fecha original:', fecha);
+      console.log('📅 ISO:', fecha.toISOString());
+
+      // Ajusta a la zona horaria local antes de formatear
+      const offset = fecha.getTimezoneOffset();
+      const fechaLocal = new Date(fecha.getTime() - (offset * 60 * 1000));
+      filtrosLimpios.fechaDesde = fechaLocal.toISOString().split('T')[0];
+
+      console.log('📅 Enviando al backend:', filtrosLimpios.fechaDesde);
     }
 
+    if (filtrosLimpios.fechaHasta) {
+      const fecha = new Date(filtrosLimpios.fechaHasta);
+      const offset = fecha.getTimezoneOffset();
+      const fechaLocal = new Date(fecha.getTime() - (offset * 60 * 1000));
+      filtrosLimpios.fechaHasta = fechaLocal.toISOString().split('T')[0];
+    }
+
+    console.log('✅ Filtros limpios finales:', filtrosLimpios);
     return filtrosLimpios as AdvancedFilter;
   }
 }
