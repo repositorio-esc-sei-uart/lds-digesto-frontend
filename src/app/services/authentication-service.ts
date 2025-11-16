@@ -132,7 +132,8 @@ export class AuthenticationService {
 
   private handleError(error: any): Observable<never> {
     console.error('Error completo:', error);
-    return throwError(() => new Error('Error de comunicación con el servidor. Intente más tarde.'));
+   // return throwError(() => new Error('Error de comunicación con el servidor. Intente más tarde.'));
+    return throwError(() => error);
   }
 
   /**

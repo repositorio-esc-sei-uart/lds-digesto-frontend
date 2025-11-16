@@ -12,6 +12,7 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { Router } from '@angular/router';
 import { finalize } from 'rxjs';
 import { MatDialogRef } from '@angular/material/dialog';
+import { MatSnackBarModule,MatSnackBar } from '@angular/material/snack-bar';
 
 import { GlobalConfigurationService } from '../../services/global-configuration-service';
 import { AuthenticationService } from '../../services/authentication-service';
@@ -30,6 +31,7 @@ import { AuthResponse } from '../../interfaces/user-model';
     MatButtonModule,
     MatSlideToggleModule,
     ReactiveFormsModule,
+    MatSnackBarModule,
     MatProgressSpinnerModule
   ],
   templateUrl: './login.html',
@@ -38,13 +40,14 @@ import { AuthResponse } from '../../interfaces/user-model';
 export class LoginComponent {
   loginForm: FormGroup;
   isLoading = false;
-  mensajeError = ''; // 👈 NUEVA propiedad visible en pantalla
+  //mensajeError = ''; // 👈 NUEVA propiedad visible en pantalla
 
   constructor(
     public configService: GlobalConfigurationService,
     private fb: FormBuilder,
     public authService: AuthenticationService,
     private router: Router,
+  private snackBar: MatSnackBar,
     private dialogRef: MatDialogRef<LoginComponent>
   ) {
     this.loginForm = this.fb.group({
@@ -53,46 +56,80 @@ export class LoginComponent {
     });
   }
 
-  onSubmit(): void {
-    if (this.loginForm.invalid) return;
+onSubmit(): void {
+  if (this.loginForm.invalid) return;
 
-    this.isLoading = true;
-    this.loginForm.disable();
-    this.mensajeError = ''; // limpia mensaje anterior
+  this.isLoading = true;
+  this.loginForm.disable();
+  //this.mensajeError = ''; // limpia mensaje anterior (esto puede eliminarse si solo se usa el snackbar)
 
-    this.authService.login(this.loginForm.value)
-      .pipe(finalize(() => {
-        this.isLoading = false;
-        this.loginForm.enable();
-      }))
-      .subscribe({
-        next: (response: AuthResponse) => {
-          if (response.token) {
-            localStorage.setItem('authToken', response.token);
-            try {
-              const payload = JSON.parse(atob(response.token.split('.')[1]));
-              localStorage.setItem('currentUser', JSON.stringify(payload));
-              console.log('Login exitoso. Usuario:', payload.nombre, 'Rol:', payload.rol);
-            } catch (e) {
-              console.error('Error al decodificar token:', e);
-            }
-            this.dialogRef.close(true);
-          } else {
-            this.mensajeError = 'Email o contraseña incorrectos.';
+  this.authService.login(this.loginForm.value)
+    .pipe(finalize(() => {
+      this.isLoading = false;
+      this.loginForm.enable();
+    }))
+    .subscribe({
+      next: (response: AuthResponse) => {
+        // Lógica de éxito (sin cambios)
+        if (response.token) {
+          localStorage.setItem('authToken', response.token);
+          try {
+            const payload = JSON.parse(atob(response.token.split('.')[1]));
+            localStorage.setItem('currentUser', JSON.stringify(payload));
+            console.log('Login exitoso. Usuario:', payload.nombre, 'Rol:', payload.rol);
+            // Mostrar un snackbar de éxito si se desea, similar a onDelete, ej:
+            /*
+            this.snackBar.open(`¡Bienvenido, ${payload.nombre}!`, '', {
+              duration: 3000,
+              horizontalPosition: 'right',
+              panelClass: ['success-snackbar']
+            });
+            */
+          } catch (e) {
+            console.error('Error al decodificar token:', e);
           }
-        },
-        error: (err) => {
-          console.error('Error completo:', err);
-
-          const mensajeError =
-            err.message?.includes('Credenciales inválidas') ? 'Email o contraseña incorrectos.' :
-            err.message?.includes('Acceso denegado') ? err.message :
-            err.status === 401 || err.status === 403 ? 'Email o contraseña incorrectos.' :
-            err.status === 500 ? 'Email o contraseña incorrectos' :
-            'Email o contraseña incorrectos';
-
-          this.mensajeError = mensajeError; // 👈 Mostrar mensaje en pantalla
+          this.dialogRef.close(true);
+        } else {
+          // Si el backend devuelve un objeto vacío o sin token en caso de credenciales inválidas.
+          const mensajeAmostrar = 'Email o contraseña incorrectos.';
+          // Reemplazado por snackbar: this.mensajeError = mensajeAmostrar;
+          this.mostrarErrorEnSnackbar(mensajeAmostrar);
         }
-      });
-  }
+      },
+      error: (err) => {
+        console.error('Error completo:', err);
+        
+        let mensajeAmostrar = 'Ocurrió un error inesperado. Intente de nuevo.';
+
+        if (err.error && typeof err.error === 'object' && err.error.message) {
+          const serverMessage = err.error.message.toLowerCase();
+          
+          if (serverMessage.includes('usuario inactivo')) {
+              mensajeAmostrar = 'Usuario inactivo. No tiene permisos para acceder.';
+          } else if (serverMessage.includes('credenciales inválidas') || err.status === 401) {
+              mensajeAmostrar = 'Email o contraseña incorrectos.';
+          }
+        } 
+        else if (typeof err.error === 'string' && err.error.toLowerCase().includes('usuario inactivo')) {
+              mensajeAmostrar = 'Usuario inactivo. No tiene permisos para acceder.';
+        }
+        else if (err.status === 401 || err.status === 403) {
+          mensajeAmostrar = 'Email o contraseña incorrectos.';
+        }
+        
+        // Asignar el mensaje correcto y MOSTRAR EN SNACKBAR
+        //this.mensajeError = mensajeAmostrar; 
+        this.mostrarErrorEnSnackbar(mensajeAmostrar);
+      }
+    });
+}
+
+// Opcional: Crear una función auxiliar para simplificar el código
+private mostrarErrorEnSnackbar(mensaje: string): void {
+    this.snackBar.open(mensaje, '', {
+        duration: 5000,
+        horizontalPosition: 'center',
+        panelClass: ['error-snackbar']
+    });
+}
 }
