@@ -21,6 +21,14 @@ import { DocumentDetail } from '../../document-detail/document-detail';
 import { DocumentForm } from '../document-form/document-form';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 
+import { MatTableDataSource } from '@angular/material/table'; // <-- 1. AÑADIR
+import { AuthenticationService } from '../../../services/authentication-service'; // <-- 2. AÑADIR
+import { RegistroService } from '../../../services/registro'; // <-- 3. AÑADIR (o 'registro')
+import { Registro } from '../../../interfaces/registro'; // <-- 4. AÑADIR
+import { Router } from '@angular/router'; // <-- 5. AÑADIR (si no estaba)
+import { MatDialogModule } from '@angular/material/dialog'; // <-- 6. AÑADIR
+
+
 @Component({
   selector: 'app-document-management-component',
   standalone: true,
@@ -38,11 +46,16 @@ import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
     MatInputModule,
     DatePipe,
     MatSnackBarModule,
+    MatDialogModule, // <-- 8. AÑADIR
+    DocumentDetail, // <-- 9. AÑADIR (si son standalone)
+    DocumentForm, // <-- 10. AÑADIR (si son standalone)
+    ConfirmDialogComponent // <-- 11. AÑADIR (si son standalone)
   ],
   templateUrl: './document-management-component.html',
   styleUrl: './document-management-component.css'
 })
 export class DocumentManagementComponent implements OnInit {
+  /**
   // Columnas que mostrará la tabla
   displayedColumns: string[] = ['numDocumento', 'titulo', 'tipoDocumento', 'fechaCreacion', 'estado', 'acciones'];
 
@@ -53,23 +66,71 @@ export class DocumentManagementComponent implements OnInit {
   // Inyectar MatDialog usando inject()
   private dialog = inject(MatDialog);
 
-  constructor(private documentService: DocumentService, private snackBar: MatSnackBar) { }
+  **/
+ // --- 12. AÑADIR/MODIFICAR VARIABLES ---
+  public isAdmin: boolean = false;
+  isLoading = true;
 
+  // Columnas para GESTIÓN (Editor)
+  displayedColumnsGestion: string[] = ['numDocumento', 'titulo', 'tipoDocumento', 'fechaCreacion', 'estado', 'acciones'];
+  // Columnas para AUDITORÍA (Admin)
+  displayedColumnsAuditoria: string[] = ['numDocumento', 'titulo', 'autor', 'fechaCarga'];
+  
+  // Fuentes de datos (Cambiadas a MatTableDataSource)
+  public dataSourceGestion = new MatTableDataSource<DocumentoListItem>();
+  public dataSourceAuditoria = new MatTableDataSource<Registro>();
+
+  private dialog = inject(MatDialog);
+
+  constructor(
+    private documentService: DocumentService,
+    private snackBar: MatSnackBar,
+    private router: Router, 
+    private registroService: RegistroService, 
+    private authService: AuthenticationService 
+  ) {}
+
+  // --- 14. REEMPLAZAR ngOnInit CON LÓGICA DE ROLES ---
   ngOnInit(): void {
-    this.loadDocumentos();
+    this.isLoading = true;
+    const currentUser = this.authService.currentUserValue;
+
+    if (currentUser && currentUser.rol?.nombre === 'Administrador') {
+      this.isAdmin = true;
+      this.loadRegistros(); 
+    } else {
+      this.isAdmin = false;
+      this.loadDocumentos(); 
+    }
   }
 
   loadDocumentos(): void {
     this.isLoading = true;
     this.documentService.getDocumentos(0, 100).subscribe({
       next: (response) => {
-        this.dataSource = response.content;;
+        this.dataSourceGestion.data = response.content;
         this.isLoading = false;
       },
       error: (err) => {
         console.error("Error al cargar documentos:", err);
         this.isLoading = false;
       },
+    });
+  }
+
+  // --- 16. AÑADIR 'loadRegistros' ---
+  loadRegistros(): void {
+    this.isLoading = true;
+    this.registroService.getRegistros().subscribe({
+      next: (data) => {
+        this.dataSourceAuditoria.data = data;
+        this.isLoading = false;
+        console.log(`Componente: Tabla actualizada con ${data.length} registros.`);
+      },
+      error: (err) => {
+        console.error("Error al cargar registros:", err);
+        this.isLoading = false;
+      }
     });
   }
 
@@ -165,7 +226,7 @@ export class DocumentManagementComponent implements OnInit {
   /**
    * Abre un diálogo modal para previsualizar el detalle de un documento.
    * @param documentoId El ID del documento a previsualizar.
-
+  **/
   openPreviewModal(documentoId: number): void {
     const dialogRef = this.dialog.open(DocumentDetail, { // Abre el componente DocumentDetail
       width: '85%',              // Ancho del modal
@@ -179,13 +240,21 @@ export class DocumentManagementComponent implements OnInit {
       console.log('El diálogo de previsualización se cerró:', result);
     });
   }
-  */
+  
   // Lógica para el filtro de la tabla
   applyFilter(event: Event) {
     // const filterValue = (event.target as HTMLInputElement).value;
     // this.dataSource.filter = filterValue.trim().toLowerCase();
     // NOTA: La lógica de filtro se implementará cuando se conecte a MatPaginator y MatSort
-    console.log("Filtrando...", (event.target as HTMLInputElement).value);
+    //console.log("Filtrando...", (event.target as HTMLInputElement).value);
+    const filterValue = (event.target as HTMLInputElement).value;
+    const filterText = filterValue.trim().toLowerCase();
+
+    if (this.isAdmin) {
+      this.dataSourceAuditoria.filter = filterText;
+    } else {
+      this.dataSourceGestion.filter = filterText;
+    }
   }
 
   onDelete(docId: number, docNum: string): void {
@@ -227,5 +296,16 @@ export class DocumentManagementComponent implements OnInit {
         });
       }
     });
+  }
+  // --- 👇 ¡PEGÁ LA FUNCIÓN QUE FALTABA AQUÍ! 👇 ---
+  onEdit(doc: DocumentoListItem): void {
+    // Esta función es llamada por el botón 'editar' en el HTML.
+    // Llama a la otra función que ya tiene la lógica completa.
+    const docItem = this.dataSourceGestion.data.find(d => d.idDocumento === doc.idDocumento);
+    if (docItem) {
+      this.openEditDocumentDialog(docItem); 
+    } else {
+      console.error("No se encontró el documento para editar");
+    }
   }
 }

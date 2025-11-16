@@ -21,7 +21,12 @@
       <!-- Enlace para ambos roles -->
       <a mat-list-item routerLink="/dashboard/documentos" routerLinkActive="active-link">
         <mat-icon matListItemIcon>article</mat-icon>
-        <span matListItemTitle>Gestionar Documentos</span>
+        
+        @if (isAdmin) {
+          <span matListItemTitle>Registro</span>
+        } @else {
+          <span matListItemTitle>Gestionar Documentos</span>
+        }
       </a>
 
       <!-- Enlace exclusivo para Administrador -->
