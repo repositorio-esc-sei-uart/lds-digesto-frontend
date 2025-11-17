@@ -6,7 +6,20 @@
 
   <!-- Sección de Selección de Filtros -->
   <section class="selection-section">
-    <h2><mat-icon>filter_list</mat-icon> Tipos de Documento</h2>
+
+    <!-- Header con título y botón de limpiar filtros -->
+    <div class="filter-header">
+      <h2><mat-icon>filter_list</mat-icon> Tipos de Documento</h2>
+      @if (isFilterActive) {
+        <button mat-stroked-button color="warn"
+                class="clear-filter-button"
+                (click)="limpiarTodosLosFiltros()">
+          <mat-icon>clear_all</mat-icon>
+          Limpiar Filtros
+        </button>
+      }
+    </div>
+
     <p>Seleccione una categoría para filtrar los documentos publicados.</p>
 
     <div class="filter-buttons">
@@ -23,7 +36,6 @@
         <button mat-stroked-button
                 (click)="selectCategory(tipo.nombre, tipo.idTipoDocumento)"
                 [class.active-filter]="categoriaSeleccionada === tipo.nombre">
-          <!-- <mat-icon>{{ tipo.icono }}</mat-icon> futura personalización -->
           <span>{{ tipo.nombre }}</span>
           <span class="badge">{{ conteoPorTipo[tipo.idTipoDocumento] || 0 }}</span>
         </button>

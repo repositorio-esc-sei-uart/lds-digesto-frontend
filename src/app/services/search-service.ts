@@ -69,7 +69,18 @@ export class SearchService {
    * Aplica filtros avanzados desde el dropdown
    */
   aplicarFiltrosAvanzados(filtros: any): void {
-    console.log('SearchService: Enviando filtros avanzados', filtros);
     this.filtrosAvanzadosSubject.next(filtros);
+  }
+
+  // Subject para limpiar la búsqueda
+  private limpiarBusquedaSubject = new Subject<void>();
+  limpiarBusqueda$ = this.limpiarBusquedaSubject.asObservable();
+
+  /**
+   * Notifica que se deben limpiar todos los filtros incluyendo la barra de búsqueda
+   */
+  limpiarTodo(): void {
+    this.limpiarBusquedaSubject.next();
+    this.actualizarBusqueda('');
   }
 }

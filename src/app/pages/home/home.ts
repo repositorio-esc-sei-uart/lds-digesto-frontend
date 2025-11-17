@@ -41,6 +41,7 @@ import { AdvancedFilter } from '../../interfaces/advanced-filter-model';
   templateUrl: './home.html',
   styleUrl: './home.css'
 })
+
 export class HomeComponent implements OnInit, OnDestroy {
 
   /** Almacena la lista completa de documentos obtenida del servicio. */
@@ -115,7 +116,6 @@ export class HomeComponent implements OnInit, OnDestroy {
     this.searchService.filtrosAvanzados$
       .pipe(takeUntil(this.destroy$))
       .subscribe((filtros: any) => {
-        console.log('Home recibió filtros:', filtros); // ⬅️ DEBUG
         this.filtrosAvanzados = this.limpiarFiltrosNulos(filtros);
 
         // Limpia búsqueda simple
@@ -243,20 +243,16 @@ export class HomeComponent implements OnInit, OnDestroy {
     });
 
     dialogRef.afterClosed().subscribe(result => {
-      // 'result' contendrá los valores del formulario si el usuario dio "Buscar"
       if (result) {
         this.filtrosAvanzados = this.limpiarFiltrosNulos(result);
 
-        // BORRAMOS el término simple, porque la búsqueda avanzada tiene prioridad
         this.terminoDeBusqueda = '';
 
-        // (Opcional: Limpiar la barra de búsqueda del header también)
-        // this.searchService.actualizarBusqueda('');
+        this.searchService.actualizarBusqueda('');
 
         this.currentPage = 0;
         this.cargarDocumentos();
       }
-      // Si 'result' es undefined (hizo clic en Cancelar), no hacemos nada
     });
   }
 
@@ -276,26 +272,55 @@ export class HomeComponent implements OnInit, OnDestroy {
     });
 
     if (filtrosLimpios.fechaDesde) {
-      const fecha = new Date(filtrosLimpios.fechaDesde);
-      console.log('📅 Fecha original:', fecha);
-      console.log('📅 ISO:', fecha.toISOString());
-
-      // Ajusta a la zona horaria local antes de formatear
-      const offset = fecha.getTimezoneOffset();
-      const fechaLocal = new Date(fecha.getTime() - (offset * 60 * 1000));
-      filtrosLimpios.fechaDesde = fechaLocal.toISOString().split('T')[0];
-
-      console.log('📅 Enviando al backend:', filtrosLimpios.fechaDesde);
+      const fechaStr = this.formatearFechaLocal(filtrosLimpios.fechaDesde);
+      delete filtrosLimpios.fechaDesde; // ⬅️ Eliminar el campo viejo
+      filtrosLimpios.fechaDesdeStr = fechaStr; // ⬅️ Agregar con el nombre correcto
     }
 
     if (filtrosLimpios.fechaHasta) {
-      const fecha = new Date(filtrosLimpios.fechaHasta);
-      const offset = fecha.getTimezoneOffset();
-      const fechaLocal = new Date(fecha.getTime() - (offset * 60 * 1000));
-      filtrosLimpios.fechaHasta = fechaLocal.toISOString().split('T')[0];
+      const fechaStr = this.formatearFechaLocal(filtrosLimpios.fechaHasta);
+      delete filtrosLimpios.fechaHasta; // ⬅️ Eliminar el campo viejo
+      filtrosLimpios.fechaHastaStr = fechaStr; // ⬅️ Agregar con el nombre correcto
     }
 
-    console.log('✅ Filtros limpios finales:', filtrosLimpios);
     return filtrosLimpios as AdvancedFilter;
+  }
+
+  // Helper method (si no lo tenés ya)
+  private formatearFechaLocal(fecha: Date): string {
+    const year = fecha.getFullYear();
+    const month = String(fecha.getMonth() + 1).padStart(2, '0');
+    const day = String(fecha.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  }
+
+  /**
+   * Devuelve 'true' si CUALQUIER filtro está activo.
+   */
+  get isFilterActive(): boolean {
+    const isSearchSimpleActive = this.terminoDeBusqueda.trim() !== '';
+    const isSearchAdvancedActive = this.filtrosAvanzados && Object.keys(this.filtrosAvanzados).length > 0;
+    const isTypeFilterActive = this.idTipoSeleccionado !== undefined; // 'undefined' es 'Todos'
+
+    return isSearchSimpleActive || isSearchAdvancedActive || isTypeFilterActive;
+  }
+
+  /**
+   * Resetea TODOS los filtros a su estado inicial y recarga los documentos.
+   */
+  limpiarTodosLosFiltros(): void {
+    // Limpia los estados del HomeComponent
+    this.terminoDeBusqueda = '';
+    this.filtrosAvanzados = {};
+    this.idTipoSeleccionado = undefined;
+    this.categoriaSeleccionada = 'todos'; // Resetea el botón de tipo
+    this.currentPage = 0; // Vuelve a la página 1
+
+    // Limpia la barra de búsqueda (importante)
+    this.searchService.actualizarBusqueda('');
+    this.searchService.limpiarTodo();
+
+    // Recarga los documentos
+    this.cargarDocumentos();
   }
 }

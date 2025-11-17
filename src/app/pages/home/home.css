@@ -214,3 +214,33 @@ mat-paginator {
   margin: 2rem auto 0 auto;
   display: block;
 }
+
+/* Contenedor para alinear Título y Botón "Limpiar" */
+.filter-header {
+  display: flex;
+  justify-content: center; /* Centra el contenido */
+  align-items: center; /* Alinea verticalmente */
+  flex-wrap: wrap; /* Permite que el botón baje en pantallas muy chicas */
+  gap: 1rem; /* Espacio entre el título y el botón */
+}
+
+/* Estilo del nuevo botón "Limpiar Filtros" */
+.clear-filter-button {
+  /* Le damos forma de píldora/chip */
+  border-radius: 16px !important;
+  padding: 0.25rem 1rem !important;
+  font-size: 0.85rem;
+  line-height: 1.5;
+  /* Animación sutil de aparición */
+  animation: fadeIn 0.3s ease-in-out;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: scale(0.9); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+/* (Opcional) Centra el título del h2 si el botón desaparece */
+.selection-section h2 {
+  margin-bottom: 0; /* Ajuste para la nueva alineación */
+}

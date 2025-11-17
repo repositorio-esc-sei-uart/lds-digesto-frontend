@@ -12,7 +12,7 @@ import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 // Formularios Reactivos
 import { FormControl, ReactiveFormsModule } from '@angular/forms';
 // RxJS
-import { debounceTime, distinctUntilChanged, Observable } from 'rxjs';
+import { debounceTime, distinctUntilChanged, Observable, Subscription } from 'rxjs';
 // Componentes y Servicios
 import { LoginComponent } from '../../pages/login/login';
 import { GlobalConfigurationService } from '../../services/global-configuration-service';
@@ -61,6 +61,7 @@ import { AdvancedSearch } from "../../pages/advanced-search/advanced-search";
     ])
   ]
 })
+
 export class HeaderComponent implements OnInit, OnDestroy {
 
   /** Se utiliza como bandera para controlar la visibilidad de la barra de búsqueda en móviles. */
@@ -77,6 +78,7 @@ export class HeaderComponent implements OnInit, OnDestroy {
 
   isAdvancedSearchOpen = false;
   @ViewChild('searchContainer') searchContainer?: ElementRef;
+  private subscriptions: Subscription[] = [];
 
   /**
    * Se inyectan los servicios necesarios para el funcionamiento del componente.
@@ -97,9 +99,6 @@ export class HeaderComponent implements OnInit, OnDestroy {
     // Inicializa el observable de autenticación
     this.isAuthenticated$ = this.authService.isAuthenticated$;
   }
-  ngOnDestroy(): void {
-    throw new Error('Method not implemented.');
-  }
 
   /**
    * @LifecycleHook ngOnInit
@@ -107,7 +106,7 @@ export class HeaderComponent implements OnInit, OnDestroy {
    */
   ngOnInit(): void {
     // Se escuchan los cambios en el valor del input de búsqueda.
-    this.searchControl.valueChanges.pipe(
+    const searchSub = this.searchControl.valueChanges.pipe(
       // Se espera 300ms después de que el usuario deja de escribir para evitar peticiones excesivas.
       debounceTime(300),
       // Se emite el valor solo si es diferente al anterior, optimizando el rendimiento.
@@ -116,6 +115,18 @@ export class HeaderComponent implements OnInit, OnDestroy {
       // Se notifica al servicio de búsqueda con el nuevo término.
       this.searchService.actualizarBusqueda(value || '');
     });
+    this.subscriptions.push(searchSub);
+
+    // Suscripción para limpiar la barra de búsqueda
+    const limpiarSub = this.searchService.limpiarBusqueda$.subscribe(() => {
+      this.searchControl.setValue('', { emitEvent: false });
+      this.isAdvancedSearchOpen = false;
+    });
+    this.subscriptions.push(limpiarSub);
+  }
+
+  ngOnDestroy(): void {
+    this.subscriptions.forEach(sub => sub.unsubscribe());
   }
 
   /**
@@ -183,16 +194,11 @@ export class HeaderComponent implements OnInit, OnDestroy {
   }
 
   onAdvancedSearchApplied(filtros: any): void {
-    console.log('Header recibió filtros:', filtros); // ⬅️ DEBUG temporal
 
     // Cierra el dropdown
     this.isAdvancedSearchOpen = false;
 
-    // ⬇️ AGREGAR: Enviar al servicio para que Home lo reciba
     this.searchService.aplicarFiltrosAvanzados(filtros);
-
-    // El componente advanced-search ya maneja el envío al servicio,
-    // solo cerramos el dropdown
   }
 
   // Cerrar dropdown si se hace click fuera
@@ -205,7 +211,8 @@ export class HeaderComponent implements OnInit, OnDestroy {
       // Verifica si el click fue en algún overlay de Material
       const clickedOnOverlay = target.closest('.cdk-overlay-container') !== null ||
                               target.closest('.mat-datepicker-popup') !== null ||
-                              target.closest('.mat-select-panel') !== null;
+                              target.closest('.mat-select-panel') !== null||
+                              target.closest('.mat-mdc-autocomplete-panel') !== null;
 
       // Solo cierra si NO fue dentro del container Y NO fue en un overlay
       if (!clickedInside && !clickedOnOverlay) {

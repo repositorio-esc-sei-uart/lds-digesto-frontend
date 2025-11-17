@@ -10,4 +10,5 @@ export interface AdvancedFilter {
   fechaDesde?: string;
   fechaHasta?: string;
   excluirPalabras?: string;
+  idsPalabrasClave?: number[];
 }
