@@ -112,7 +112,7 @@ export class UserManagementComponent implements OnInit {
             // Muestra mensaje de éxito
             this.snackBar.open(`¡Usuario ${userName} eliminado con éxito!`, '', {
               duration: 3000,
-              horizontalPosition: 'right',
+              horizontalPosition: 'center',
               panelClass: ['success-snackbar']
             });
           },
@@ -123,7 +123,7 @@ export class UserManagementComponent implements OnInit {
 
             this.snackBar.open(errorMessage, 'Cerrar', {
               duration: 5000,
-              horizontalPosition: 'right',
+              horizontalPosition: 'center',
               panelClass: ['error-snackbar']
             });
           }
