@@ -16,12 +16,31 @@
 
   <!-- Sección Central: Contiene la barra de búsqueda principal. Solo visible si NO está autenticado. -->
   @if (!(isAuthenticated$ | async)) {
-    <div class="search-container">
+    <div class="search-container" #searchContainer>
       <mat-form-field class="search-bar">
         <mat-icon matPrefix>search</mat-icon>
         <!-- Se utiliza un formControl para gestionar el estado del input de forma reactiva. -->
         <input matInput placeholder="Buscar en el digesto..." [formControl]="searchControl">
+
+        <button mat-icon-button matSuffix
+            (click)="toggleAdvancedSearch()"
+            [class.active]="isAdvancedSearchOpen"
+            matTooltip="Búsqueda avanzada">
+          <mat-icon>tune</mat-icon>
+        </button>
       </mat-form-field>
+
+      <!-- Panel desplegable de búsqueda avanzada -->
+      @if (isAdvancedSearchOpen) {
+        <div class="advanced-search-dropdown" [@slideDown]>
+          <app-advanced-search
+            [isDropdownMode]="true"
+            (searchApplied)="onAdvancedSearchApplied($event)"
+            (searchCancelled)="closeAdvancedSearch()">
+          </app-advanced-search>
+        </div>
+      }
+
     </div>
   }
 

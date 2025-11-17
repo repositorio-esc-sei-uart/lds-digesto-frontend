@@ -6,7 +6,7 @@
  */
 
 import { Injectable } from '@angular/core';
-import { BehaviorSubject } from 'rxjs';
+import { BehaviorSubject, Subject } from 'rxjs';
 
 /**
  * @Injectable
@@ -32,6 +32,14 @@ export class SearchService {
    */
   public searchTerm$ = this.searchTermSource.asObservable();
 
+  // Observable para abrir búsqueda avanzada (modal legacy)
+  private openAdvancedSearchSubject = new Subject<void>();
+  public openAdvancedSearch$ = this.openAdvancedSearchSubject.asObservable();
+
+  // Observable para filtros avanzados (dropdown)
+  private filtrosAvanzadosSubject = new Subject<any>();
+  public filtrosAvanzados$ = this.filtrosAvanzadosSubject.asObservable();
+
   /**
    * @constructor
    * El constructor del servicio. Actualmente no realiza ninguna acción.
@@ -46,5 +54,33 @@ export class SearchService {
    */
   actualizarBusqueda(term: string): void {
     this.searchTermSource.next(term);
+  }
+
+  /**
+   * @method triggerAdvancedSearch
+   * Es llamado por el HeaderComponent para notificar al HomeComponent
+   * que debe abrir el modal de búsqueda avanzada.
+   */
+  triggerAdvancedSearch(): void {
+    this.openAdvancedSearchSubject.next();
+  }
+
+  /**
+   * Aplica filtros avanzados desde el dropdown
+   */
+  aplicarFiltrosAvanzados(filtros: any): void {
+    this.filtrosAvanzadosSubject.next(filtros);
+  }
+
+  // Subject para limpiar la búsqueda
+  private limpiarBusquedaSubject = new Subject<void>();
+  limpiarBusqueda$ = this.limpiarBusquedaSubject.asObservable();
+
+  /**
+   * Notifica que se deben limpiar todos los filtros incluyendo la barra de búsqueda
+   */
+  limpiarTodo(): void {
+    this.limpiarBusquedaSubject.next();
+    this.actualizarBusqueda('');
   }
 }

@@ -1,20 +1,26 @@
-import { ApplicationConfig, provideZoneChangeDetection, provideBrowserGlobalErrorListeners } from '@angular/core';
+import { ApplicationConfig, provideZoneChangeDetection, provideBrowserGlobalErrorListeners, LOCALE_ID } from '@angular/core';
 import { provideRouter } from '@angular/router';
 import { routes } from './app.routes';
 import { provideHttpClient, withInterceptors } from '@angular/common/http';
 import { MAT_DATE_LOCALE, provideNativeDateAdapter } from '@angular/material/core';
 import { AuthInterceptor } from './services/auth.interceptor';
 import { MatPaginatorIntl } from '@angular/material/paginator';
+import { provideAnimations } from '@angular/platform-browser/animations';
+import { registerLocaleData } from '@angular/common';
+import localeEsAr from '@angular/common/locales/es-AR';
 
+registerLocaleData(localeEsAr);
 
 export const appConfig: ApplicationConfig = {
   providers: [
     provideBrowserGlobalErrorListeners(),
     provideZoneChangeDetection({ eventCoalescing: true }),
     provideRouter(routes),
+    provideAnimations(),
     provideHttpClient(withInterceptors([AuthInterceptor])),
     provideNativeDateAdapter(),
-    { provide: MAT_DATE_LOCALE, useValue: 'es' },
+    { provide: MAT_DATE_LOCALE, useValue: 'es-AR' },
+    { provide: LOCALE_ID, useValue: 'es-AR' },
     { provide: MatPaginatorIntl, useValue: getSpanishPaginatorIntl() }
   ]
 };

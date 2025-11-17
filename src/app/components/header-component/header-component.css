@@ -226,3 +226,71 @@
   color: #e0e0e0;         /* Se aplica un gris claro para el feedback. */
   transform: scale(0.9);  /* Se aplica un leve encogimiento para simular el clic. */
 }
+
+/* ====================================
+   DROPDOWN DE BÚSQUEDA AVANZADA
+   ==================================== */
+
+.search-container {
+  position: relative; /* Necesario para posicionar el dropdown */
+  z-index: 1000;
+}
+
+.advanced-search-dropdown {
+  position: absolute;
+  top: calc(100% + 1px);
+  left: 0;
+  right: 0;
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+  overflow: hidden;
+  z-index: 1001;
+  width: 600px; /* Ancho máximo del dropdown */
+  margin: 0 auto;
+  border-top: 2px solid #1976d2;
+  transform-origin: top;
+  will-change: transform, opacity;
+}
+
+/* Animación del botón tune cuando se abre */
+button[matSuffix].active {
+  transition: transform 0.3s cubic-bezier(0.4, 0.0, 0.2, 1);
+}
+/* Botón de tune activo */
+button[matSuffix].active mat-icon {
+  color: var(--primary-color, #1976d2);
+  transform: rotate(90deg);
+  transition: transform 0.3s ease;
+}
+
+/* Suavizar transiciones de los campos de Material */
+.advanced-search-dropdown ::ng-deep .mat-mdc-form-field {
+  transition: all 0.5s ease-in-out;
+}
+
+.advanced-search-dropdown.hidden {
+  display: none;
+}
+
+/* Overlay oscuro opcional (descomentá si querés fondo oscuro) */
+/*
+.search-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.3);
+  z-index: 999;
+}
+*/
+
+/* Responsivo: en móviles ocupa todo el ancho */
+@media (max-width: 768px) {
+  .advanced-search-dropdown {
+    left: 16px;
+    right: 16px;
+    max-width: none;
+  }
+}
