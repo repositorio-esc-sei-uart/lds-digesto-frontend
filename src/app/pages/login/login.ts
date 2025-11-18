@@ -47,11 +47,12 @@ export class LoginComponent {
     private fb: FormBuilder,
     public authService: AuthenticationService,
     private router: Router,
-  private snackBar: MatSnackBar,
+    private snackBar: MatSnackBar,
     private dialogRef: MatDialogRef<LoginComponent>
   ) {
     this.loginForm = this.fb.group({
-      email: ['', [Validators.required, Validators.email]],
+      //email: ['', [Validators.required, Validators.email]],
+      identifier: ['', [Validators.required]],
       password: ['', Validators.required]
     });
   }
@@ -107,14 +108,14 @@ onSubmit(): void {
           if (serverMessage.includes('usuario inactivo')) {
               mensajeAmostrar = 'Usuario inactivo. No tiene permisos para acceder.';
           } else if (serverMessage.includes('credenciales inválidas') || err.status === 401) {
-              mensajeAmostrar = 'Email o contraseña incorrectos.';
+              mensajeAmostrar = 'Email, Legajo o contraseña incorrectos.';
           }
         } 
         else if (typeof err.error === 'string' && err.error.toLowerCase().includes('usuario inactivo')) {
               mensajeAmostrar = 'Usuario inactivo. No tiene permisos para acceder.';
         }
         else if (err.status === 401 || err.status === 403) {
-          mensajeAmostrar = 'Email o contraseña incorrectos.';
+          mensajeAmostrar = 'Email, Legajo o contraseña incorrectos.';
         }
         
         // Asignar el mensaje correcto y MOSTRAR EN SNACKBAR
