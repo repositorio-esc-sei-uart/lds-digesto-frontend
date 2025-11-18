@@ -46,10 +46,7 @@ import { MatDialogModule } from '@angular/material/dialog'; // <-- 6. AÑADIR
     MatInputModule,
     DatePipe,
     MatSnackBarModule,
-    MatDialogModule, // <-- 8. AÑADIR
-    DocumentDetail, // <-- 9. AÑADIR (si son standalone)
-    DocumentForm, // <-- 10. AÑADIR (si son standalone)
-    ConfirmDialogComponent // <-- 11. AÑADIR (si son standalone)
+    MatDialogModule
   ],
   templateUrl: './document-management-component.html',
   styleUrl: './document-management-component.css'
@@ -75,7 +72,7 @@ export class DocumentManagementComponent implements OnInit {
   displayedColumnsGestion: string[] = ['numDocumento', 'titulo', 'tipoDocumento', 'fechaCreacion', 'estado', 'acciones'];
   // Columnas para AUDITORÍA (Admin)
   displayedColumnsAuditoria: string[] = ['numDocumento', 'titulo', 'autor', 'fechaCarga'];
-  
+
   // Fuentes de datos (Cambiadas a MatTableDataSource)
   public dataSourceGestion = new MatTableDataSource<DocumentoListItem>();
   public dataSourceAuditoria = new MatTableDataSource<Registro>();
@@ -85,9 +82,9 @@ export class DocumentManagementComponent implements OnInit {
   constructor(
     private documentService: DocumentService,
     private snackBar: MatSnackBar,
-    private router: Router, 
-    private registroService: RegistroService, 
-    private authService: AuthenticationService 
+    private router: Router,
+    private registroService: RegistroService,
+    private authService: AuthenticationService
   ) {}
 
   // --- 14. REEMPLAZAR ngOnInit CON LÓGICA DE ROLES ---
@@ -97,10 +94,10 @@ export class DocumentManagementComponent implements OnInit {
 
     if (currentUser && currentUser.rol?.nombre === 'Administrador') {
       this.isAdmin = true;
-      this.loadRegistros(); 
+      this.loadRegistros();
     } else {
       this.isAdmin = false;
-      this.loadDocumentos(); 
+      this.loadDocumentos();
     }
   }
 
@@ -240,7 +237,7 @@ export class DocumentManagementComponent implements OnInit {
       console.log('El diálogo de previsualización se cerró:', result);
     });
   }
-  
+
   // Lógica para el filtro de la tabla
   applyFilter(event: Event) {
     // const filterValue = (event.target as HTMLInputElement).value;
@@ -303,7 +300,7 @@ export class DocumentManagementComponent implements OnInit {
     // Llama a la otra función que ya tiene la lógica completa.
     const docItem = this.dataSourceGestion.data.find(d => d.idDocumento === doc.idDocumento);
     if (docItem) {
-      this.openEditDocumentDialog(docItem); 
+      this.openEditDocumentDialog(docItem);
     } else {
       console.error("No se encontró el documento para editar");
     }
