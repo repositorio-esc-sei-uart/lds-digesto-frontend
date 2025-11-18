@@ -170,7 +170,6 @@ table {
   border-color: var(--app-success-color);
 }
 
-/* --- NUEVAS REGLAS --- */
 .status-derogado-parcial { /* Amarillo/Naranja */
   background-color: var(--app-attention-light-bg);
   color: var(--app-attention-color);
@@ -182,7 +181,6 @@ table {
   color: var(--app-warn-color);
   border-color: var(--app-warn-color);
 }
-/* --- FIN NUEVAS REGLAS --- */
 
 .status-otro {
   background-color: var(--app-chip-other-bg);

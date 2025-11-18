@@ -1,7 +1,7 @@
 import { CommonModule } from '@angular/common';
 import { Component, OnInit, Inject, Optional } from '@angular/core';
 import { ActivatedRoute, RouterModule } from '@angular/router';
-import { MAT_DIALOG_DATA } from '@angular/material/dialog';
+import { MAT_DIALOG_DATA, MatDialogRef, MatDialogModule } from '@angular/material/dialog';
 import { environment } from '../../../environments/environment.development';
 // Módulos de Angular Material
 import { MatCardModule } from '@angular/material/card';
@@ -34,35 +34,68 @@ export class DocumentDetail implements OnInit {
   public apiUrl: string = environment.apiUrl;
   /** Almacena los datos completos del documento a mostrar. */
   documento?: Documento;
-
+  isDialog: boolean = false;
   constructor(
     private route: ActivatedRoute,
     private documentService: DocumentService,
+    @Optional() public dialogRef: MatDialogRef<DocumentDetail>,
     @Optional() @Inject(MAT_DIALOG_DATA) private data: { id: number }
-  ) { }
+  ) { 
+    // Si data existe, significa que se abrió como modal
+    if (this.data && this.data.id) {
+      this.isDialog = true;
+    }
+  }
 
   ngOnInit(): void {
-    this.route.paramMap.pipe(
-      // Obtiene el ID como string y lo convierte a número
-      map(params => parseInt(params.get('id')!, 10)),
-      // Filtro de protección para IDs inválidos (NaN)
-      filter(id => !isNaN(id)),
-      // Usa switchMap para obtener el documento principal
-      switchMap(id => this.documentService.getDocumentoById(id)),
-      tap(documento => {
-        console.log("URL original del archivo:", documento?.archivos?.[0]?.url);
+    if (this.isDialog) {
+      // LÓGICA MODAL: Usamos el ID que viene por inyección
+      this.cargarDocumento(this.data.id);
+    } else {
+      // LÓGICA PÁGINA: Usamos la URL
+      this.route.paramMap.pipe(
+         // Obtiene el ID como string y lo convierte a número
+        map(params => parseInt(params.get('id')!, 10)),
+        filter(id => !isNaN(id))
+      ).subscribe(id => {
+        this.cargarDocumento(id);
+      });
+    }
+  }
+  private cargarDocumento(id: number): void {
+    this.documentService.getDocumentoById(id).pipe(tap(documento => {
         if (documento?.archivos) {
           documento.archivos = documento.archivos.map(archivo => ({
             ...archivo,
             url: `${environment.apiUrl}/api/v1/archivos/${archivo.idArchivo}/${archivo.nombre}`
           }));
         }
-        console.log("URL corregida:", documento?.archivos?.[0]?.url);
       })
     ).subscribe(documentoEncontrado => {
       // Asigna el resultado.
       this.documento = documentoEncontrado;
     });
+  }
+  /**
+   * Maneja el clic en un documento relacionado.
+   * Si es modal: Evita la navegación y recarga los datos en el mismo modal.
+   * Si es página: Deja que el routerLink navegue normalmente.
+   */
+  onReferenceClick(event: Event, id: number): void {
+    if (this.isDialog) {
+      // 1. Detenemos la navegación por defecto del routerLink
+      event.preventDefault(); 
+      
+      // 2. Recargamos el documento actual con el nuevo ID dentro del mismo modal
+      this.cargarDocumento(id);
+    }
+    // Si no es diálogo, no hacemos nada y dejamos que [routerLink] funcione.
+  }
+  // Método para cerrar el modal manualmente
+  cerrarModal(): void {
+    if (this.isDialog && this.dialogRef) {
+      this.dialogRef.close();
+    }
   }
 }
 
