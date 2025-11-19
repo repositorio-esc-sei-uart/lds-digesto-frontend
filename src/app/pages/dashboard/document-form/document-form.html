@@ -114,24 +114,87 @@
         }
       </div>
 
-      <mat-form-field appearance="outline" class="full-width">
-        <mat-label>Este documento hace referencia a:</mat-label>
-        <mat-select formControlName="referencias" multiple>
-          @for (doc of (todosLosDocumentos$ | async); track doc.idDocumento) {
-            <mat-option [value]="doc">{{ doc.numDocumento }} - {{ doc.titulo }}</mat-option>
-          }
-        </mat-select>
-      </mat-form-field>
+<!-- ========================= -->
+<!--      REFERENCIAS          -->
+<!-- ========================= -->
+<mat-form-field class="full-width" appearance="outline">
+  <mat-label>Referencias</mat-label>
 
-      <mat-form-field appearance="outline" class="full-width">
-        <mat-label>Palabras Clave</mat-label>
-        <mat-select formControlName="palabrasClave" multiple>
-          <mat-option #allSelected (click)="toggleAllSelection(allSelected.selected)">Seleccionar Todas</mat-option>
-          @for (palabra of (palabrasClave$ | async); track palabra.idPalabraClave) {
-            <mat-option [value]="palabra">{{ palabra.nombre }}</mat-option>
-          }
-        </mat-select>
-      </mat-form-field>
+  <!-- Chips seleccionados -->
+  <mat-chip-grid #chipList aria-label="Documentos seleccionados">
+    <mat-chip
+      *ngFor="let doc of referenciasSeleccionadas"
+      [removable]="true"
+      (removed)="removeReferencia(doc)"
+    >
+      {{ doc.numDocumento }} - {{ doc.titulo }}
+      <mat-icon matChipRemove>cancel</mat-icon>
+    </mat-chip>
+  </mat-chip-grid>
+
+  <!-- Input buscador separado -->
+  <input
+    #referenciaInput
+    placeholder="Este documento hace referencia a:"
+    [formControl]="referenciaCtrl"
+    [matAutocomplete]="auto"
+    [matChipInputFor]="chipList"
+    class="buscador-input"
+  />
+
+  <mat-autocomplete
+    #auto="matAutocomplete"
+    (optionSelected)="addReferencia($event.option.value)"
+  >
+    <mat-option *ngFor="let doc of filteredDocs$ | async" [value]="doc">
+      {{ doc.numDocumento }} - {{ doc.titulo }}
+    </mat-option>
+  </mat-autocomplete>
+</mat-form-field>
+
+
+<!-- ========================= -->
+<!--      PALABRAS CLAVE       -->
+<!-- ========================= -->
+<mat-form-field appearance="outline" class="full-width">
+  <mat-label>Palabras Clave</mat-label>
+
+  <!-- Chips seleccionados -->
+  <mat-chip-grid #chipListPalabras aria-label="Palabras clave seleccionadas">
+    <mat-chip
+      *ngFor="let palabra of palabrasClaveSeleccionadas"
+      [removable]="true"
+      (removed)="removePalabraClave(palabra)"
+    >
+      {{ palabra.nombre }}
+      <mat-icon matChipRemove>cancel</mat-icon>
+    </mat-chip>
+  </mat-chip-grid>
+
+  <!-- Input separado, igual que en Referencias -->
+  <input
+    #palabraClaveInput
+    class="buscador-input"
+    placeholder="Agregar palabra clave"
+    [formControl]="palabraClaveCtrl"
+    [matChipInputFor]="chipListPalabras"
+    [matAutocomplete]="autoPalabras"
+  />
+
+  <mat-autocomplete
+  #autoPalabras="matAutocomplete"
+  (optionSelected)="addPalabraClave($event.option.value)"
+  >
+    <mat-option
+      *ngFor="let palabra of palabrasClaveFiltradas$ | async"
+      [value]="palabra"
+    >
+      {{ palabra.nombre }}
+    </mat-option>
+  </mat-autocomplete>
+</mat-form-field>
+
+
 
     </div>
   </mat-dialog-content>
