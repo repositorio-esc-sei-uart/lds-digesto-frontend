@@ -115,3 +115,20 @@ mat-dialog-content {
     gap: 1.25rem; /* Mantenemos el mismo gap vertical */
   }
 }
+
+.full-width mat-chip-grid {
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: stretch !important;
+  width: 100%;
+}
+
+.full-width mat-chip-grid mat-chip {
+  margin-bottom: 4px; /* Separación entre chips */
+}
+
+/* El input siempre abajo */
+.full-width mat-chip-grid input {
+  width: 100%;
+  margin-top: 8px;
+}

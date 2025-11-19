@@ -1,7 +1,7 @@
 import { Component, ElementRef, Inject, OnInit, ViewChild } from '@angular/core';
-import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
+import { FormBuilder, FormGroup, Validators, ReactiveFormsModule, FormControl } from '@angular/forms';
 import { MAT_DIALOG_DATA, MatDialogRef, MatDialogModule, MatDialog } from '@angular/material/dialog';
-import { forkJoin, Observable, of, switchMap, take, map } from 'rxjs';
+import { forkJoin, Observable, of, switchMap, take, map, startWith } from 'rxjs';
 
 import { TipoDocumento } from '../../../interfaces/type-document-model';
 import { Sector } from '../../../interfaces/sector-model';
@@ -32,6 +32,7 @@ import { MatListModule } from "@angular/material/list";
 import { DocumentPreviewComponent } from '../document-preview/document-preview';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { HttpErrorResponse } from '@angular/common/http';
+import { MatAutocompleteModule } from '@angular/material/autocomplete';
 
 @Component({
   selector: 'app-document-form',
@@ -50,7 +51,8 @@ import { HttpErrorResponse } from '@angular/common/http';
     MatButtonModule,
     MatProgressSpinnerModule,
     MatListModule,
-    MatSnackBarModule
+    MatSnackBarModule,
+    MatAutocompleteModule
   ],
   templateUrl: './document-form.html',
   styleUrl: './document-form.css'
@@ -71,6 +73,31 @@ export class DocumentForm implements OnInit {
   estados$!: Observable<EstadoDocumento[]>;
   palabrasClave$!: Observable<PalabraClave[]>;
   todosLosDocumentos$!: Observable<DocumentoListItem[]>;
+
+  // 🔑 NUEVO: lista local y control para referencias
+  referenciasSeleccionadas: DocumentoListItem[] = [];
+  referenciaCtrl = new FormControl();
+  filteredDocs$!: Observable<DocumentoListItem[]>;
+  searchText = '';  // texto del buscador
+  @ViewChild('referenciaInput') referenciaInput!: ElementRef<HTMLInputElement>;
+
+
+  // Lista seleccionada
+  palabrasClaveSeleccionadas: PalabraClave[] = [];
+
+  // FormControl
+  palabraClaveCtrl = new FormControl();
+
+  // Array con todas las palabras disponibles
+  palabrasClaveDisponibles: PalabraClave[] = [];
+
+  // Observable filtrado
+  palabrasClaveFiltradas$!: Observable<PalabraClave[]>;
+
+  // Para limpiar el input real
+  @ViewChild('palabraClaveInput') palabraClaveInput!: ElementRef<HTMLInputElement>;
+
+
   /**
    * Define la política de nombrado de archivos que usará el backend.
    * 'original': El backend usará el nombre original del archivo. (Default actual)
@@ -162,34 +189,62 @@ export class DocumentForm implements OnInit {
    * Carga todos los catálogos necesarios para los <mat-select>
    * (Tipos, Sectores, Estados, Palabras Clave y Documentos para referencias).
    */
-  ngOnInit(): void {
-    // Definimos los observables de los catálogos
-    this.tipos$ = this.typeDocumentService.getTiposDocumento();
-    this.sectores$ = this.sectorService.getSectores();
-    this.estados$ = this.statusDocumentService.getEstados();
-    this.palabrasClave$ = this.keywordDocumentService.getKeywords();
+ngOnInit(): void {
+  // Catálogos
+  this.tipos$ = this.typeDocumentService.getTiposDocumento();
+  this.sectores$ = this.sectorService.getSectores();
+  this.estados$ = this.statusDocumentService.getEstados();
+  this.palabrasClave$ = this.keywordDocumentService.getKeywords();
 
-    this.todosLosDocumentos$ = this.documentService.getDocumentos().pipe(
-      map(response => response.content)
+  // ---------------------------
+  // REFERENCIAS 
+  // ---------------------------
+  this.todosLosDocumentos$ = this.documentService.getDocumentos().pipe(
+    map(response => response.content)
+  );
+
+  this.todosLosDocumentos$.pipe(take(1)).subscribe(docs => {
+    this.filteredDocs$ = this.referenciaCtrl.valueChanges.pipe(
+      startWith(''),
+      map(value => typeof value === 'string' ? value : value?.titulo),
+      map(titulo => titulo ? this._filter(docs, titulo) : docs)
     );
+  });
 
-    if (this.isEditMode && this.data.documento) {
+  // ---------------------------
+  // 🔥 PALABRAS CLAVE 
+  // ---------------------------
 
-      // Esperamos a que los 3 catálogos clave (y los otros 2) se resuelvan
-      forkJoin({
-        tipos: this.tipos$.pipe(take(1)),
-        sectores: this.sectores$.pipe(take(1)),
-        estados: this.estados$.pipe(take(1)),
-        palabras: this.palabrasClave$.pipe(take(1)), // Esperamos también por si acaso
-        documentos: this.todosLosDocumentos$.pipe(take(1)) // Esperamos también por si acaso
-      }).subscribe((catalogos) => { // <-- Añade 'catalogos' aquí
-        // Solo AHORA, que los <mat-option> existen,
-        // llamamos a fillFormForEdit.
-        this.fillFormForEdit(this.data.documento!, catalogos); // <-- Pasa 'catalogos' aquí
-      });
+  // Cargamos las palabras y, solo cuando estén, inicializamos el observable del autocomplete
+  this.keywordDocumentService.getKeywords().pipe(take(1)).subscribe(palabras => {
+    this.palabrasClaveDisponibles = palabras; // lista base
 
-    }
+    // Ahora sí inicializamos el observable: al emitir startWith('') ya habrá opciones para renderizar
+    this.palabrasClaveFiltradas$ = this.palabraClaveCtrl.valueChanges.pipe(
+      startWith(''),
+      map(value => typeof value === 'string' ? value : value?.nombre),
+      map(texto => this.filtrarPalabrasClave(texto || ''))
+    );
+    
+  });
+
+
+  // ---------------------------
+  // MODO EDICIÓN
+  // ---------------------------
+  if (this.isEditMode && this.data.documento) {
+    forkJoin({
+      tipos: this.tipos$.pipe(take(1)),
+      sectores: this.sectores$.pipe(take(1)),
+      estados: this.estados$.pipe(take(1)),
+      palabras: this.palabrasClave$.pipe(take(1)),
+      documentos: this.todosLosDocumentos$.pipe(take(1))
+    }).subscribe((catalogos) => {
+      this.fillFormForEdit(this.data.documento!, catalogos);
+    });
   }
+}
+
 
   /**
    * Se dispara cuando el usuario selecciona archivos desde el input <file>.
@@ -566,4 +621,78 @@ export class DocumentForm implements OnInit {
       referencias: documento.referencias
     });
   }
+
+    private _filter(docs: DocumentoListItem[], value: string): DocumentoListItem[] {
+    const filterValue = value.toLowerCase();
+    return docs.filter(doc =>
+      doc.titulo.toLowerCase().includes(filterValue) ||
+      doc.numDocumento.toLowerCase().includes(filterValue)
+    );
+  }
+
+  addReferencia(doc: DocumentoListItem): void {
+    if (!this.referenciasSeleccionadas.find(r => r.idDocumento === doc.idDocumento)) {
+      this.referenciasSeleccionadas.push(doc);
+    }
+
+    // Limpiar input real (ESTO ES LO QUE TE FALTA)
+    if (this.referenciaInput) {
+      this.referenciaInput.nativeElement.value = '';
+    }
+
+    // Limpiar el FormControl
+    this.referenciaCtrl.setValue('');
+
+    this.documentForm.get('referencias')?.setValue(this.referenciasSeleccionadas);
+  }
+
+  removeReferencia(doc: DocumentoListItem): void {
+    const index = this.referenciasSeleccionadas.indexOf(doc);
+    if (index >= 0) {
+      this.referenciasSeleccionadas.splice(index, 1);
+    }
+    this.documentForm.get('referencias')?.setValue(this.referenciasSeleccionadas);
+  }
+
+
+ // MÉTODO DE FILTRADO (idéntico al de referencias)
+filtrarPalabrasClave(texto: string): PalabraClave[] {
+  const filtro = (texto || '').toLowerCase();
+  return this.palabrasClaveDisponibles.filter(p =>
+    p.nombre.toLowerCase().includes(filtro)
+  );
+}
+
+
+
+// Agregar palabra clave
+addPalabraClave(palabra: PalabraClave): void {
+  if (!this.palabrasClaveSeleccionadas.some(p => p.idPalabraClave === palabra.idPalabraClave)) {
+    this.palabrasClaveSeleccionadas.push(palabra);
+  }
+
+  // Limpiar input real (evita congelamientos)
+  if (this.palabraClaveInput) {
+    this.palabraClaveInput.nativeElement.value = '';
+  }
+
+  // Limpiar FormControl (obligatorio para refrescar el autocomplete)
+  this.palabraClaveCtrl.setValue('');
+
+  // Actualizar el formulario si corresponde
+  this.documentForm.get('palabrasClave')?.setValue(this.palabrasClaveSeleccionadas);
+}
+
+// Remover
+removePalabraClave(palabra: PalabraClave): void {
+  const index = this.palabrasClaveSeleccionadas.indexOf(palabra);
+  if (index >= 0) {
+    this.palabrasClaveSeleccionadas.splice(index, 1);
+  }
+
+  // Actualiza FormControl del form
+  this.documentForm.get('palabrasClave')?.setValue(this.palabrasClaveSeleccionadas);
+}
+
+
 }
