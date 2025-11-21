@@ -227,8 +227,8 @@ export class DocumentManagementComponent implements OnInit {
   openPreviewModal(documentoId: number): void {
     const dialogRef = this.dialog.open(DocumentDetail, { // Abre el componente DocumentDetail
       width: '85%',              // Ancho del modal
-      maxWidth: '1000px',        // Ancho máximo
-      height: '80vh',            // Alto relativo a la ventana
+      maxWidth: '90vw',        // Ancho máximo
+      height: '90vh',            // Alto relativo a la ventana
       panelClass: 'preview-dialog-container', // Clase CSS opcional para estilizar el modal
       data: { id: documentoId } // Pasamos el ID como dato al modal
     });

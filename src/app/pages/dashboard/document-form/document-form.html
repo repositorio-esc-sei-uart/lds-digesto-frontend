@@ -56,14 +56,28 @@
         </mat-form-field>
       </div>
 
-      <mat-form-field appearance="outline" class="full-width">
-        <mat-label>Estado</mat-label>
-        <mat-select formControlName="estado" required>
-          @for (estado of (estados$ | async); track estado.idEstado) {
-            <mat-option [value]="estado">{{ estado.nombre }}</mat-option>
-          }
-        </mat-select>
-      </mat-form-field>
+      <div class="form-row">
+    <mat-form-field appearance="outline" class="flex-field">
+      <mat-label>Unidad Ejecutora</mat-label>
+      <mat-select formControlName="unidadEjecutora" required>
+        @for (unidad of (unidades$ | async); track unidad.idUnidadEjecutora) {
+          <mat-option [value]="unidad">{{ unidad.nombre }}</mat-option>
+        }
+      </mat-select>
+@if (documentForm.get('unidadEjecutora')?.hasError('required')) {
+        <mat-error>La unidad ejecutora es requerida</mat-error>
+      }
+    </mat-form-field>
+
+    <mat-form-field appearance="outline" class="flex-field">
+      <mat-label>Estado</mat-label>
+      <mat-select formControlName="estado" required>
+        @for (estado of (estados$ | async); track estado.idEstado) {
+          <mat-option [value]="estado">{{ estado.nombre }}</mat-option>
+        }
+      </mat-select>
+    </mat-form-field>
+  </div>
 
       <mat-form-field appearance="outline" class="full-width">
         <mat-label>Resumen</mat-label>
@@ -75,6 +89,7 @@
           <mat-icon>attach_file</mat-icon>
           Archivos Adjuntos (PDF)
         </h3>
+        
         <input
           type="file"
           hidden
@@ -88,30 +103,52 @@
           Seleccionar archivos
         </button>
 
-        @if (archivosParaSubir.length > 0) {
-          <mat-list role="list">
+        <mat-list role="list">
+          
+          @if (isEditMode && archivosExistentes.length > 0) {
+            <h3 matSubheader>Archivos Guardados</h3>
+            @for (archivo of archivosExistentes; track archivo.idArchivo) {
+              <mat-list-item role="listitem">
+                <mat-icon matListItemIcon class="icon-existing">cloud_done</mat-icon>
+                <div matListItemTitle class="file-item-line">
+                  <a [href]="archivo.url" target="_blank" class="file-name link-existing">
+                    {{ archivo.nombre }}
+                  </a>
+                  <span class="file-size">Guardado</span>
+                  
+                  <button mat-icon-button color="warn" type="button"
+                          (click)="removerArchivoExistente(archivo)"
+                          aria-label="Eliminar archivo existente"
+                          class="delete-button">
+                    <mat-icon>delete_forever</mat-icon>
+                  </button>
+                </div>
+              </mat-list-item>
+            }
+            <mat-divider></mat-divider>
+          }
+
+
+          @if (archivosParaSubir.length > 0) {
+            <h3 matSubheader>Nuevos para subir</h3>
             @for (file of archivosParaSubir; track file.name) {
               <mat-list-item role="listitem">
                 <mat-icon matListItemIcon>picture_as_pdf</mat-icon>
-
                 <div matListItemTitle class="file-item-line">
-
                   <span class="file-name">{{ file.name }}</span>
-
                   <span class="file-size">{{ (file.size / 1024).toFixed(1) }} KB</span>
-
+                  
                   <button mat-icon-button color="warn" type="button"
                           (click)="removerArchivo(file)"
-                          aria-label="Quitar archivo"
+                          aria-label="Quitar archivo de la lista"
                           class="delete-button">
-                    <mat-icon>delete</mat-icon>
+                    <mat-icon>close</mat-icon>
                   </button>
                 </div>
-
-                </mat-list-item>
+              </mat-list-item>
             }
-          </mat-list>
-        }
+          }
+        </mat-list>
       </div>
 
 <!-- ========================= -->

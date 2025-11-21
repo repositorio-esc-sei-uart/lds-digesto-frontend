@@ -3,6 +3,7 @@ import { PalabraClave } from "./keyword-document-model";
 import { Sector } from "./sector-model";
 import { EstadoDocumento } from "./status-document-model";
 import { TipoDocumento } from "./type-document-model";
+import { UnidadEjecutora } from "./unidad-ejecutora-model";
 
 /**
  * @interface DocumentoListItem
@@ -41,7 +42,9 @@ export interface Documento {
   fechaCreacion: Date;
   tipoDocumento: TipoDocumento;
   sector: Sector;
+  unidadEjecutora: UnidadEjecutora;
   estado: EstadoDocumento;
+  activo: boolean;
   archivos: Archivo[];
   palabrasClave: PalabraClave[];
   referencias: ReferenciaDocumento[];

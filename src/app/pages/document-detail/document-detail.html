@@ -5,6 +5,7 @@
 
 <!-- @if (documento) Bloque que se muestra si el documento se encuentra. -->
 @if (documento) {
+  @if (!isDialog) {
   <!-- Sección de Acciones: Botón 'Volver'. -->
   <div class="page-actions">
     <a mat-stroked-button routerLink="/home">
@@ -12,9 +13,10 @@
       <span>Volver al inicio</span>
     </a>
   </div>
+  }
 
   <!-- Contenedor Principal en Grilla -->
-  <div class="detail-container">
+  <div class="detail-container"[class.modal-padding]="isDialog">
 
     <!-- Columna Izquierda: Contenido Principal -->
     <div class="document-content">
@@ -55,7 +57,10 @@
             <h3><mat-icon>link</mat-icon> Este documento hace referencia a:</h3>
             <div class="references-list">
               @for (ref of documento.referencias; track ref.idDocumento) {
-                <a class="reference-item" [routerLink]="['/documento', ref.idDocumento]">
+                <a class="reference-item" 
+                   [routerLink]="isDialog ? null : ['/documento', ref.idDocumento]"
+                   (click)="onReferenceClick($event, ref.idDocumento)"
+                   [style.cursor]="'pointer'">
                   <mat-icon>article</mat-icon>
                   <span>{{ ref.numDocumento }}</span>
                 </a>
@@ -72,7 +77,10 @@
             <h3><mat-icon>link</mat-icon> Este documento es referenciado por:</h3>
             <div class="references-list">
               @for (ref of documento.referenciadoPor; track ref.idDocumento) {
-                <a class="reference-item" [routerLink]="['/documento', ref.idDocumento]">
+             <a class="reference-item" 
+                   [routerLink]="isDialog ? null : ['/documento', ref.idDocumento]"
+                   (click)="onReferenceClick($event, ref.idDocumento)"
+                   [style.cursor]="'pointer'">
                   <mat-icon>article</mat-icon>
                   <span>{{ ref.numDocumento }}</span>
                 </a>
@@ -136,12 +144,21 @@
   }
     </div>
   </div>
+   <!-- Bloque que se muestra si el documento NO se encuentra. -->
+  @if (isDialog) {
+    <div style="padding: 1rem; text-align: right;">
+      <button mat-stroked-button (click)="cerrarModal()">Cerrar Vista</button>
+    </div>
+  }
+
 } @else {
-  <!-- Bloque que se muestra si el documento NO se encuentra. -->
   <div class="not-found-container">
     <mat-icon>search_off</mat-icon>
     <h2>Documento no Encontrado</h2>
-    <p>El documento que estás buscando no existe o fue movido.</p>
-    <a mat-stroked-button routerLink="/home">Volver al inicio</a>
+    @if (!isDialog) {
+      <a mat-stroked-button routerLink="/home">Volver al inicio</a>
+    } @else {
+      <button mat-stroked-button (click)="cerrarModal()">Cerrar</button>
+    }
   </div>
 }

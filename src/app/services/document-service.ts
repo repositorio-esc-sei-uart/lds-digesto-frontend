@@ -11,6 +11,8 @@ import { catchError, map, delay, Observable, of, tap, throwError } from 'rxjs';
 import { environment } from '../../environments/environment.development';
 import { TipoDocumento, } from '../interfaces/type-document-model';
 import { EstadoDocumento } from '../interfaces/status-document-model';
+import { UnidadEjecutoraService } from './unidad-ejecutora-service';
+import { UnidadEjecutora } from '../interfaces/unidad-ejecutora-model';
 import { Sector } from '../interfaces/sector-model';
 import { Archivo } from '../interfaces/archive-document-model';
 import { PalabraClave } from '../interfaces/keyword-document-model';
@@ -54,10 +56,12 @@ interface BackendDocumentoDTO {
   resumen: string;
   numDocumento: string;
   fechaCreacion: string;
+  activo: boolean;
   // Nombres "planos"
   nombreEstado: string;
   nombreTipoDocumento: string;
   nombreSector: string;
+  nombreUnidadEjecutora: string;
   // Listas de DTOs
   archivos: Archivo[];
   palabrasClave: PalabraClave[];
@@ -83,7 +87,8 @@ export class DocumentService {
     private http: HttpClient,
     private typeDocumentService: TypeDocumentService,
     private sectorService: SectorService,
-    private statusDocumentService: StatusDocumentService
+    private statusDocumentService: StatusDocumentService,
+    private unidadEjecutoraService: UnidadEjecutoraService
   ) { }
 
   /**
@@ -259,6 +264,7 @@ export class DocumentService {
       numDocumento: dto.numDocumento,
       resumen: dto.resumen,
       fechaCreacion: new Date(dto.fechaCreacion + 'T00:00:00'),
+      activo: dto.activo,
 
       // "Inflamos" los strings planos a los objetos que el frontend espera
       tipoDocumento: {
@@ -270,6 +276,10 @@ export class DocumentService {
         idSector: 0,
         nombre: dto.nombreSector
       } as Sector,
+      unidadEjecutora: {
+          idUnidadEjecutora: 0,
+          nombre: dto.nombreUnidadEjecutora
+      } as UnidadEjecutora,
       estado: {
         idEstado: 0,
         nombre: dto.nombreEstado
@@ -336,11 +346,12 @@ export class DocumentService {
       dto: this.http.get<BackendDocumentoDTO>(url),
       tipos: this.typeDocumentService.getTiposDocumento(),
       sectores: this.sectorService.getSectores(),
-      estados: this.statusDocumentService.getEstados()
+      estados: this.statusDocumentService.getEstados(),
+      unidades: this.unidadEjecutoraService.getUnidadesEjecutoras()
     }).pipe(
-      map(({ dto, tipos, sectores, estados }) => {
+      map(({ dto, tipos, sectores, estados, unidades }) => {
         // Pasamos todo a la nueva función de rehidratación
-        return this.rehidratarDTOParaEdicion(dto, tipos, sectores, estados);
+        return this.rehidratarDTOParaEdicion(dto, tipos, sectores, estados, unidades);
       }),
       catchError(this.handleError<Documento | undefined>(`getDocumentoParaEdicion id=${id}`))
     );
@@ -354,18 +365,20 @@ export class DocumentService {
     dto: BackendDocumentoDTO,
     catalogoTipos: TipoDocumento[],
     catalogoSectores: Sector[],
-    catalogoEstados: EstadoDocumento[]
+    catalogoEstados: EstadoDocumento[],
+    catalogoUnidades: UnidadEjecutora[]
   ): Documento {
 
     // Buscamos los objetos completos en los catálogos usando el nombre que SÍ nos da el DTO
     const tipoDocEncontrado = catalogoTipos.find(t => t.nombre === dto.nombreTipoDocumento);
     const sectorEncontrado = catalogoSectores.find(s => s.nombre === dto.nombreSector);
     const estadoEncontrado = catalogoEstados.find(e => e.nombre === dto.nombreEstado);
-
+    const unidadEncontrada = catalogoUnidades.find(u => u.nombre === dto.nombreUnidadEjecutora);
     return {
       idDocumento: dto.idDocumento,
       titulo: dto.titulo,
       numDocumento: dto.numDocumento,
+      activo: true,
       resumen: dto.resumen,
       fechaCreacion: new Date(dto.fechaCreacion + 'T00:00:00'),
 
@@ -373,12 +386,25 @@ export class DocumentService {
       tipoDocumento: tipoDocEncontrado || { idTipoDocumento: 0, nombre: dto.nombreTipoDocumento, descripcion: '' },
       sector: sectorEncontrado || { idSector: 0, nombre: dto.nombreSector } as Sector,
       estado: estadoEncontrado || { idEstado: 0, nombre: dto.nombreEstado } as EstadoDocumento,
+      unidadEjecutora: unidadEncontrada || { idUnidadEjecutora: 0, nombre: dto.nombreUnidadEjecutora } as UnidadEjecutora,
 
       archivos: dto.archivos || [],
       palabrasClave: dto.palabrasClave || [],
       referencias: dto.referencias || [],
       referenciadoPor: dto.referenciadoPor || []
     };
+  }
+   /**
+  * Elimina un archivo por su ID.
+  * Llama al endpoint: DELETE /api/v1/archivos/{id}
+  */
+  deleteArchivo(idArchivo: number): Observable<void> {
+    const url = `${environment.apiUrl}/api/v1/archivos/${idArchivo}`;
+    console.log(`[DocumentService-REAL] DELETE a ${url}`);
+    return this.http.delete<void>(url).pipe(
+      tap(() => console.log(`Archivo ${idArchivo} eliminado con éxito.`)),
+      catchError(this.handleError<void>('deleteArchivo'))
+    );
   }
   /**
    * (MÉTODO FUTURO) Sube archivos al backend.
