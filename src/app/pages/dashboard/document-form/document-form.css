@@ -92,6 +92,16 @@ mat-dialog-content {
 
   margin-right: 1rem; /* Espacio antes del tamaño */
 }
+.icon-existing {
+  color: #4caf50; /* Verde para indicar que ya está guardado */
+}
+.link-existing {
+  text-decoration: none;
+  color: #1976d2;
+}
+.link-existing:hover {
+  text-decoration: underline;
+}
 
 .file-size {
   flex-shrink: 0; /* Evita que el tamaño se encoja */

@@ -71,6 +71,7 @@ export class DocumentForm implements OnInit {
   estados$!: Observable<EstadoDocumento[]>;
   palabrasClave$!: Observable<PalabraClave[]>;
   todosLosDocumentos$!: Observable<DocumentoListItem[]>;
+  archivosExistentes: Archivo[] = [];
   /**
    * Define la política de nombrado de archivos que usará el backend.
    * 'original': El backend usará el nombre original del archivo. (Default actual)
@@ -175,6 +176,7 @@ export class DocumentForm implements OnInit {
 
     if (this.isEditMode && this.data.documento) {
 
+       this.archivosExistentes = [...this.data.documento.archivos];
       // Esperamos a que los 3 catálogos clave (y los otros 2) se resuelvan
       forkJoin({
         tipos: this.tipos$.pipe(take(1)),
@@ -234,8 +236,6 @@ export class DocumentForm implements OnInit {
     // Reseteamos el input
     input.value = '';
   }
-
-
   /**
    * Elimina un archivo de la lista `archivosParaSubir`
    * @param archivoARemover El objeto File que se debe quitar.
@@ -246,12 +246,6 @@ export class DocumentForm implements OnInit {
       (file) => file !== archivoARemover
     );
   }
-
-  /**
-   * Se ejecuta al enviar el formulario (clic en "Vista Documento").
-   * Valida, construye el DTO para el backend y el objeto para la preview,
-   * y abre el modal de previsualización (`DocumentPreviewComponent`).
-   */
   /**
    * Se ejecuta al enviar el formulario (clic en "Vista Documento").
    * Valida, construye el DTO para el backend y el objeto para la preview,
@@ -289,20 +283,24 @@ export class DocumentForm implements OnInit {
       const documentoParaPreview = this.crearDocumentoParaPreview();
 
       this.isLoading = true;
-      // --- INICIO DE LA MODIFICACIÓN ---
+      if (this.isEditMode) {
+      // CASO 1: EDICIÓN -> Guardar Directamente (Saltar Preview)
+      console.log('Modo Edición: Guardando directamente...');
+      this.guardarDocumento(nuevoDocumentoDTO, archivosFinales);
+      
+    } else {
       // Añadimos este log para depurar el objeto exacto que se envía
       console.log('--- PAYLOAD FINAL ENVIADO AL BACKEND ---');
       console.log(JSON.stringify(nuevoDocumentoDTO, null, 2));
-      // --- FIN DE LA MODIFICACIÓN ---
 
+      
       // --- Abrir el Modal de Preview ---
       const previewDialogRef = this.dialog.open(DocumentPreviewComponent, {
-        width: '85%',
-        maxWidth: '1200px',
+        width: '95%',
+        maxWidth: '98vw',
         maxHeight: '90vh',
         data: { documento: documentoParaPreview }
       });
-
       // Escuchamos la respuesta del preview
       previewDialogRef.afterClosed().subscribe(result => {
         if (result === true) {
@@ -312,7 +310,7 @@ export class DocumentForm implements OnInit {
           this.isLoading = false;
         }
       });
-
+    }
     } catch (error) {
       console.error('Error al construir el objeto o abrir el modal:', error);
       this.isLoading = false;
@@ -322,6 +320,7 @@ export class DocumentForm implements OnInit {
    * Cierra el diálogo modal sin guardar, devolviendo 'false'.
    */
   onCancel(): void {
+    if(this.isEditMode)
     this.dialogRef.close(false); // Cierra el modal sin hacer nada
   }
 
@@ -522,15 +521,6 @@ export class DocumentForm implements OnInit {
     };
   }
   /**
-   * @private
-   * Rellena el formulario con los datos de un documento existente.
-   */
-  /**
-   * @private
-   * Rellena el formulario con los datos de un documento existente.
-   * Esta versión busca los objetos correctos en los catálogos.
-   */
-  /**
   * @private
   * Rellena el formulario con los datos de un documento existente.
   * Esta versión funciona porque el 'documento' recibido ya fue
@@ -547,7 +537,6 @@ export class DocumentForm implements OnInit {
     const estadoCorrecto = catalogos.estados.find(
       (e: EstadoDocumento) => e.idEstado === documento.estado.idEstado
     );
-    // --- FIN DE CORRECCIÓN ---
 
     this.documentForm.patchValue({
       titulo: documento.titulo,
@@ -564,6 +553,38 @@ export class DocumentForm implements OnInit {
       // (Estos también necesitan el mismo tratamiento si fallan)
       palabrasClave: documento.palabrasClave,
       referencias: documento.referencias
+    });
+  }
+  /**
+  * Elimina un archivo EXISTENTE (que ya está en el backend).
+  * @param archivoARemover El objeto Archivo (con idArchivo) a eliminar.
+  */
+  removerArchivoExistente(archivoARemover: Archivo): void {
+    console.log(`Solicitando eliminar archivo existente: ID ${archivoARemover.idArchivo}`);
+    this.isLoading = true; // Mostrar spinner
+
+    this.documentService.deleteArchivo(archivoARemover.idArchivo).subscribe({
+      next: () => {
+        this.isLoading = false;
+        // Quitar de la lista local en la UI
+        this.archivosExistentes = this.archivosExistentes.filter(
+          (a) => a.idArchivo !== archivoARemover.idArchivo
+        );
+        this.snackBar.open('Archivo eliminado permanentemente.', 'Cerrar', {
+          duration: 3000,
+          verticalPosition: 'top',
+          panelClass: ['success-snackbar']
+        });
+      },
+      error: (err) => {
+        this.isLoading = false;
+        console.error('Error al eliminar archivo:', err);
+        this.snackBar.open('Error al eliminar el archivo.', 'Cerrar', {
+          duration: 5000,
+          verticalPosition: 'top',
+          panelClass: ['error-snackbar']
+        });
+      }
     });
   }
 }

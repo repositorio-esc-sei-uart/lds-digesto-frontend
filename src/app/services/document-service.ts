@@ -380,6 +380,18 @@ export class DocumentService {
       referenciadoPor: dto.referenciadoPor || []
     };
   }
+   /**
+  * Elimina un archivo por su ID.
+  * Llama al endpoint: DELETE /api/v1/archivos/{id}
+  */
+  deleteArchivo(idArchivo: number): Observable<void> {
+    const url = `${environment.apiUrl}/api/v1/archivos/${idArchivo}`;
+    console.log(`[DocumentService-REAL] DELETE a ${url}`);
+    return this.http.delete<void>(url).pipe(
+      tap(() => console.log(`Archivo ${idArchivo} eliminado con éxito.`)),
+      catchError(this.handleError<void>('deleteArchivo'))
+    );
+  }
   /**
    * (MÉTODO FUTURO) Sube archivos al backend.
    * El backend usará el Título del documento como nombre base.
