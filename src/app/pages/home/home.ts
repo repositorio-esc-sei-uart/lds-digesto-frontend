@@ -160,7 +160,9 @@ export class HomeComponent implements OnInit, OnDestroy {
       this.documentosFiltrados = response.content;
       this.totalElements = response.totalElements;
       this.totalPages = response.totalPages;
+      this.totalDocumentos = response.totalElements;
     });
+
   }
 
   /**
