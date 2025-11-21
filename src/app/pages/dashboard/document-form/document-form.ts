@@ -9,13 +9,15 @@ import { EstadoDocumento } from '../../../interfaces/status-document-model';
 import { PalabraClave } from '../../../interfaces/keyword-document-model';
 import { Documento, DocumentoListItem, ReferenciaDocumento } from '../../../interfaces/document-model';
 import { Archivo } from '../../../interfaces/archive-document-model';
+import { UnidadEjecutora } from '../../../interfaces/unidad-ejecutora-model';
 
 // Servicios para los Comboboxes
 import { TypeDocumentService } from '../../../services/type-document-service';
 import { SectorService } from '../../../services/sector-service';
 import { StatusDocumentService } from '../../../services/status-document-service';
 import { KeywordDocumentService } from '../../../services/keyword-document-service';
-import { DocumentService } from '../../../services/document-service'; // Para el POST
+import { DocumentService } from '../../../services/document-service'; 
+import { UnidadEjecutoraService } from '../../../services/unidad-ejecutora-service';
 
 // Módulos de Angular Material para el HTML
 import { CommonModule } from '@angular/common';
@@ -71,6 +73,7 @@ export class DocumentForm implements OnInit {
   estados$!: Observable<EstadoDocumento[]>;
   palabrasClave$!: Observable<PalabraClave[]>;
   todosLosDocumentos$!: Observable<DocumentoListItem[]>;
+  unidades$!: Observable<UnidadEjecutora[]>;
   archivosExistentes: Archivo[] = [];
   // Referencias
   referenciasSeleccionadas: DocumentoListItem[] = [];
@@ -96,6 +99,7 @@ export class DocumentForm implements OnInit {
     private dialogRef: MatDialogRef<DocumentForm>,
     private typeDocumentService: TypeDocumentService,
     private sectorService: SectorService,
+    private unidadEjecutoraService: UnidadEjecutoraService,
     private statusDocumentService: StatusDocumentService,
     private keywordDocumentService: KeywordDocumentService,
     private documentService: DocumentService, 
@@ -114,6 +118,7 @@ export class DocumentForm implements OnInit {
       resumen: ['', Validators.required],
       tipoDocumento: [null, Validators.required],
       sector: [null, Validators.required],
+      unidadEjecutora: [null, Validators.required],
       estado: [null, Validators.required],
       palabrasClave: [[]], 
       referencias: [[]],
@@ -140,6 +145,7 @@ export class DocumentForm implements OnInit {
     // Catálogos básicos
     this.tipos$ = this.typeDocumentService.getTiposDocumento();
     this.sectores$ = this.sectorService.getSectores();
+    this.unidades$ = this.unidadEjecutoraService.getUnidadesEjecutoras();
     this.estados$ = this.statusDocumentService.getEstados();
     this.palabrasClave$ = this.keywordDocumentService.getKeywords();
     this.todosLosDocumentos$ = this.documentService.getDocumentos().pipe(
@@ -170,6 +176,7 @@ export class DocumentForm implements OnInit {
       forkJoin({
         tipos: this.tipos$.pipe(take(1)),
         sectores: this.sectores$.pipe(take(1)),
+        unidades: this.unidades$.pipe(take(1)),
         estados: this.estados$.pipe(take(1)),
         palabras: this.palabrasClave$.pipe(take(1)),
         documentos: this.todosLosDocumentos$.pipe(take(1)) 
@@ -320,7 +327,7 @@ export class DocumentForm implements OnInit {
     const idTipoDocumento = formValue.tipoDocumento?.idTipoDocumento || null;
     const idSector = formValue.sector?.idSector || null;
     const idEstado = formValue.estado?.idEstado || null;
-
+    const idUnidadEjecutora = formValue.unidadEjecutora?.idUnidadEjecutora || null;
     const idsPalabrasClave = formValue.palabrasClave.map((pc: any) => pc.idPalabraClave);
     const idsReferencias = formValue.referencias.map((ref: any) => ref.idDocumento);
 
@@ -330,6 +337,7 @@ export class DocumentForm implements OnInit {
       numDocumento: formValue.numDocumento,
       idTipoDocumento: idTipoDocumento,
       idSector: idSector,
+      idUnidadEjecutora: idUnidadEjecutora,
       idEstado: idEstado,
       idsPalabrasClave: idsPalabrasClave,
       idsReferencias: idsReferencias,
@@ -360,6 +368,8 @@ export class DocumentForm implements OnInit {
       resumen: formValue.resumen,
       tipoDocumento: formValue.tipoDocumento,
       sector: formValue.sector,
+      unidadEjecutora: formValue.unidadEjecutora,
+      activo: true,
       estado: formValue.estado,
       palabrasClave: formValue.palabrasClave || [],
       archivos: archivosSimulados,
@@ -378,6 +388,8 @@ export class DocumentForm implements OnInit {
     const estadoCorrecto = catalogos.estados.find(
       (e: EstadoDocumento) => e.idEstado === documento.estado.idEstado
     );
+    const unidadCorrecta = catalogos.unidades.find(
+      (u: UnidadEjecutora) => u.idUnidadEjecutora === documento.unidadEjecutora.idUnidadEjecutora);
 
     this.documentForm.patchValue({
       titulo: documento.titulo,
@@ -387,6 +399,7 @@ export class DocumentForm implements OnInit {
       tipoDocumento: tipoDocCorrecto,
       sector: sectorCorrecto,
       estado: estadoCorrecto,
+      unidadEjecutora: unidadCorrecta,
       palabrasClave: documento.palabrasClave,
       referencias: documento.referencias
     });

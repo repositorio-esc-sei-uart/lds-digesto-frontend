@@ -56,14 +56,28 @@
         </mat-form-field>
       </div>
 
-      <mat-form-field appearance="outline" class="full-width">
-        <mat-label>Estado</mat-label>
-        <mat-select formControlName="estado" required>
-          @for (estado of (estados$ | async); track estado.idEstado) {
-            <mat-option [value]="estado">{{ estado.nombre }}</mat-option>
-          }
-        </mat-select>
-      </mat-form-field>
+      <div class="form-row">
+    <mat-form-field appearance="outline" class="flex-field">
+      <mat-label>Unidad Ejecutora</mat-label>
+      <mat-select formControlName="unidadEjecutora" required>
+        @for (unidad of (unidades$ | async); track unidad.idUnidadEjecutora) {
+          <mat-option [value]="unidad">{{ unidad.nombre }}</mat-option>
+        }
+      </mat-select>
+@if (documentForm.get('unidadEjecutora')?.hasError('required')) {
+        <mat-error>La unidad ejecutora es requerida</mat-error>
+      }
+    </mat-form-field>
+
+    <mat-form-field appearance="outline" class="flex-field">
+      <mat-label>Estado</mat-label>
+      <mat-select formControlName="estado" required>
+        @for (estado of (estados$ | async); track estado.idEstado) {
+          <mat-option [value]="estado">{{ estado.nombre }}</mat-option>
+        }
+      </mat-select>
+    </mat-form-field>
+  </div>
 
       <mat-form-field appearance="outline" class="full-width">
         <mat-label>Resumen</mat-label>
@@ -113,6 +127,7 @@
             }
             <mat-divider></mat-divider>
           }
+
 
           @if (archivosParaSubir.length > 0) {
             <h3 matSubheader>Nuevos para subir</h3>
