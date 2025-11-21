@@ -21,6 +21,7 @@ import { KeywordDocumentService } from '../../services/keyword-document-service'
 import { MatChipsModule } from '@angular/material/chips';
 import { MatAutocompleteModule, MatAutocompleteSelectedEvent } from '@angular/material/autocomplete';
 import { COMMA, ENTER } from '@angular/cdk/keycodes';
+import { MatChipInputEvent } from '@angular/material/chips';
 
 @Component({
   selector: 'app-advanced-search',
@@ -121,38 +122,92 @@ export class AdvancedSearch implements OnInit {
     }, 0);
   }
 
-  // Filtro para el autocomplete
+// Filtro para el autocomplete
   private _filterPalabrasClave(value: string): PalabraClave[] {
-    const filterValue = value.toLowerCase();
+    //const filterValue = value.toLowerCase();
+    const filterValue = (value ? String(value) : '').toLowerCase();
 
     // Filtra palabras que NO estén ya seleccionadas
+    // Se mantiene esta lógica para que el autocomplete solo muestre las no seleccionadas
     return this.palabrasClaveDisponibles.filter(palabra =>
       !this.palabrasClaveSeleccionadas.find(p => p.idPalabraClave === palabra.idPalabraClave) &&
       palabra.nombre.toLowerCase().includes(filterValue)
     );
   }
 
-  // Cuando se selecciona una palabra del autocomplete
+// Cuando se selecciona una palabra del autocomplete
   seleccionarPalabraClave(event: MatAutocompleteSelectedEvent): void {
-    const palabra = event.option.value as PalabraClave;
-    // Evitar duplicados
-    if (!this.palabrasClaveSeleccionadas.find(p => p.idPalabraClave === palabra.idPalabraClave)) {
-      this.palabrasClaveSeleccionadas.push(palabra);
-    }
+      const palabra = event.option.value as PalabraClave;
 
-    // Limpiar el input
-    if (this.palabraClaveInput) {
-      this.palabraClaveInput.nativeElement.value = '';
-    }
-    this.palabraClaveControl.setValue('');
+      // 1. Añadir la palabra clave
+      if (!this.palabrasClaveSeleccionadas.some(p => p.idPalabraClave === palabra.idPalabraClave)) {
+          this.palabrasClaveSeleccionadas.push(palabra);
+      }
+
+      // 2. Sincronizar el Form
+      this.advancedForm.get('palabrasClave')?.setValue(this.palabrasClaveSeleccionadas);
+      
+      // 3. Limpieza y Re-enfoque (usando setTimeout para estabilidad)
+      setTimeout(() => {
+          // Limpia el valor del control (obligatorio para la siguiente búsqueda)
+          this.palabraClaveControl.setValue(''); 
+          
+          // Limpia el texto visible del input
+          if (this.palabraClaveInput && this.palabraClaveInput.nativeElement) {
+              this.palabraClaveInput.nativeElement.value = '';
+              // ⚠️ CLAVE: Vuelve a enfocar el input
+              this.palabraClaveInput.nativeElement.focus(); 
+          }
+      }, 0);
   }
 
-  // Remover una palabra clave seleccionada
+// Para añadir palabras clave escritas manualmente (al presionar Enter/Coma)
+  add(event: MatChipInputEvent): void {
+    const input = event.input;
+    const value = (event.value || '').trim();
+
+    // Solo si el valor existe, intenta añadirlo
+    if (value) {
+      // 1. Buscar la palabra clave en la lista de disponibles
+      const palabraEncontrada = this.palabrasClaveDisponibles.find(p =>
+        p.nombre.toLowerCase() === value.toLowerCase()
+      );
+
+      if (palabraEncontrada) {
+        // 2. Si se encuentra, la añade
+      if (!this.palabrasClaveSeleccionadas.some(p => p.idPalabraClave === palabraEncontrada.idPalabraClave)) {
+          this.palabrasClaveSeleccionadas.push(palabraEncontrada);
+          // Sincronizar el FormControl del formulario
+          this.advancedForm.get('palabrasClave')?.setValue(this.palabrasClaveSeleccionadas);
+        }
+      }
+    }
+    // Limpia el texto visible en el input
+    if (input) {
+      input.value = ''; 
+    }
+  
+  // Limpia el valor del control (puede ser null o '')
+   this.palabraClaveControl.setValue(''); 
+  
+  // Es mejor usar setTimeout para asegurar que el foco se aplique después 
+  // del ciclo de vida del matChipInputTokenEnd.
+  setTimeout(() => {
+      if (this.palabraClaveInput && this.palabraClaveInput.nativeElement) {
+          // Forzar el foco de vuelta al input
+          this.palabraClaveInput.nativeElement.focus(); 
+      }
+  }, 0);
+}
+
+
+// Remover una palabra clave seleccionada
   removerPalabraClave(palabra: PalabraClave): void {
     const index = this.palabrasClaveSeleccionadas.indexOf(palabra);
     if (index >= 0) {
       this.palabrasClaveSeleccionadas.splice(index, 1);
     }
+    this.advancedForm.get('palabrasClave')?.setValue(this.palabrasClaveSeleccionadas);
   }
 
   onSearch(): void {
