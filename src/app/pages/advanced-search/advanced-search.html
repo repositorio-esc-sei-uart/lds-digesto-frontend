@@ -51,38 +51,37 @@
       </div>
 
       <!-- Palabras Clave (Autocomplete con Chips) -->
-      <mat-form-field appearance="outline" class="full-width">
+    <mat-form-field appearance="outline" class="full-width">
         <mat-label>Palabras Clave</mat-label>
 
-        <!-- Contenedor de chips -->
-        <mat-chip-grid #chipGrid aria-label="Selección de palabras clave">
-          @for (palabra of palabrasClaveSeleccionadas; track palabra.idPalabraClave) {
-            <mat-chip-row
-              (removed)="removerPalabraClave(palabra)"
-              [aria-description]="'presione enter para editar ' + palabra.nombre">
-              {{ palabra.nombre }}
-              <button matChipRemove [attr.aria-label]="'remover ' + palabra.nombre">
-                <mat-icon>cancel</mat-icon>
-              </button>
-            </mat-chip-row>
-          }
-
-          <!-- Input DENTRO del chip-grid -->
-          <input
-            placeholder="Escriba para buscar..."
-            #palabraClaveInput
-            [formControl]="palabraClaveControl"
-            [matChipInputFor]="chipGrid"
-            [matAutocomplete]="auto"
-            (keydown)="onChipInputKeydown($event)"
-            matInput>
+        <mat-chip-grid #chipListPalabras aria-label="Palabras clave seleccionadas">
+          <mat-chip
+            *ngFor="let palabra of palabrasClaveSeleccionadas"
+            [removable]="true"
+            (removed)="removerPalabraClave(palabra)" 
+          >
+            {{ palabra.nombre }}
+            <mat-icon matChipRemove>cancel</mat-icon>
+          </mat-chip>
         </mat-chip-grid>
 
+        <input
+          #palabraClaveInput
+          class="buscador-input"
+          placeholder="Escriba para buscar o presione enter para agregar..."
+          [formControl]="palabraClaveControl"
+          [matChipInputFor]="chipListPalabras"
+          [matAutocomplete]="autoPalabras"
+          [matChipInputSeparatorKeyCodes]="separatorKeysCodes"
+          (matChipInputTokenEnd)="add($event)" 
+        />
+
         <mat-autocomplete
-          #auto="matAutocomplete"
-          (optionSelected)="seleccionarPalabraClave($event)">
+          #autoPalabras="matAutocomplete"
+          (optionSelected)="seleccionarPalabraClave($event)"
+        >
           @for (palabra of palabrasClaveFilteradas$ | async; track palabra.idPalabraClave) {
-            <mat-option [value]="palabra">
+            <mat-option [value]="palabra"(click)="$event.stopPropagation()">
               {{ palabra.nombre }}
             </mat-option>
           }
