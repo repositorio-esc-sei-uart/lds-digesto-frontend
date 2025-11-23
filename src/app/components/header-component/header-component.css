@@ -156,10 +156,33 @@
     display: none !important;
   }
 
+  /* ✅ NUEVO: Ocultar menú de usuario en móvil */
+  .user-menu,
+  .toolbar-right button[aria-label*="usuario"],
+  .toolbar-right button[aria-label*="Usuario"],
+  .toolbar-right .mat-mdc-menu-trigger,
+  .toolbar-right .user-avatar,
+  .toolbar-right .user-button {
+    display: none !important;
+  }
+
   /* Se muestran los elementos específicos para móvil. */
   .show-on-mobile,
   .search-toggle-button {
     display: inline-flex !important;
+  }
+
+  /* Ícono de búsqueda BLANCO en móvil */
+  .search-toggle-button {
+    color: white !important;
+  }
+
+  .search-toggle-button mat-icon {
+    color: white !important;
+  }
+
+  .show-on-mobile mat-icon {
+    color: white !important;
   }
 
   /** @subsection Estilo de Búsqueda Expandida en Móvil */
@@ -181,6 +204,7 @@
     opacity: 1;
     transform: scale(1);
     pointer-events: auto;
+    color: white !important; /* ✅ Mantener blanco al cerrar */
   }
 
   /* Se muestra y posiciona la barra de búsqueda para que ocupe casi todo el header. */
@@ -196,7 +220,6 @@
     animation: fadeIn 0.3s ease; /* Se aplica una animación de aparición. */
   }
 
-
   /** @subsection Estilos Generales para Móvil */
 
   /* Se añade una transición suave para todos los cambios de estado. */
@@ -207,6 +230,12 @@
   @keyframes fadeIn {
     from { opacity: 0; }
     to { opacity: 1; }
+  }
+
+  .advanced-search-dropdown {
+    left: 16px;
+    right: 16px;
+    max-width: none;
   }
 }
 
@@ -286,11 +315,4 @@ button[matSuffix].active mat-icon {
 }
 */
 
-/* Responsivo: en móviles ocupa todo el ancho */
-@media (max-width: 768px) {
-  .advanced-search-dropdown {
-    left: 16px;
-    right: 16px;
-    max-width: none;
-  }
-}
+
