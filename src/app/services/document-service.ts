@@ -47,6 +47,7 @@ interface BackendDocumentoTablaDTO {
   resumen: string;
   tipoDocumento: BackendTipoDocumentoDTO; // <-- DTO anidado
   estado: BackendEstadoDTO;
+  activo: boolean;
 }
 
 // DTO para el DETALLE (GET /api/v1/documentos/{id})
@@ -102,53 +103,57 @@ export class DocumentService {
     size: number = 6,
     search?: string, // <-- Búsqueda Simple (barra principal)
     idTipoDocumento?: number, // <-- Filtro de botones (Home)
-    filtrosAvanzados?: AdvancedFilter // <-- Búsqueda Avanzada (Modal)
+    filtrosAvanzados?: AdvancedFilter, // <-- Búsqueda Avanzada (Modal)
+    soloActivos: boolean = false
   ): Observable<PageResponse<DocumentoListItem>> {
 
     // 1. Construye los parámetros base de paginación
     let params = new HttpParams()
-        .set('page', page.toString())
-        .set('size', size.toString());
-
+      .set('page', page.toString())
+      .set('size', size.toString());
+      
+      if (soloActivos) {
+      params = params.set('soloActivos', 'true');
+    }
     // 2. Detecta si se está usando la búsqueda avanzada (del modal)
     const esBusquedaAvanzada = filtrosAvanzados && Object.keys(filtrosAvanzados).length > 0;
 
     if (esBusquedaAvanzada) {
-        // --- MODO 2: BÚSQUEDA AVANZADA ---
-        // (Ignora el 'search' simple)
+      // --- MODO 2: BÚSQUEDA AVANZADA ---
+      // (Ignora el 'search' simple)
 
-        // Itera sobre el objeto de filtros y añade solo los que tienen valor
-        for (const [key, value] of Object.entries(filtrosAvanzados)) {
-            if (value) {
-                params = params.set(key, value.toString());
-            }
+      // Itera sobre el objeto de filtros y añade solo los que tienen valor
+      for (const [key, value] of Object.entries(filtrosAvanzados)) {
+        if (value) {
+          params = params.set(key, value.toString());
         }
-        // NOTA: El idTipoDocumento del modal ya viene dentro de filtrosAvanzados.idTipoDocumento
+      }
+      // NOTA: El idTipoDocumento del modal ya viene dentro de filtrosAvanzados.idTipoDocumento
 
     } else {
-        // --- MODO 1: BÚSQUEDA SIMPLE ---
-        // (Usa el 'search' de la barra principal)
-        if (search && search.trim() !== '') {
-            params = params.set('search', search.trim());
-        }
+      // --- MODO 1: BÚSQUEDA SIMPLE ---
+      // (Usa el 'search' de la barra principal)
+      if (search && search.trim() !== '') {
+        params = params.set('search', search.trim());
+      }
 
-        // Y aplica el filtro de botones (idTipoDocumento)
-        if (idTipoDocumento !== undefined) {
-          params = params.set('idTipoDocumento', idTipoDocumento.toString());
-        }
+      // Y aplica el filtro de botones (idTipoDocumento)
+      if (idTipoDocumento !== undefined) {
+        params = params.set('idTipoDocumento', idTipoDocumento.toString());
+      }
     }
 
     // 3. Llama a la API con los parámetros construidos
     return this.http.get<PageResponse<BackendDocumentoTablaDTO>>(this.apiUrl, { params }).pipe(
       map(response => ({
-      content: response.content.map(dto => this.rehidratarTablaDTO(dto)),
-      totalElements: response.totalElements,
-      totalPages: response.totalPages,
-      size: response.size,
-      number: response.number,
-      first: response.first,
-      last: response.last
-    })),
+        content: response.content.map(dto => this.rehidratarTablaDTO(dto)),
+        totalElements: response.totalElements,
+        totalPages: response.totalPages,
+        size: response.size,
+        number: response.number,
+        first: response.first,
+        last: response.last
+      })),
       catchError(this.handleError<PageResponse<DocumentoListItem>>('getDocumentos'))
     );
   }
@@ -235,6 +240,7 @@ export class DocumentService {
       idDocumento: dto.idDocumento,
       titulo: dto.titulo,
       numDocumento: dto.numDocumento,
+      activo: dto.activo,
       fechaCreacion: new Date(dto.fechaCreacion + 'T00:00:00'), // Corrige la zona horaria
       resumen: dto.resumen,
       // Mapeamos el DTO anidado a la interfaz anidada 'TipoDocumento'
@@ -277,8 +283,8 @@ export class DocumentService {
         nombre: dto.nombreSector
       } as Sector,
       unidadEjecutora: {
-          idUnidadEjecutora: 0,
-          nombre: dto.nombreUnidadEjecutora
+        idUnidadEjecutora: 0,
+        nombre: dto.nombreUnidadEjecutora
       } as UnidadEjecutora,
       estado: {
         idEstado: 0,
@@ -313,7 +319,7 @@ export class DocumentService {
   getCountByType(): Observable<{ [key: number]: number }> {
     const url = `${this.apiUrl}/count-by-type`;
     return this.http.get<{ [key: number]: number }>(url).pipe(  // ✅ Y aquí
-    catchError(this.handleError<{ [key: number]: number }>('getCountByType'))
+      catchError(this.handleError<{ [key: number]: number }>('getCountByType'))
     );
   }
 
@@ -378,7 +384,7 @@ export class DocumentService {
       idDocumento: dto.idDocumento,
       titulo: dto.titulo,
       numDocumento: dto.numDocumento,
-      activo: true,
+      activo: dto.activo,
       resumen: dto.resumen,
       fechaCreacion: new Date(dto.fechaCreacion + 'T00:00:00'),
 
@@ -394,16 +400,27 @@ export class DocumentService {
       referenciadoPor: dto.referenciadoPor || []
     };
   }
-   /**
-  * Elimina un archivo por su ID.
-  * Llama al endpoint: DELETE /api/v1/archivos/{id}
-  */
+  /**
+ * Elimina un archivo por su ID.
+ * Llama al endpoint: DELETE /api/v1/archivos/{id}
+ */
   deleteArchivo(idArchivo: number): Observable<void> {
     const url = `${environment.apiUrl}/api/v1/archivos/${idArchivo}`;
     console.log(`[DocumentService-REAL] DELETE a ${url}`);
     return this.http.delete<void>(url).pipe(
       tap(() => console.log(`Archivo ${idArchivo} eliminado con éxito.`)),
       catchError(this.handleError<void>('deleteArchivo'))
+    );
+  }
+  /**
+ * Cambia el estado activo/inactivo de un documento.
+ * Llama al endpoint: PATCH /api/v1/documentos/{id}/toggle-activo
+ */
+  cambiarEstadoActivo(id: number): Observable<void> {
+    const url = `${this.apiUrl}/cambiar-activo/${id}`;
+    return this.http.patch<void>(url, {}).pipe(
+      tap(() => console.log(`Estado del documento ${id} cambiado con éxito.`)),
+      catchError(this.handleError<void>('cambiarEstadoActivo'))
     );
   }
   /**

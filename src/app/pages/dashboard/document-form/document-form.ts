@@ -16,7 +16,7 @@ import { TypeDocumentService } from '../../../services/type-document-service';
 import { SectorService } from '../../../services/sector-service';
 import { StatusDocumentService } from '../../../services/status-document-service';
 import { KeywordDocumentService } from '../../../services/keyword-document-service';
-import { DocumentService } from '../../../services/document-service'; 
+import { DocumentService } from '../../../services/document-service';
 import { UnidadEjecutoraService } from '../../../services/unidad-ejecutora-service';
 
 // Módulos de Angular Material para el HTML
@@ -79,7 +79,7 @@ export class DocumentForm implements OnInit {
   referenciasSeleccionadas: DocumentoListItem[] = [];
   referenciaCtrl = new FormControl();
   filteredDocs$!: Observable<DocumentoListItem[]>;
-  searchText = '';  
+  searchText = '';
   @ViewChild('referenciaInput') referenciaInput!: ElementRef<HTMLInputElement>;
 
   // Palabras Clave
@@ -89,7 +89,7 @@ export class DocumentForm implements OnInit {
   palabrasClaveFiltradas$!: Observable<PalabraClave[]>;
   @ViewChild('palabraClaveInput') palabraClaveInput!: ElementRef<HTMLInputElement>;
 
-  private politicaDeNombreado: 'original' | 'titulo' | 'numDocumento' = 'original'; 
+  private politicaDeNombreado: 'original' | 'titulo' | 'numDocumento' = 'original';
   archivosParaSubir: File[] = [];
 
   @ViewChild('submitButton', { read: ElementRef }) submitButton!: ElementRef;
@@ -102,9 +102,9 @@ export class DocumentForm implements OnInit {
     private unidadEjecutoraService: UnidadEjecutoraService,
     private statusDocumentService: StatusDocumentService,
     private keywordDocumentService: KeywordDocumentService,
-    private documentService: DocumentService, 
+    private documentService: DocumentService,
     private dialog: MatDialog,
-    private snackBar: MatSnackBar, 
+    private snackBar: MatSnackBar,
     @Inject(MAT_DIALOG_DATA) public data: {
       isEditMode: boolean;
       documento?: Documento
@@ -113,32 +113,16 @@ export class DocumentForm implements OnInit {
     this.isEditMode = data.isEditMode;
     this.documentForm = this.fb.group({
       titulo: ['', [Validators.required, Validators.maxLength(255)]],
-      numDocumento: ['', [Validators.required, Validators.maxLength(100)]],
+      numDocumento: ['', [Validators.required, Validators.min(1)]],
       fechaCreacion: [new Date(), Validators.required],
       resumen: ['', Validators.required],
       tipoDocumento: [null, Validators.required],
       sector: [null, Validators.required],
       unidadEjecutora: [null, Validators.required],
       estado: [null, Validators.required],
-      palabrasClave: [[]], 
+      palabrasClave: [[]],
       referencias: [[]],
     });
-  }
-
-  private toISODateString(date: any): string {
-    if (!date) {
-      const today = new Date();
-      const adjustedToday = new Date(today.getTime() - (today.getTimezoneOffset() * 60000));
-      return adjustedToday.toISOString().split('T')[0];
-    }
-    const validDate = new Date(date);
-    const year = validDate.getFullYear();
-    const month = validDate.getMonth() + 1; 
-    const day = validDate.getDate();
-    const monthFormatted = month < 10 ? '0' + month : month;
-    const dayFormatted = day < 10 ? '0' + day : day;
-
-    return `${year}-${monthFormatted}-${dayFormatted}`;
   }
 
   ngOnInit(): void {
@@ -161,7 +145,7 @@ export class DocumentForm implements OnInit {
     });
 
     this.keywordDocumentService.getKeywords().pipe(take(1)).subscribe(palabras => {
-      this.palabrasClaveDisponibles = palabras; 
+      this.palabrasClaveDisponibles = palabras;
       this.palabrasClaveFiltradas$ = this.palabraClaveCtrl.valueChanges.pipe(
         startWith(''),
         map(value => typeof value === 'string' ? value : value?.nombre),
@@ -170,7 +154,7 @@ export class DocumentForm implements OnInit {
     });
 
     if (this.data.documento && this.data.documento.archivos) {
-        this.archivosExistentes = [...this.data.documento.archivos];
+      this.archivosExistentes = [...this.data.documento.archivos];
     }
     if (this.isEditMode && this.data.documento) {
       forkJoin({
@@ -179,7 +163,7 @@ export class DocumentForm implements OnInit {
         unidades: this.unidades$.pipe(take(1)),
         estados: this.estados$.pipe(take(1)),
         palabras: this.palabrasClave$.pipe(take(1)),
-        documentos: this.todosLosDocumentos$.pipe(take(1)) 
+        documentos: this.todosLosDocumentos$.pipe(take(1))
       }).subscribe((catalogos) => {
         this.fillFormForEdit(this.data.documento!, catalogos);
       });
@@ -206,9 +190,9 @@ export class DocumentForm implements OnInit {
         const mensaje = `Se ignoraron ${archivosRechazados.length} archivos. Solo se permiten PDFs.`;
         this.snackBar.open(mensaje, 'Cerrar', {
           duration: 5000,
-          verticalPosition: 'top', 
+          verticalPosition: 'top',
           horizontalPosition: 'center',
-          panelClass: ['error-snackbar'] 
+          panelClass: ['error-snackbar']
         });
       }
     }
@@ -264,8 +248,7 @@ export class DocumentForm implements OnInit {
   }
 
   onCancel(): void {
-    if(this.isEditMode)
-    this.dialogRef.close(false); 
+    this.dialogRef.close(false);
   }
 
   toggleAllSelection(isSelected: boolean) {
@@ -289,7 +272,7 @@ export class DocumentForm implements OnInit {
         const idDocumentoProcesado = this.isEditMode
           ? this.data.documento!.idDocumento
           : respuestaDTO.idDocumento;
-        
+
         if (archivosParaSubir.length === 0) {
           return of({ success: true, message: 'Documento guardado sin archivos nuevos.' });
         }
@@ -305,7 +288,7 @@ export class DocumentForm implements OnInit {
     ).subscribe({
       next: (respuestaSubida) => {
         this.isLoading = false;
-        this.dialogRef.close(true); 
+        this.dialogRef.close(true);
       },
       error: (err: HttpErrorResponse) => {
         this.isLoading = false;
@@ -334,22 +317,22 @@ export class DocumentForm implements OnInit {
     return {
       titulo: formValue.titulo,
       resumen: formValue.resumen,
-      numDocumento: formValue.numDocumento,
+      numDocumento: this.generarNomenclatura(),
       idTipoDocumento: idTipoDocumento,
       idSector: idSector,
       idUnidadEjecutora: idUnidadEjecutora,
       idEstado: idEstado,
       idsPalabrasClave: idsPalabrasClave,
       idsReferencias: idsReferencias,
-      fechaCreacion: this.toISODateString(formValue.fechaCreacion)
-  };
+      fechaCreacion: formValue.fechaCreacion
+    };
   };
 
   private crearDocumentoParaPreview(): Documento {
     const formValue = this.documentForm.value;
 
     const archivosSimulados: Archivo[] = this.archivosParaSubir.map((file, index) => ({
-      idArchivo: 100 + index, 
+      idArchivo: 100 + index,
       nombre: file.name,
       url: `/simulado/uploads/${file.name}`
     }));
@@ -361,9 +344,9 @@ export class DocumentForm implements OnInit {
       }));
 
     return {
-      idDocumento: 0, 
+      idDocumento: 0,
       titulo: formValue.titulo,
-      numDocumento: formValue.numDocumento,
+      numDocumento: this.generarNomenclatura(),
       fechaCreacion: formValue.fechaCreacion,
       resumen: formValue.resumen,
       tipoDocumento: formValue.tipoDocumento,
@@ -391,9 +374,21 @@ export class DocumentForm implements OnInit {
     const unidadCorrecta = catalogos.unidades.find(
       (u: UnidadEjecutora) => u.idUnidadEjecutora === documento.unidadEjecutora.idUnidadEjecutora);
 
+    // LÓGICA NUEVA PARA EXTRAER EL NÚMERO
+    let numeroExtraido = '';
+    if (documento.numDocumento) {
+      const partes = documento.numDocumento.split('-');
+      // Asumimos que el número siempre está en la posición 1 (Índice 1)
+      // Ej: R [0] - 001 [1] - 25 [2] ...
+      if (partes.length > 1) {
+        // parseInt convierte "001" en 1 para que el input type="number" lo lea bien
+        const numero = parseInt(partes[1], 10);
+        numeroExtraido = isNaN(numero) ? '' : numero.toString();
+      }
+    }
     this.documentForm.patchValue({
       titulo: documento.titulo,
-      numDocumento: documento.numDocumento,
+      numDocumento: numeroExtraido,
       fechaCreacion: documento.fechaCreacion,
       resumen: documento.resumen,
       tipoDocumento: tipoDocCorrecto,
@@ -405,7 +400,7 @@ export class DocumentForm implements OnInit {
     });
   }
   removerArchivoExistente(archivoARemover: Archivo): void {
-    this.isLoading = true; 
+    this.isLoading = true;
     this.documentService.deleteArchivo(archivoARemover.idArchivo).subscribe({
       next: () => {
         this.isLoading = false;
@@ -480,5 +475,42 @@ export class DocumentForm implements OnInit {
       this.palabrasClaveSeleccionadas.splice(index, 1);
     }
     this.documentForm.get('palabrasClave')?.setValue(this.palabrasClaveSeleccionadas);
+  }
+  private generarNomenclatura(): string {
+    const formValue = this.documentForm.value;
+
+    // 1. Validaciones básicas para evitar errores si el form está incompleto
+    if (!formValue.tipoDocumento || !formValue.unidadEjecutora || !formValue.fechaCreacion) {
+      return ''; // O un string temporal como "---"
+    }
+
+    // 2. Obtener datos
+    const tipoDoc = formValue.tipoDocumento;
+    const sector = formValue.sector;
+    const unidadEjecutora = formValue.unidadEjecutora;
+
+    // 3. Formatear Año
+    const fecha = new Date(formValue.fechaCreacion);
+    const añoShort = fecha.getFullYear().toString().slice(-2);
+
+    // 4. Formatear Número
+    const numeroRaw = formValue.numDocumento || 0;
+    const numeroFormateado = numeroRaw.toString().padStart(3, '0');
+
+    // 5. Nomenclaturas
+    const prefijoTipo = tipoDoc.nomenclatura || tipoDoc.nombre.charAt(0).toUpperCase();
+    const sufijoUnidad = unidadEjecutora.nomenclatura || 'UNPA';
+
+    // Lógica de Sector Opcional
+    const codigoSector = sector?.nomenclatura ? sector.nomenclatura : null;
+
+    // 6. Armar Array y Unir
+    return [
+      prefijoTipo,
+      numeroFormateado,
+      añoShort,
+      codigoSector, // Si es null, se ignora
+      sufijoUnidad
+    ].filter(Boolean).join('-');
   }
 }

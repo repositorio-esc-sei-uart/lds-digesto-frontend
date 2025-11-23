@@ -18,6 +18,7 @@ export interface DocumentoListItem {
   resumen: string;
   tipoDocumento: TipoDocumento;
   estado: EstadoDocumento;
+  activo: boolean;
 }
 
 /**
