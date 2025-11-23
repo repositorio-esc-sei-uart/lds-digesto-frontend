@@ -4,7 +4,10 @@
 </mat-dialog-content>
 <mat-dialog-actions align="end">
   <button mat-button [mat-dialog-close]="false">Cancelar</button>
-  <button mat-flat-button color="warn" [mat-dialog-close]="true" cdkFocusInitial>
-    Eliminar
+  <button mat-flat-button 
+          [color]="data.buttonColor || 'warn'" 
+          [mat-dialog-close]="true" 
+          cdkFocusInitial>
+    {{ data.buttonText || 'Eliminar' }}
   </button>
 </mat-dialog-actions>

@@ -1,4 +1,4 @@
-import { Component, inject, OnInit } from '@angular/core';
+import { Component, inject, OnInit, ViewChild, AfterViewInit } from '@angular/core';
 import { CommonModule, DatePipe } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { ConfirmDialogComponent } from '../../../components/shared/confirm-dialog/confirm-dialog';
@@ -9,7 +9,7 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatPaginatorModule } from '@angular/material/paginator';
-import { MatSortModule } from '@angular/material/sort';
+import { MatSort, MatSortModule } from '@angular/material/sort';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 
@@ -52,19 +52,6 @@ import { MatDialogModule } from '@angular/material/dialog'; // <-- 6. AÑADIR
   styleUrl: './document-management-component.css'
 })
 export class DocumentManagementComponent implements OnInit {
-  /**
-  // Columnas que mostrará la tabla
-  displayedColumns: string[] = ['numDocumento', 'titulo', 'tipoDocumento', 'fechaCreacion', 'estado', 'acciones'];
-
-  // Usamos el 'DocumentoListItem' que definimos, ¡es perfecto para esto!
-  dataSource: DocumentoListItem[] = [];
-  isLoading = true;
-
-  // Inyectar MatDialog usando inject()
-  private dialog = inject(MatDialog);
-
-  **/
- // --- 12. AÑADIR/MODIFICAR VARIABLES ---
   public isAdmin: boolean = false;
   isLoading = true;
 
@@ -78,6 +65,7 @@ export class DocumentManagementComponent implements OnInit {
   public dataSourceAuditoria = new MatTableDataSource<Registro>();
 
   private dialog = inject(MatDialog);
+  @ViewChild(MatSort) sort!: MatSort;
 
   constructor(
     private documentService: DocumentService,
@@ -85,9 +73,34 @@ export class DocumentManagementComponent implements OnInit {
     private router: Router,
     private registroService: RegistroService,
     private authService: AuthenticationService
-  ) {}
+  ) { }
+  ngAfterViewInit() {
+    this.dataSourceGestion.sort = this.sort;
+    this.dataSourceAuditoria.sort = this.sort;
+    this.dataSourceGestion.sortingDataAccessor = (item: DocumentoListItem, property: string) => {
+      switch (property) {
+        case 'tipoDocumento':
+          return item.tipoDocumento.nombre.toLowerCase();
+        case 'estado':
+          const nombreEstado = item.estado.nombre.toLowerCase();
+          if (nombreEstado.includes('vigente')) return '1';
+          if (nombreEstado.includes('derogado parcial')) return '2';
+          if (nombreEstado.includes('derogado total')) return '3';
+          return '4'; // Cualquier otro estado va al final
+        case 'fechaCreacion':
+          return new Date(item.fechaCreacion).getTime();
 
-  // --- 14. REEMPLAZAR ngOnInit CON LÓGICA DE ROLES ---
+        //ordencion aflabetica
+        case 'numDocumento':
+          return item.numDocumento.toLowerCase();
+        case 'titulo':
+          return (item.titulo).toLowerCase();
+        default:
+          return (item as any)[property];
+
+      }
+    };
+  }
   ngOnInit(): void {
     this.isLoading = true;
     const currentUser = this.authService.currentUserValue;
@@ -103,7 +116,7 @@ export class DocumentManagementComponent implements OnInit {
 
   loadDocumentos(): void {
     this.isLoading = true;
-    this.documentService.getDocumentos(0, 100).subscribe({
+    this.documentService.getDocumentos(0, 100, undefined, undefined, undefined, false).subscribe({
       next: (response) => {
         this.dataSourceGestion.data = response.content;
         this.isLoading = false;
@@ -164,7 +177,7 @@ export class DocumentManagementComponent implements OnInit {
 
     // 2. Buscar el documento completo por ID
     this.documentService.getDocumentoParaEdicion(documento.idDocumento).subscribe({
-    next: (documentoCompleto) => {
+      next: (documentoCompleto) => {
         this.isLoading = false; // Ocultar spinner
 
         if (!documentoCompleto) {
@@ -253,7 +266,49 @@ export class DocumentManagementComponent implements OnInit {
       this.dataSourceGestion.filter = filterText;
     }
   }
+  toggleEstadoDocumento(doc: DocumentoListItem): void {
+    // Calculamos visualmente el nuevo estado para el mensaje
+    const nuevoEstado = !doc.activo;
+    // Definimos el texto y color según la acción
+    const accionTexto = nuevoEstado ? 'reactivar' : 'dar de baja';
+    const botonTexto = nuevoEstado ? 'Reactivar' : 'Dar de baja';
+    const botonColor = nuevoEstado ? 'primary' : 'warn';
+    const mensaje = `¿Estás seguro de que deseas ${accionTexto} el documento "${doc.numDocumento}"?`;
 
+    const dialogRef = this.dialog.open(ConfirmDialogComponent, {
+      width: '400px',
+      data: {
+        message: mensaje,
+        buttonText: botonTexto,
+        buttonColor: botonColor
+      }
+    });
+
+    dialogRef.afterClosed().subscribe(result => {
+      if (result === true) {
+        this.isLoading = true;
+
+        this.documentService.cambiarEstadoActivo(doc.idDocumento).subscribe({
+          next: () => {
+            this.isLoading = false;
+            this.snackBar.open(
+              `Estado del documento actualizado correctamente.`,
+              'Cerrar', { duration: 3000, panelClass: ['success-snackbar'] }
+            );
+            // Recargamos la tabla para ver el cambio
+            this.loadDocumentos();
+          },
+          error: (err) => {
+            this.isLoading = false;
+            console.error(err);
+            this.snackBar.open('Error al cambiar el estado.', 'Cerrar', { panelClass: ['error-snackbar'] });
+          }
+        });
+      }
+    });
+  }
+
+  // Ya no se usa, reemplazada por 'toggleEstadoDocumento'
   onDelete(docId: number, docNum: string): void {
     // 1. Abre el modal de confirmación
     const dialogRef = this.dialog.open(ConfirmDialogComponent, {

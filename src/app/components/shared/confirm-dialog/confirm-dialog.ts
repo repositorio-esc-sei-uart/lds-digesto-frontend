@@ -18,6 +18,10 @@ export class ConfirmDialogComponent {
   // data.message contendrá el texto (ej: "¿Estás seguro...?")
   constructor(
     public dialogRef: MatDialogRef<ConfirmDialogComponent>,
-    @Inject(MAT_DIALOG_DATA) public data: { message: string }
+    @Inject(MAT_DIALOG_DATA) public data: { 
+      message: string,
+      buttonText?: string,  // Texto del botón 
+      buttonColor?: string  // Color del botón 
+     }
   ) {}
 }

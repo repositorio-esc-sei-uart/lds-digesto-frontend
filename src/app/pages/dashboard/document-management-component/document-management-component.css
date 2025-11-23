@@ -187,6 +187,20 @@ table {
   color: var(--app-chip-other-text);
   border-color: #bdbdbd; /* Borde gris medio */
 }
+/* Estilo para baja lógica (fila tachada) */
+.inactivo .mat-mdc-cell {
+  text-decoration: line-through;
+  color: #9e9e9e; /* Gris claro */
+}
+
+/* Fondo sutil para filas inactivas */
+.inactivo {
+  background-color: #f9f9f9 !important;
+}
+/* Botón de restaurar (verde) */
+.btn-restaurar {
+  color: #2e7d32 !important; /* Verde éxito */
+}
 
 /* Mensaje de "No hay datos" */
 .mat-row-no-data {

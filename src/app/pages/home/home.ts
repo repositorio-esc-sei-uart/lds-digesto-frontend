@@ -154,7 +154,8 @@ export class HomeComponent implements OnInit, OnDestroy {
 
       // Arg 5: filtrosAvanzados (AdvancedFilter | undefined)
       // Si es avanzada, pasa el objeto de filtros. Si no, pasa undefined.
-      esAvanzada ? this.filtrosAvanzados : undefined
+      esAvanzada ? this.filtrosAvanzados : undefined,
+      true // soloActivos: boolean
 
     ).subscribe(response => {
       this.documentosFiltrados = response.content;
