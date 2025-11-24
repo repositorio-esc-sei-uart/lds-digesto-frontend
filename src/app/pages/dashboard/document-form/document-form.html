@@ -39,7 +39,7 @@
       <div class="form-row">
         <mat-form-field appearance="outline" class="flex-field">
           <mat-label>Tipo de Documento</mat-label>
-          <mat-select formControlName="tipoDocumento" required>
+          <mat-select formControlName="tipoDocumento" [compareWith]="compareObjects" required>
             @for (tipo of (tipos$ | async); track tipo.idTipoDocumento) {
               <mat-option [value]="tipo">{{ tipo.nombre }}</mat-option>
             }
@@ -48,7 +48,7 @@
 
         <mat-form-field appearance="outline" class="flex-field">
           <mat-label>Sector Emisor</mat-label>
-          <mat-select formControlName="sector" required>
+          <mat-select formControlName="sector" [compareWith]="compareObjects" required>
             @for (sector of (sectores$ | async); track sector.idSector) {
               <mat-option [value]="sector">{{ sector.nombre }}</mat-option>
             }
@@ -59,7 +59,7 @@
       <div class="form-row">
     <mat-form-field appearance="outline" class="flex-field">
       <mat-label>Unidad Ejecutora</mat-label>
-      <mat-select formControlName="unidadEjecutora" required>
+      <mat-select formControlName="unidadEjecutora" [compareWith]="compareObjects" required>
         @for (unidad of (unidades$ | async); track unidad.idUnidadEjecutora) {
           <mat-option [value]="unidad">{{ unidad.nombre }}</mat-option>
         }
@@ -71,7 +71,7 @@
 
     <mat-form-field appearance="outline" class="flex-field">
       <mat-label>Estado</mat-label>
-      <mat-select formControlName="estado" required>
+      <mat-select formControlName="estado" [compareWith]="compareObjects" required>
         @for (estado of (estados$ | async); track estado.idEstado) {
           <mat-option [value]="estado">{{ estado.nombre }}</mat-option>
         }
@@ -154,7 +154,7 @@
 <!-- ========================= -->
 <!--      REFERENCIAS          -->
 <!-- ========================= -->
-<mat-form-field class="full-width" appearance="outline">
+<mat-form-field class="full-width" appearance="outline" floatLabel="always">
   <mat-label>Referencias</mat-label>
 
   <!-- Chips seleccionados -->
@@ -193,7 +193,7 @@
 <!-- ========================= -->
 <!--      PALABRAS CLAVE       -->
 <!-- ========================= -->
-<mat-form-field appearance="outline" class="full-width">
+<mat-form-field appearance="outline" class="full-width" floatLabel="always">
   <mat-label>Palabras Clave</mat-label>
 
   <!-- Chips seleccionados -->

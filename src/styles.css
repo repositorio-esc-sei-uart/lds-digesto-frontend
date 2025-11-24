@@ -64,6 +64,11 @@ html, body {
   color: white !important;
   opacity: 0.7;
 }
+/* Permite que el texto dentro del snackbar tenga saltos de línea */
+.multi-line-snackbar .mdc-snackbar__label {
+    white-space: pre-wrap !important;
+    line-height: 1.4 !important;
+}
 
 /* Estilos del paginador - Global */
 mat-paginator {

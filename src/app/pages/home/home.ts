@@ -161,7 +161,9 @@ export class HomeComponent implements OnInit, OnDestroy {
       this.documentosFiltrados = response.content;
       this.totalElements = response.totalElements;
       this.totalPages = response.totalPages;
-      this.totalDocumentos = response.totalElements;
+      // no se si es un bug lo de abajo pero si no es, se descomenta la linea siguiente.
+      // este bug cambia el total de documentos mostrados en los botones de categoria por el tipo de documento
+      //this.totalDocumentos = response.totalElements;
     });
 
   }

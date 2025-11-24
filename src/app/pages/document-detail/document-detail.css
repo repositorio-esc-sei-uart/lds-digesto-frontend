@@ -158,7 +158,18 @@ h3 {
   color: #0a58ca; /* Azul más oscuro al pasar el mouse */
   text-decoration: underline;
 }
+/* Estilo para referencias desactivadas */
+.reference-item.disabled-link {
+  color: #999 !important; /* Gris claro */
+  pointer-events: none;   /* Evita que sea clickeable */
+  text-decoration: none;
+  cursor: default;
+  font-style: italic;
+}
 
+.reference-item.disabled-link mat-icon {
+  color: #ccc; /* Icono también apagado */
+}
 /* Contenedor para las palabras clave */
 .keywords-container {
   display: flex;
