@@ -2,104 +2,106 @@
 
 <mat-dialog-content>
   @if (documento) {
-    <div class="detail-container">
+  <div class="detail-container">
 
-      <div class="document-content">
-        <mat-card>
-          <mat-card-header>
-            <mat-card-title>{{ documento.titulo }}</mat-card-title>
-            <mat-card-subtitle>{{ documento.numDocumento }}</mat-card-subtitle>
-          </mat-card-header>
-          <mat-card-content>
-            <h3 class="summary-title">Resumen</h3>
-            <p class="document-body">{{ documento.resumen }}</p>
-          </mat-card-content>
-        </mat-card>
+    <div class="document-content">
+      <mat-card>
+        <mat-card-header>
+          <mat-card-title>{{ documento.titulo }}</mat-card-title>
+          <mat-card-subtitle>{{ documento.numDocumento }}</mat-card-subtitle>
+        </mat-card-header>
+        <mat-card-content>
+          <h3 class="summary-title">Resumen</h3>
+          <p class="document-body">{{ documento.resumen }}</p>
+        </mat-card-content>
+      </mat-card>
 
-        @if (documento.archivos && documento.archivos.length > 0) {
-          <mat-card class="section-card">
-            <mat-card-content>
-              <h3><mat-icon>attach_file</mat-icon> Archivos Adjuntos</h3>
-              <div class="file-list">
-                @for (archivo of documento.archivos; track archivo.idArchivo) {
-                  <span class="file-item">
-                    <mat-icon>picture_as_pdf</mat-icon>
-                    <span>{{ archivo.nombre }}</span>
-                  </span>
-                }
-              </div>
-            </mat-card-content>
-          </mat-card>
-        }
+      @if (documento.archivos && documento.archivos.length > 0) {
+      <mat-card class="section-card">
+        <mat-card-content>
+          <h3><mat-icon>attach_file</mat-icon> Archivos Adjuntos</h3>
+          <div class="file-list">
+            @for (archivo of documento.archivos; track archivo.idArchivo) {
+            <span class="file-item">
+              <mat-icon>picture_as_pdf</mat-icon>
+              <span [title]="archivo.nombre">
+                {{ archivo.nombre.length > 45 ? (archivo.nombre | slice:0:45) + '...' : archivo.nombre }}
+              </span>
+            </span>
+            }
+          </div>
+        </mat-card-content>
+      </mat-card>
+      }
 
-        @if (documento.referencias && documento.referencias.length > 0) {
-          <mat-card class="section-card">
-            <mat-card-content>
-              <h3><mat-icon>link</mat-icon> Este documento hace referencia a:</h3>
-              <div class="references-list">
-                @for (ref of documento.referencias; track ref.idDocumento) {
-                  <span class="reference-item">
-                    <mat-icon>article</mat-icon>
-                    <span>{{ ref.numDocumento }}</span>
-                  </span>
-                }
-              </div>
-            </mat-card-content>
-          </mat-card>
-        }
-      </div>
-
-      <div class="document-sidebar">
-        <mat-card>
-          <mat-card-content>
-            <h3>Detalles del Documento</h3>
-            <div class="metadata-item">
-              <mat-icon>label_important</mat-icon>
-              <div class="metadata-text">
-                <span>Estado</span>
-                <strong [ngClass]="'status-' + documento.estado.nombre.split(' ')[0].toLowerCase()">
-                  {{ documento.estado.nombre }}
-                </strong>
-              </div>
-            </div>
-            <div class="metadata-item">
-              <mat-icon>assignment</mat-icon>
-              <div class="metadata-text">
-                <span>Tipo</span>
-                <strong>{{ documento.tipoDocumento.nombre }}</strong>
-              </div>
-            </div>
-            <div class="metadata-item">
-              <mat-icon>corporate_fare</mat-icon>
-              <div class="metadata-text">
-                <span>Sector Emisor</span>
-                <strong>{{ documento.sector.nombre }}</strong>
-              </div>
-            </div>
-            <div class="metadata-item">
-              <mat-icon>calendar_today</mat-icon>
-              <div class="metadata-text">
-                <span>Fecha de Creación</span>
-                <strong>{{ documento.fechaCreacion | date:'dd/MM/yyyy' }}</strong>
-              </div>
-            </div>
-          </mat-card-content>
-        </mat-card>
-
-        @if (documento.palabrasClave && documento.palabrasClave.length > 0) {
-          <mat-card class="section-card">
-            <mat-card-content>
-              <h3><mat-icon>sell</mat-icon> Palabras Clave</h3>
-              <div class="keywords-container">
-                @for (keyword of documento.palabrasClave; track keyword.idPalabraClave) {
-                  <span class="keyword-chip">{{ keyword.nombre }}</span>
-                }
-              </div>
-            </mat-card-content>
-          </mat-card>
-        }
-      </div>
+      @if (documento.referencias && documento.referencias.length > 0) {
+      <mat-card class="section-card">
+        <mat-card-content>
+          <h3><mat-icon>link</mat-icon> Este documento hace referencia a:</h3>
+          <div class="references-list">
+            @for (ref of documento.referencias; track ref.idDocumento) {
+            <span class="reference-item">
+              <mat-icon>article</mat-icon>
+              <span>{{ ref.numDocumento }}</span>
+            </span>
+            }
+          </div>
+        </mat-card-content>
+      </mat-card>
+      }
     </div>
+
+    <div class="document-sidebar">
+      <mat-card>
+        <mat-card-content>
+          <h3>Detalles del Documento</h3>
+          <div class="metadata-item">
+            <mat-icon>label_important</mat-icon>
+            <div class="metadata-text">
+              <span>Estado</span>
+              <strong [ngClass]="'status-' + documento.estado.nombre.split(' ')[0].toLowerCase()">
+                {{ documento.estado.nombre }}
+              </strong>
+            </div>
+          </div>
+          <div class="metadata-item">
+            <mat-icon>assignment</mat-icon>
+            <div class="metadata-text">
+              <span>Tipo</span>
+              <strong>{{ documento.tipoDocumento.nombre }}</strong>
+            </div>
+          </div>
+          <div class="metadata-item">
+            <mat-icon>corporate_fare</mat-icon>
+            <div class="metadata-text">
+              <span>Sector Emisor</span>
+              <strong>{{ documento.sector.nombre }}</strong>
+            </div>
+          </div>
+          <div class="metadata-item">
+            <mat-icon>calendar_today</mat-icon>
+            <div class="metadata-text">
+              <span>Fecha de Creación</span>
+              <strong>{{ documento.fechaCreacion | date:'dd/MM/yyyy' }}</strong>
+            </div>
+          </div>
+        </mat-card-content>
+      </mat-card>
+
+      @if (documento.palabrasClave && documento.palabrasClave.length > 0) {
+      <mat-card class="section-card">
+        <mat-card-content>
+          <h3><mat-icon>sell</mat-icon> Palabras Clave</h3>
+          <div class="keywords-container">
+            @for (keyword of documento.palabrasClave; track keyword.idPalabraClave) {
+            <span class="keyword-chip">{{ keyword.nombre }}</span>
+            }
+          </div>
+        </mat-card-content>
+      </mat-card>
+      }
+    </div>
+  </div>
   }
 </mat-dialog-content>
 
