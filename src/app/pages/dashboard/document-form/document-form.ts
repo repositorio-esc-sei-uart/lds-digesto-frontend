@@ -132,7 +132,13 @@ export class DocumentForm implements OnInit {
     this.unidades$ = this.unidadEjecutoraService.getUnidadesEjecutoras();
     this.estados$ = this.statusDocumentService.getEstados();
     this.palabrasClave$ = this.keywordDocumentService.getKeywords();
-    this.todosLosDocumentos$ = this.documentService.getDocumentos().pipe(
+    this.todosLosDocumentos$ = this.documentService.getDocumentos(
+        0, 
+        1000, 
+        undefined, 
+        undefined, 
+        undefined, 
+        true).pipe(
       map(response => response.content)
     );
 
@@ -175,24 +181,56 @@ export class DocumentForm implements OnInit {
     if (input.files) {
       const archivos = Array.from(input.files);
       const archivosPDF: File[] = [];
-      const archivosRechazados: string[] = [];
+      // Contenedores para los errores
+      const rechazadosPorTamano: string[] = [];
+      let cantidadRechazadosPorTipo = 0;
 
+      const MAX_SIZE_MB = 10;
+      const MAX_SIZE_BYTES = MAX_SIZE_MB * 1024 * 1024;
       for (const archivo of archivos) {
-        if (archivo.name.toLowerCase().endsWith('.pdf')) {
-          archivosPDF.push(archivo);
-        } else {
-          archivosRechazados.push(archivo.name);
+        // 1. Validar que sea PDF (Si falla, solo sumamos al contador)
+        if (!archivo.name.toLowerCase().endsWith('.pdf')) {
+          cantidadRechazadosPorTipo++;
+          continue; 
         }
+
+        // 2. Validar Tamaño (Si falla, guardamos el nombre específico)
+        if (archivo.size > MAX_SIZE_BYTES) {
+          rechazadosPorTamano.push(archivo.name);
+          continue; 
+        }
+
+        // Si pasa ambas, es válido
+        archivosPDF.push(archivo);
       }
       this.archivosParaSubir = this.archivosParaSubir.concat(archivosPDF);
 
-      if (archivosRechazados.length > 0) {
-        const mensaje = `Se ignoraron ${archivosRechazados.length} archivos. Solo se permiten PDFs.`;
-        this.snackBar.open(mensaje, 'Cerrar', {
-          duration: 5000,
+      // --- Construcción del Mensaje Inteligente ---
+      const lineasMensaje: string[] = [];
+
+      // A. Listar nombres de los archivos muy pesados
+      if (rechazadosPorTamano.length > 0) {
+        rechazadosPorTamano.forEach(nombre => {
+          lineasMensaje.push(`• "${nombre}" excede el límite de ${MAX_SIZE_MB}MB.`);
+        });
+      }
+
+      // B. Mostrar resumen numérico de los que no eran PDF
+      if (cantidadRechazadosPorTipo > 0) {
+        const plural = cantidadRechazadosPorTipo > 1;
+        lineasMensaje.push(`• Se ignoraron ${cantidadRechazadosPorTipo} archivo${plural ? 's' : ''} porque no ${plural ? 'eran' : 'era'} PDF.`);
+      }
+
+      // C. Mostrar SnackBar si hubo algún rechazo
+      if (lineasMensaje.length > 0) {
+        const mensajeFinal = `No se pudieron cargar algunos archivos:\n${lineasMensaje.join('\n')}`;
+        
+        this.snackBar.open(mensajeFinal, 'Cerrar', {
+          duration: 8000,
           verticalPosition: 'top',
           horizontalPosition: 'center',
-          panelClass: ['error-snackbar']
+          // Agregamos 'multi-line-snackbar' para permitir saltos de línea
+          panelClass: ['error-snackbar', 'multi-line-snackbar'] 
         });
       }
     }
@@ -386,6 +424,21 @@ export class DocumentForm implements OnInit {
         numeroExtraido = isNaN(numero) ? '' : numero.toString();
       }
     }
+    this.palabrasClaveSeleccionadas = [...documento.palabrasClave];
+    // Mapeamos las referencias para que encajen en el tipo DocumentoListItem
+    // Nota: El título vendrá vacío porque el backend no lo manda en la referencia simple,
+    // pero el número de documento sí se verá correctamente.
+    this.referenciasSeleccionadas = documento.referencias.map(ref => ({
+      idDocumento: ref.idDocumento,
+      numDocumento: ref.numDocumento,
+      titulo: '', // El backend no manda el título en la referencia, se verá vacío
+      // Propiedades obligatorias de relleno para evitar errores de tipado:
+      fechaCreacion: new Date(),
+      resumen: '',
+      activo: true,
+      tipoDocumento: { idTipoDocumento: 0, nombre: '', descripcion: '' },
+      estado: { idEstado: 0, nombre: '', descripcion: '' }
+    }));
     this.documentForm.patchValue({
       titulo: documento.titulo,
       numDocumento: numeroExtraido,
@@ -512,5 +565,16 @@ export class DocumentForm implements OnInit {
       codigoSector, // Si es null, se ignora
       sufijoUnidad
     ].filter(Boolean).join('-');
+  }
+  // Función para comparar objetos en los Selects
+  compareObjects(o1: any, o2: any): boolean {
+    if (o1 && o2) {
+      // Compara por ID si existe, o por referencia completa
+      return (o1.idTipoDocumento === o2.idTipoDocumento) || 
+             (o1.idSector === o2.idSector) ||
+             (o1.idUnidadEjecutora === o2.idUnidadEjecutora) ||
+             (o1.idEstado === o2.idEstado);
+    }
+    return o1 === o2;
   }
 }

@@ -1,13 +1,15 @@
 import { CommonModule } from '@angular/common';
 import { Component, OnInit, Inject, Optional } from '@angular/core';
 import { ActivatedRoute, RouterModule } from '@angular/router';
-import { MAT_DIALOG_DATA, MatDialogRef, MatDialogModule } from '@angular/material/dialog';
 import { environment } from '../../../environments/environment.development';
 // Módulos de Angular Material
+import { MAT_DIALOG_DATA, MatDialogRef, MatDialogModule } from '@angular/material/dialog';
+import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatCardModule } from '@angular/material/card';
 import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
 // Servicios y Tipos
+import { AuthenticationService } from '../../services/authentication-service';
 import { DocumentService } from '../../services/document-service';
 import { Documento } from '../../interfaces/document-model';
 import { filter, map, switchMap, tap } from 'rxjs';
@@ -24,7 +26,8 @@ import { filter, map, switchMap, tap } from 'rxjs';
     RouterModule,
     MatCardModule,
     MatIconModule,
-    MatButtonModule
+    MatButtonModule,
+    MatTooltipModule
   ],
   templateUrl: './document-detail.html',
   styleUrl: './document-detail.css'
@@ -35,11 +38,13 @@ export class DocumentDetail implements OnInit {
   /** Almacena los datos completos del documento a mostrar. */
   documento?: Documento;
   isDialog: boolean = false;
+  canViewInactive: boolean = false;
   constructor(
     private route: ActivatedRoute,
     private documentService: DocumentService,
     @Optional() public dialogRef: MatDialogRef<DocumentDetail>,
-    @Optional() @Inject(MAT_DIALOG_DATA) private data: { id: number }
+    @Optional() @Inject(MAT_DIALOG_DATA) private data: { id: number },
+    private authService: AuthenticationService
   ) { 
     // Si data existe, significa que se abrió como modal
     if (this.data && this.data.id) {
@@ -48,6 +53,10 @@ export class DocumentDetail implements OnInit {
   }
 
   ngOnInit(): void {
+    const user = this.authService.currentUserValue;
+    if (user && (user.rol?.nombre === 'Administrador' || user.rol?.nombre === 'Editor')) {
+      this.canViewInactive = true;
+    }
     if (this.isDialog) {
       // LÓGICA MODAL: Usamos el ID que viene por inyección
       this.cargarDocumento(this.data.id);

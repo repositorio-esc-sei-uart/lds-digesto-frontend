@@ -29,6 +29,7 @@ export interface DocumentoListItem {
 export interface ReferenciaDocumento {
   idDocumento: number;
   numDocumento: string;
+  activo?: boolean;
 }
 
 /**
