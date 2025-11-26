@@ -400,17 +400,6 @@ export class DocumentForm implements OnInit {
   }
 
   private fillFormForEdit(documento: Documento, catalogos: any): void {
-    const tipoDocCorrecto = catalogos.tipos.find(
-      (t: TipoDocumento) => t.idTipoDocumento === documento.tipoDocumento.idTipoDocumento
-    );
-    const sectorCorrecto = catalogos.sectores.find(
-      (s: Sector) => s.idSector === documento.sector.idSector
-    );
-    const estadoCorrecto = catalogos.estados.find(
-      (e: EstadoDocumento) => e.idEstado === documento.estado.idEstado
-    );
-    const unidadCorrecta = catalogos.unidades.find(
-      (u: UnidadEjecutora) => u.idUnidadEjecutora === documento.unidadEjecutora.idUnidadEjecutora);
 
     // LÓGICA NUEVA PARA EXTRAER EL NÚMERO
     let numeroExtraido = '';
@@ -424,33 +413,21 @@ export class DocumentForm implements OnInit {
         numeroExtraido = isNaN(numero) ? '' : numero.toString();
       }
     }
-    this.palabrasClaveSeleccionadas = [...documento.palabrasClave];
-    // Mapeamos las referencias para que encajen en el tipo DocumentoListItem
-    // Nota: El título vendrá vacío porque el backend no lo manda en la referencia simple,
-    // pero el número de documento sí se verá correctamente.
-    this.referenciasSeleccionadas = documento.referencias.map(ref => ({
-      idDocumento: ref.idDocumento,
-      numDocumento: ref.numDocumento,
-      titulo: '', // El backend no manda el título en la referencia, se verá vacío
-      // Propiedades obligatorias de relleno para evitar errores de tipado:
-      fechaCreacion: new Date(),
-      resumen: '',
-      activo: true,
-      tipoDocumento: { idTipoDocumento: 0, nombre: '', descripcion: '' },
-      estado: { idEstado: 0, nombre: '', descripcion: '' }
-    }));
     this.documentForm.patchValue({
-      titulo: documento.titulo,
-      numDocumento: numeroExtraido,
-      fechaCreacion: documento.fechaCreacion,
-      resumen: documento.resumen,
-      tipoDocumento: tipoDocCorrecto,
-      sector: sectorCorrecto,
-      estado: estadoCorrecto,
-      unidadEjecutora: unidadCorrecta,
-      palabrasClave: documento.palabrasClave,
-      referencias: documento.referencias
-    });
+    titulo: documento.titulo,
+    numDocumento: numeroExtraido,
+    fechaCreacion: documento.fechaCreacion,
+    resumen: documento.resumen,
+    
+    // Asignación directa (el compareObjects corregido hará el trabajo de emparejarlo con el select)
+    tipoDocumento: documento.tipoDocumento,
+    sector: documento.sector,
+    estado: documento.estado,
+    unidadEjecutora: documento.unidadEjecutora,
+    
+    palabrasClave: documento.palabrasClave,
+    referencias: documento.referencias
+  });
   }
   removerArchivoExistente(archivoARemover: Archivo): void {
     this.isLoading = true;
@@ -568,13 +545,29 @@ export class DocumentForm implements OnInit {
   }
   // Función para comparar objetos en los Selects
   compareObjects(o1: any, o2: any): boolean {
-    if (o1 && o2) {
-      // Compara por ID si existe, o por referencia completa
-      return (o1.idTipoDocumento === o2.idTipoDocumento) || 
-             (o1.idSector === o2.idSector) ||
-             (o1.idUnidadEjecutora === o2.idUnidadEjecutora) ||
-             (o1.idEstado === o2.idEstado);
-    }
+    if (!o1 || !o2) {
     return o1 === o2;
+  }
+
+  // 2. Verificamos qué tipo de objeto es mirando si tiene la propiedad ID correspondiente
+  // Usamos el operador 'in' para asegurar que la propiedad existe en ambos objetos
+  if ('idTipoDocumento' in o1 && 'idTipoDocumento' in o2) {
+    return o1.idTipoDocumento === o2.idTipoDocumento;
+  }
+  
+  if ('idSector' in o1 && 'idSector' in o2) {
+    return o1.idSector === o2.idSector;
+  }
+  
+  if ('idUnidadEjecutora' in o1 && 'idUnidadEjecutora' in o2) {
+    return o1.idUnidadEjecutora === o2.idUnidadEjecutora;
+  }
+  
+  if ('idEstado' in o1 && 'idEstado' in o2) {
+    return o1.idEstado === o2.idEstado;
+  }
+
+  // 3. Fallback: comparación por referencia si no coincide con ninguno anterior
+  return o1 === o2;
   }
 }
