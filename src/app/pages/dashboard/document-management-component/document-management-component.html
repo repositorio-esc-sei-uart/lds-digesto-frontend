@@ -29,44 +29,68 @@
   <div [hidden]="isLoading">
 
     @if (isAdmin) {
-    <div class="mat-elevation-z4 table-container">
-      <h3>Registro de Auditoría</h3>
-      <table mat-table [dataSource]="dataSourceAuditoria" class="user-table" matSort>
+      <div class="mat-elevation-z4 table-container">
+        <h3>Registro de Auditoría del Sistema</h3>
+        
+        <table mat-table [dataSource]="dataSourceAuditoria" class="user-table" matSort #sortAuditoria="matSort">
 
-        <ng-container matColumnDef="numDocumento">
-          <th mat-header-cell *matHeaderCellDef mat-sort-header> N° Documento </th>
-          <td mat-cell *matCellDef="let reg"> {{ reg.numDocumento }} </td>
-        </ng-container>
+          <ng-container matColumnDef="fechaCarga">
+            <th mat-header-cell *matHeaderCellDef mat-sort-header> Fecha Operacion</th>
+            <td mat-cell *matCellDef="let reg"> {{ reg.fechaCarga | date:'dd/MM/yyyy' }} </td>
+          </ng-container>
 
-        <ng-container matColumnDef="titulo">
-          <th mat-header-cell *matHeaderCellDef mat-sort-header> Título </th>
-          <td mat-cell *matCellDef="let reg" class="truncate-cell" [matTooltip]="reg.tituloDocumento">
-            {{ reg.tituloDocumento }}
-          </td>
-        </ng-container>
+          <ng-container matColumnDef="autor">
+            <th mat-header-cell *matHeaderCellDef> Autor </th>
+            <td mat-cell *matCellDef="let reg"> 
+              <strong>{{ reg.nombreUsuarioResponsable }}</strong>
+              <br><small class="text-muted">Leg: {{ reg.legajoUsuarioResponsable }}</small>
+            </td>
+          </ng-container>
 
-        <ng-container matColumnDef="autor">
-          <th mat-header-cell *matHeaderCellDef> Autor </th>
-          <td mat-cell *matCellDef="let reg"> {{ reg.nombreUsuario }} </td>
-        </ng-container>
+          <ng-container matColumnDef="tipoOperacion">
+            <th mat-header-cell *matHeaderCellDef mat-sort-header> Tipo Operación </th>
+            <td mat-cell *matCellDef="let reg"> 
+              <span class="status-chip" [ngClass]="getOperacionClass(reg.tipoOperacion)">
+                {{ reg.tipoOperacion }} 
+              </span>
+            </td>
+          </ng-container>
 
-        <ng-container matColumnDef="fechaCarga">
-          <th mat-header-cell *matHeaderCellDef mat-sort-header> Fecha de Carga </th>
-          <td mat-cell *matCellDef="let reg"> {{ reg.fechaCarga | date:'dd/MM/yyyy' }} </td>
-        </ng-container>
+          <ng-container matColumnDef="documentoAfectado">
+            <th mat-header-cell *matHeaderCellDef> Documento Afectado </th>
+            <td mat-cell *matCellDef="let reg">
+              @if (reg.numDocumentoAfectado && reg.numDocumentoAfectado !== 'N/A') {
+                <strong>{{ reg.numDocumentoAfectado }}</strong><br>
+                <small class="text-muted">{{ reg.tituloDocumentoAfectado }}</small>
+              } @else {
+                <span class="text-muted">-</span>
+              }
+            </td>
+          </ng-container>
 
-        <tr mat-header-row *matHeaderRowDef="displayedColumnsAuditoria; sticky: true"></tr>
-        <tr mat-row *matRowDef="let row; columns: displayedColumnsAuditoria;"></tr>
+          <ng-container matColumnDef="usuarioAfectado">
+            <th mat-header-cell *matHeaderCellDef> Usuario Afectado </th>
+            <td mat-cell *matCellDef="let reg">
+              @if (reg.nombreUsuarioAfectado && reg.nombreUsuarioAfectado !== 'N/A') {
+                <strong>{{ reg.nombreUsuarioAfectado }}</strong>
+              } @else {
+                <span class="text-muted">-</span>
+              }
+            </td>
+          </ng-container>
 
-        @if (!isLoading && dataSourceAuditoria.data.length === 0) {
-        <tr class="mat-row-no-data">
-          <td class="mat-cell" [attr.colspan]="displayedColumnsAuditoria.length">
-            No se encontraron registros de auditoría.
-          </td>
-        </tr>
-        }
-      </table>
-    </div>
+          <tr mat-header-row *matHeaderRowDef="displayedColumnsAuditoria; sticky: true"></tr>
+          <tr mat-row *matRowDef="let row; columns: displayedColumnsAuditoria;"></tr>
+
+          @if (!isLoading && dataSourceAuditoria.data.length === 0) {
+            <tr class="mat-row-no-data">
+              <td class="mat-cell" [attr.colspan]="displayedColumnsAuditoria.length">
+                No se encontraron registros de auditoría.
+              </td>
+            </tr>
+          }
+        </table>
+      </div>
     }
 
     @else {

@@ -58,7 +58,8 @@ export class DocumentManagementComponent implements OnInit {
   // Columnas para GESTIÓN (Editor)
   displayedColumnsGestion: string[] = ['numDocumento', 'titulo', 'tipoDocumento', 'fechaCreacion', 'estado', 'acciones'];
   // Columnas para AUDITORÍA (Admin)
-  displayedColumnsAuditoria: string[] = ['numDocumento', 'titulo', 'autor', 'fechaCarga'];
+  // Columnas Definidas: Fecha, Responsable, Operación, Doc Afectado, Usuario Afectado
+  displayedColumnsAuditoria: string[] = ['fechaCarga', 'autor', 'tipoOperacion', 'documentoAfectado', 'usuarioAfectado'];
 
   // Fuentes de datos (Cambiadas a MatTableDataSource)
   public dataSourceGestion = new MatTableDataSource<DocumentoListItem>();
@@ -359,5 +360,17 @@ export class DocumentManagementComponent implements OnInit {
     } else {
       console.error("No se encontró el documento para editar");
     }
+  }
+
+  getOperacionClass(operacion: string): string {
+    if (!operacion) return '';
+    const op = operacion.toUpperCase();
+    // Verde: Crear/Activar
+    if (op === 'REGISTRAR' || op === 'ACTIVAR' || op === 'ALTA') return 'status-vigente'; 
+    // Naranja: Modificar
+    if (op === 'MODIFICAR' || op === 'EDICION') return 'status-derogado-parcial'; 
+    // Rojo: Desactivar/Baja
+    if (op === 'DESACTIVAR' || op === 'BAJA' || op === 'BAJA_LOGICA') return 'status-derogado-total'; 
+    return 'status-otro';
   }
 }
